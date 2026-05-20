@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useGameStore, type Level } from '../stores/gameStore';
+import { useGameStore } from '../stores/gameStore';
 import AppShell from '../components/layout/AppShell';
 import StockList from '../components/trading/StockList';
 import OrderPanel from '../components/trading/OrderPanel';
@@ -17,12 +17,11 @@ import {
   Cpu 
 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { toast } from 'sonner';
 
 type TradingSubTabMobile = 'stocks' | 'chart' | 'trade';
 
 export default function Dashboard() {
-  const { stocks, dayCount, cash, holdings, initialCash, level, setLevel } = useGameStore();
+  const { stocks, dayCount, cash, holdings, initialCash, level } = useGameStore();
   
   const [activeWorkspace, setActiveWorkspace] = useState<'trading' | 'portfolio' | 'news' | 'glossary'>('trading');
   const [selectedStockId, setSelectedStockId] = useState<string | null>(null);
@@ -291,22 +290,7 @@ export default function Dashboard() {
             <span>DAY {dayCount}</span>
           </div>
           <span>|</span>
-          <div className="flex items-center gap-1">
-            <span>난이도:</span>
-            <select
-              value={level}
-              onChange={(e) => {
-                const newLevel = e.target.value as Level;
-                setLevel(newLevel);
-                toast.success(`학습 레벨이 ${newLevel === 'elementary' ? '초급' : newLevel === 'middle' ? '중급' : '고급'}으로 전환되었습니다.`);
-              }}
-              className="bg-transparent hover:bg-black/5 dark:hover:bg-white/5 px-1 py-0.5 rounded text-[10px] font-bold border-none focus:outline-none cursor-pointer text-muted-foreground hover:text-foreground transition-all font-sans"
-            >
-              <option value="elementary" className="bg-[var(--color-hts-panel)] text-foreground">초급</option>
-              <option value="middle" className="bg-[var(--color-hts-panel)] text-foreground">중급</option>
-              <option value="high" className="bg-[var(--color-hts-panel)] text-foreground">고급</option>
-            </select>
-          </div>
+          <span>난이도: {level === 'elementary' ? '초급' : level === 'middle' ? '중급' : '고급'}</span>
           <span>|</span>
           <span>상장 종목 수: {stockIds.length}개</span>
         </div>

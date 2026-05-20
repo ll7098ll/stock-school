@@ -1,4 +1,4 @@
-import { useGameStore } from './stores/gameStore';
+import { useGameStore, type Level } from './stores/gameStore';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import { Toaster } from './components/ui/sonner';
@@ -21,10 +21,19 @@ function App() {
   }, [setAuth]);
 
   useEffect(() => {
-    if (uid && !isLoadingState && Object.keys(stocks).length === 0) {
-      initializeGame(level);
+    if (uid && !isLoadingState) {
+      const pendingLevel = localStorage.getItem('stockschool_pending_level') as Level | null;
+      if (pendingLevel) {
+        // 유저가 로그인 전에 난이도를 명시적으로 변경한 경우
+        localStorage.removeItem('stockschool_pending_level');
+        initializeGame(pendingLevel);
+      } else if (Object.keys(stocks).length === 0) {
+        // 새 유저이거나 저장된 게임이 없는 경우
+        initializeGame(level);
+      }
     }
-  }, [uid, isLoadingState, stocks, level, initializeGame]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uid, isLoadingState]);
 
   useEffect(() => {
     if (theme === 'dark') {

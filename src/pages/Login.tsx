@@ -69,6 +69,7 @@ export default function Login() {
   const { theme, toggleTheme } = useGameStore();
   const [level, setLevel] = useState<Level>('elementary');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasChangedLevel, setHasChangedLevel] = useState(false);
   const [randomTerm, setRandomTerm] = useState<GlossaryItem | null>(null);
 
   // Live mockup states for preview dashboard
@@ -116,10 +117,15 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
+      // 유저가 난이도를 명시적으로 변경한 경우 localStorage에 저장
+      if (hasChangedLevel) {
+        localStorage.setItem('stockschool_pending_level', level);
+      }
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       toast.success('스탁스쿨에 입학하신 것을 환영합니다! 🎉');
     } catch (error: any) {
+      localStorage.removeItem('stockschool_pending_level');
       toast.error('로그인 실패: ' + error.message);
     } finally {
       setIsLoading(false);
@@ -318,7 +324,7 @@ export default function Login() {
               {levels.map(l => (
                 <button
                   key={l.key}
-                  onClick={() => setLevel(l.key)}
+                  onClick={() => { setLevel(l.key); setHasChangedLevel(true); }}
                   className={cn(
                     "rounded-xl p-3.5 text-left transition-all border flex flex-col justify-between cursor-pointer select-none group min-h-[135px]",
                     level === l.key

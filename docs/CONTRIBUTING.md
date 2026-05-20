@@ -95,7 +95,7 @@ gitgraph
     checkout develop
     merge "fix/price-calc"
     checkout main
-    merge develop id: "v1.1.0 릴리즈"
+    merge develop id: "v1.1.0-릴리즈"
 ```
 
 | 브랜치 | 용도 | 예시 |

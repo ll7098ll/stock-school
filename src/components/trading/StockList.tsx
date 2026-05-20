@@ -177,10 +177,10 @@ export default function StockList({ selected, onSelect }: Props) {
 
       {/* Column Header */}
       <div className="grid grid-cols-12 px-4 py-2 text-[10px] text-muted-foreground font-bold tracking-wider uppercase border-b border-[var(--color-hts-border)] bg-black/[0.02] dark:bg-black/10">
-        <span className="col-span-5">종목명 / 차트</span>
+        <span className="col-span-6 sm:col-span-5">종목명 / 차트</span>
         <span className="col-span-3 text-right">현재가</span>
-        <span className="col-span-2 text-right">대비</span>
-        <span className="col-span-2 text-right">등락률</span>
+        <span className="hidden sm:inline sm:col-span-2 text-right">대비</span>
+        <span className="col-span-3 sm:col-span-2 text-right">등락률</span>
       </div>
 
       {/* Stock list */}
@@ -226,7 +226,7 @@ export default function StockList({ selected, onSelect }: Props) {
                           )}
                         >
                           {/* Name and Sparkline */}
-                          <div className="col-span-5 flex items-center gap-2 pr-1">
+                          <div className="col-span-6 sm:col-span-5 flex items-center gap-2 pr-1">
                             <div className="min-w-0">
                               <div className="font-extrabold text-foreground text-xs truncate leading-snug">{stock.name}</div>
                               <div className="mt-0.5">
@@ -245,7 +245,7 @@ export default function StockList({ selected, onSelect }: Props) {
 
                           {/* Net Change */}
                           <div className={cn(
-                            "col-span-2 text-right text-[10px] font-bold tabular-nums",
+                            "hidden sm:block sm:col-span-2 text-right text-[10px] font-bold tabular-nums",
                             isUp ? "text-[var(--color-price-up)]" : isDown ? "text-[var(--color-price-down)]" : "text-muted-foreground"
                           )}>
                             {isUp ? '▲' : isDown ? '▼' : ''}{Math.abs(diff).toLocaleString()}
@@ -253,7 +253,7 @@ export default function StockList({ selected, onSelect }: Props) {
 
                           {/* Percent Change */}
                           <div className={cn(
-                            "col-span-2 text-right text-[10px] font-black tabular-nums",
+                            "col-span-3 sm:col-span-2 text-right text-[10px] font-black tabular-nums",
                             isUp ? "text-[var(--color-price-up)]" : isDown ? "text-[var(--color-price-down)]" : "text-muted-foreground"
                           )}>
                             {pct > 0 ? '+' : ''}{pct.toFixed(2)}%

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useGameStore } from '../../stores/gameStore';
 import { GLOSSARY_TERMS, getCategoryLabel } from '../../lib/glossaryData';
-import { BookOpen, Search, Bookmark, HelpCircle } from 'lucide-react';
+import { BookOpen, Search, Bookmark, HelpCircle, ArrowLeft } from 'lucide-react';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '../../lib/utils';
@@ -114,7 +114,10 @@ export default function GlossaryHub() {
       {/* Main Grid View */}
       <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 min-h-0">
         {/* Left Side: Term Cards List (1/3 weight) */}
-        <div className="md:col-span-1 flex flex-col min-h-0 bg-[var(--color-hts-panel)] border border-[var(--color-hts-border)] rounded-2xl overflow-hidden shadow-md">
+        <div className={cn(
+          "md:col-span-1 flex flex-col min-h-0 bg-[var(--color-hts-panel)] border border-[var(--color-hts-border)] rounded-2xl overflow-hidden shadow-md",
+          selectedTermId !== null ? "hidden md:flex" : "flex"
+        )}>
           <div className="px-4 py-3 border-b border-[var(--color-hts-border)] bg-black/[0.01] dark:bg-white/[0.01] flex items-center justify-between shrink-0">
             <span className="font-extrabold text-xs text-foreground tracking-tight">용어 목록 ({filteredTerms.length})</span>
           </div>
@@ -164,7 +167,10 @@ export default function GlossaryHub() {
         </div>
 
         {/* Right Side: Term Deep Explanation Card (2/3 weight) */}
-        <div className="md:col-span-2 flex flex-col min-h-0 bg-[var(--color-hts-panel)] border border-[var(--color-hts-border)] rounded-2xl overflow-hidden shadow-md">
+        <div className={cn(
+          "md:col-span-2 flex flex-col min-h-0 bg-[var(--color-hts-panel)] border border-[var(--color-hts-border)] rounded-2xl overflow-hidden shadow-md",
+          selectedTermId === null ? "hidden md:flex" : "flex"
+        )}>
           {selectedTermId ? (
             (() => {
               const selectedItem = GLOSSARY_TERMS.find(i => i.id === selectedTermId)!;
@@ -173,6 +179,14 @@ export default function GlossaryHub() {
                   {/* Detailed Title */}
                   <div className="px-6 py-5 border-b border-[var(--color-hts-border)] bg-black/[0.01] dark:bg-white/[0.01] flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-3">
+                      {/* Mobile Back Button */}
+                      <button
+                        onClick={() => setSelectedTermId(null)}
+                        className="md:hidden p-2 -ml-2 mr-1 rounded-lg hover:bg-[var(--color-hts-hover)] text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                        title="용어 목록으로 돌아가기"
+                      >
+                        <ArrowLeft className="w-5 h-5" />
+                      </button>
                       <div className="w-10 h-10 rounded-xl bg-[var(--color-accent-gold)]/10 border border-[var(--color-accent-gold)]/20 flex items-center justify-center text-[var(--color-accent-gold)] font-bold">
                         <Bookmark className="w-5 h-5" />
                       </div>

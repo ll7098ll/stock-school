@@ -279,46 +279,102 @@ export default function PortfolioPanel() {
                 <p className="text-[10px] mt-1 opacity-60">트레이딩 룸에서 종목을 골라 첫 매수 주문을 넣어보세요.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto w-full">
-                <table className="w-full text-xs border-collapse">
-                  <thead className="bg-black/[0.02] dark:bg-black/30 border-b border-[var(--color-hts-border)] text-muted-foreground uppercase text-[10px] font-bold tracking-wider">
-                    <tr>
-                      <th className="p-3 text-left pl-5">종목명 / 섹터</th>
-                      <th className="p-3 text-right">보유 수량</th>
-                      <th className="p-3 text-right">평균 매수가</th>
-                      <th className="p-3 text-right">현재가</th>
-                      <th className="p-3 text-right">평가금액</th>
-                      <th className="p-3 text-right pr-5">평가손익 (수익률)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[var(--color-hts-border)]/40">
-                    {holdingList.map(item => {
-                      const itemProfit = item.profit > 0;
-                      const itemLoss = item.profit < 0;
-                      return (
-                        <tr key={item.id} className="hover:bg-[var(--color-hts-hover)] transition-colors duration-150">
-                          <td className="p-3.5 pl-5 font-bold text-foreground">
-                            <div className="text-xs md:text-sm">{item.name}</div>
-                            <div className="text-[9px] text-muted-foreground font-black uppercase tracking-wider mt-0.5">{item.sector}</div>
-                          </td>
-                          <td className="p-3.5 text-right font-bold text-foreground/90 tabular-nums text-xs md:text-sm">{item.quantity}주</td>
-                          <td className="p-3.5 text-right text-muted-foreground/90 tabular-nums text-xs md:text-sm">{item.avgPrice.toLocaleString()}원</td>
-                          <td className="p-3.5 text-right font-bold text-foreground tabular-nums text-xs md:text-sm">{item.currentPrice.toLocaleString()}원</td>
-                          <td className="p-3.5 text-right font-bold text-foreground/90 tabular-nums text-xs md:text-sm">{item.currentValue.toLocaleString()}원</td>
-                          <td className={cn("p-3.5 text-right font-extrabold pr-5 tabular-nums text-xs md:text-sm",
+              <div className="w-full">
+                {/* Mobile Card List (visible only on mobile) */}
+                <div className="sm:hidden divide-y divide-[var(--color-hts-border)]/40">
+                  {holdingList.map(item => {
+                    const itemProfit = item.profit > 0;
+                    const itemLoss = item.profit < 0;
+                    return (
+                      <div key={item.id} className="p-4 space-y-3 hover:bg-[var(--color-hts-hover)] transition-colors duration-150">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="font-bold text-foreground text-sm">{item.name}</span>
+                            <span className="text-[9px] text-muted-foreground font-black uppercase tracking-wider ml-2">{item.sector}</span>
+                          </div>
+                          <div className={cn("text-xs font-black px-2 py-0.5 rounded-full",
+                            itemProfit ? 'bg-[var(--color-price-up)]/10 text-[var(--color-price-up)]' :
+                            itemLoss ? 'bg-[var(--color-price-down)]/10 text-[var(--color-price-down)]' : 'bg-slate-500/10 text-slate-500'
+                          )}>
+                            {item.profitRate > 0 ? '+' : ''}{item.profitRate.toFixed(2)}%
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-[11px] font-bold text-muted-foreground">
+                          <div>
+                            <span className="text-muted-foreground/60 mr-1.5">보유수량</span>
+                            <span className="text-foreground/95 tabular-nums">{item.quantity}주</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground/60 mr-1.5">평가금액</span>
+                            <span className="text-foreground/95 tabular-nums">{item.currentValue.toLocaleString()}원</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground/60 mr-1.5">평균단가</span>
+                            <span className="text-foreground/80 tabular-nums">{item.avgPrice.toLocaleString()}원</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground/60 mr-1.5">현재가격</span>
+                            <span className="text-foreground/80 tabular-nums">{item.currentPrice.toLocaleString()}원</span>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-[var(--color-hts-border)]/30 flex items-center justify-between text-[11px]">
+                          <span className="font-bold text-muted-foreground/75">평가손익</span>
+                          <span className={cn("font-extrabold tabular-nums text-xs",
                             itemProfit ? 'text-[var(--color-price-up)]' :
                             itemLoss ? 'text-[var(--color-price-down)]' : 'text-muted-foreground'
                           )}>
-                            <div>{item.profit > 0 ? '+' : ''}{item.profit.toLocaleString()}원</div>
-                            <div className="text-[10px] font-black opacity-85 mt-0.5">
-                              {item.profitRate > 0 ? '+' : ''}{item.profitRate.toFixed(2)}%
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                            {item.profit > 0 ? '+' : ''}{item.profit.toLocaleString()}원
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop Table (hidden on mobile) */}
+                <div className="hidden sm:block overflow-x-auto w-full">
+                  <table className="w-full text-xs border-collapse">
+                    <thead className="bg-black/[0.02] dark:bg-black/30 border-b border-[var(--color-hts-border)] text-muted-foreground uppercase text-[10px] font-bold tracking-wider">
+                      <tr>
+                        <th className="p-3 text-left pl-5">종목명 / 섹터</th>
+                        <th className="p-3 text-right">보유 수량</th>
+                        <th className="p-3 text-right">평균 매수가</th>
+                        <th className="p-3 text-right">현재가</th>
+                        <th className="p-3 text-right">평가금액</th>
+                        <th className="p-3 text-right pr-5">평가손익 (수익률)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[var(--color-hts-border)]/40">
+                      {holdingList.map(item => {
+                        const itemProfit = item.profit > 0;
+                        const itemLoss = item.profit < 0;
+                        return (
+                          <tr key={item.id} className="hover:bg-[var(--color-hts-hover)] transition-colors duration-150">
+                            <td className="p-3.5 pl-5 font-bold text-foreground">
+                              <div className="text-xs md:text-sm">{item.name}</div>
+                              <div className="text-[9px] text-muted-foreground font-black uppercase tracking-wider mt-0.5">{item.sector}</div>
+                            </td>
+                            <td className="p-3.5 text-right font-bold text-foreground/90 tabular-nums text-xs md:text-sm">{item.quantity}주</td>
+                            <td className="p-3.5 text-right text-muted-foreground/90 tabular-nums text-xs md:text-sm">{item.avgPrice.toLocaleString()}원</td>
+                            <td className="p-3.5 text-right font-bold text-foreground tabular-nums text-xs md:text-sm">{item.currentPrice.toLocaleString()}원</td>
+                            <td className="p-3.5 text-right font-bold text-foreground/90 tabular-nums text-xs md:text-sm">{item.currentValue.toLocaleString()}원</td>
+                            <td className={cn("p-3.5 text-right font-extrabold pr-5 tabular-nums text-xs md:text-sm",
+                              itemProfit ? 'text-[var(--color-price-up)]' :
+                              itemLoss ? 'text-[var(--color-price-down)]' : 'text-muted-foreground'
+                            )}>
+                              <div>{item.profit > 0 ? '+' : ''}{item.profit.toLocaleString()}원</div>
+                              <div className="text-[10px] font-black opacity-85 mt-0.5">
+                                {item.profitRate > 0 ? '+' : ''}{item.profitRate.toFixed(2)}%
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>

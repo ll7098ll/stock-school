@@ -71,6 +71,17 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasChangedLevel, setHasChangedLevel] = useState(false);
   const [randomTerm, setRandomTerm] = useState<GlossaryItem | null>(null);
+  const [isKakaoTalk, setIsKakaoTalk] = useState(false);
+
+  // Detect KakaoTalk in-app browser and redirect to system default browser
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isKakao = /kakaotalk/i.test(userAgent);
+    setIsKakaoTalk(isKakao);
+    if (isKakao) {
+      window.location.href = `kakaotalk://web/openExternal?url=${encodeURIComponent(window.location.href)}`;
+    }
+  }, []);
 
   // Enable body scrolling when Login page is mounted, restore on unmount
   useEffect(() => {
@@ -395,6 +406,28 @@ export default function Login() {
 
             {/* Login / Entry triggers */}
             <div className="space-y-2 pt-1.5">
+              {isKakaoTalk && (
+                <div className={cn(
+                  "p-3.5 border rounded-xl flex flex-col gap-1.5 text-xs text-left mb-2 animate-fade-in shadow-sm select-none",
+                  isDark 
+                    ? "bg-rose-500/10 border-rose-500/25 text-rose-300" 
+                    : "bg-rose-50 border-rose-200 text-rose-800"
+                )}>
+                  <div className="flex items-center gap-1.5 font-black text-rose-600 dark:text-rose-400">
+                    <span className="text-sm">⚠️</span>
+                    <span>카카오톡 인앱 브라우저 접속 안내</span>
+                  </div>
+                  <p className="leading-relaxed font-semibold text-[11px] opacity-90">
+                    구글 보안 정책에 의해 카카오톡 앱 내부에서는 Google 계정 로그인을 진행할 수 없습니다.
+                  </p>
+                  <div className="mt-1 pt-1.5 border-t border-rose-500/10 text-[10px] font-bold opacity-80 flex flex-col gap-1">
+                    <div className="text-rose-700 dark:text-rose-300">💡 해결 방법:</div>
+                    <div className="leading-normal">
+                      우측 상단의 메뉴 버튼(<span className="underline font-black">⋯</span> 또는 <span className="underline font-black">⋮</span>)을 누르고, <strong className="font-extrabold text-rose-700 dark:text-rose-300 underline decoration-rose-500/30">'다른 브라우저로 열기'</strong> 또는 <strong className="font-extrabold text-rose-700 dark:text-rose-300 underline decoration-rose-500/30">'Safari/Chrome으로 열기'</strong>를 선택하여 정상적으로 로그인해 주세요!
+                    </div>
+                  </div>
+                </div>
+              )}
               <Button
                 className={cn(
                   "w-full h-11 font-extrabold text-sm gap-2 transition-all cursor-pointer shadow-sm rounded-xl border flex items-center justify-center",

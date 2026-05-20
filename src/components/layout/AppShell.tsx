@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGameStore, type Level } from '../../stores/gameStore';
+import { useGameStore } from '../../stores/gameStore';
 import { 
   LineChart, 
   Wallet, 
@@ -31,7 +31,6 @@ export default function AppShell({ children, activeWorkspace, setActiveWorkspace
   const { 
     displayName, 
     level, 
-    setLevel,
     dayCount, 
     nextDay, 
     theme, 
@@ -51,6 +50,7 @@ export default function AppShell({ children, activeWorkspace, setActiveWorkspace
     }
   };
 
+  const levelLabel = level === 'elementary' ? '초급' : level === 'middle' ? '중급' : '고급';
   const levelColor = level === 'elementary' ? 'from-slate-400 to-slate-500' : level === 'middle' ? 'from-slate-500 to-slate-600' : 'from-slate-700 to-slate-850';
 
   const menuItems = [
@@ -104,22 +104,9 @@ export default function AppShell({ children, activeWorkspace, setActiveWorkspace
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-black truncate text-foreground">{displayName || '게스트'}</div>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <select
-                    value={level}
-                    onChange={(e) => {
-                      const newLevel = e.target.value as Level;
-                      setLevel(newLevel);
-                      toast.success(`학습 레벨이 ${newLevel === 'elementary' ? '초급' : newLevel === 'middle' ? '중급' : '고급'}으로 전환되었습니다.`);
-                    }}
-                    className={cn(
-                      "inline-flex px-1.5 py-0.5 rounded-full text-[9px] font-black text-white bg-gradient-to-r shadow-sm shadow-black/10 focus:outline-none cursor-pointer border border-white/10 hover:brightness-110 transition-all font-sans",
-                      levelColor
-                    )}
-                  >
-                    <option value="elementary" className="text-slate-800 bg-white dark:bg-slate-900 dark:text-white">초급</option>
-                    <option value="middle" className="text-slate-800 bg-white dark:bg-slate-900 dark:text-white">중급</option>
-                    <option value="high" className="text-slate-800 bg-white dark:bg-slate-900 dark:text-white">고급</option>
-                  </select>
+                  <span className={cn("inline-flex px-1.5 py-0.5 rounded-full text-[9px] font-black text-white bg-gradient-to-r shadow-sm shadow-black/10", levelColor)}>
+                    {levelLabel}
+                  </span>
                 </div>
               </div>
             </div>

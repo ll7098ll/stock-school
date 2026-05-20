@@ -85,8 +85,8 @@ export default function Header() {
             </h1>
           </div>
           
-          <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground border-l border-[var(--color-hts-border)] pl-4 ml-1">
-            <span className="font-semibold text-foreground/80">{displayName}</span>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground border-l border-[var(--color-hts-border)] pl-2 md:pl-4 ml-1">
+            <span className="hidden sm:inline font-semibold text-foreground/80">{displayName}</span>
             <select
               value={level}
               onChange={(e) => {

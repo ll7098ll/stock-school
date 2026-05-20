@@ -3,30 +3,32 @@ import { useGameStore } from '../../stores/gameStore';
 import { createChart, type IChartApi, ColorType, LineStyle, LineSeries, AreaSeries, HistogramSeries } from 'lightweight-charts';
 import { BookOpen, ShoppingCart } from 'lucide-react';
 import { cn } from '../../lib/utils';
-
 interface Props {
   stockId: string;
   onTradeClick?: () => void;
   onAnalyzeClick?: () => void;
 }
-
 export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Props) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const { stocks, theme, tutorialStep } = useGameStore();
   const stock = stocks[stockId];
-
   useEffect(() => {
     if (!chartContainerRef.current || !stock) return;
-
+    const getDateString = (index: number) => {
+      const date = new Date(2026, 0, 1);
+      date.setDate(date.getDate() + index);
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    };
     // Cleanup previous chart
     if (chartRef.current) {
       chartRef.current.remove();
       chartRef.current = null;
     }
-
     const container = chartContainerRef.current;
-
     // Resolve theme colors
     const isDark = theme === 'dark';
     const textColor = isDark ? '#9CA3AF' : '#4B5563';
@@ -36,7 +38,6 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
     const priceUpColor = isDark ? '#FF375F' : '#E11D48';
     const priceDownColor = isDark ? '#0A84FF' : '#2563EB';
     const goldColor = isDark ? '#FBBF24' : '#D97706';
-
     const chart = createChart(container, {
       width: container.clientWidth,
       height: container.clientHeight,
@@ -63,11 +64,8 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
         timeVisible: false,
       },
     });
-
     chartRef.current = chart;
-
     const isOverallUp = stock.priceHistory[stock.priceHistory.length - 1] >= stock.priceHistory[0];
-
     // Area series for gradient fill
     const areaSeries = chart.addSeries(AreaSeries, {
       topColor: isOverallUp 
@@ -82,15 +80,12 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
       crosshairMarkerVisible: true,
       crosshairMarkerRadius: 4,
     });
-
     // Create data
     const data = stock.priceHistory.map((price: number, i: number) => ({
-      time: `2026-01-${String(i + 1).padStart(2, '0')}` as any,
+      time: getDateString(i) as any,
       value: price,
     }));
-
     areaSeries.setData(data);
-
     // Moving average (5-day)
     if (stock.priceHistory.length >= 5) {
       const ma5Series = chart.addSeries(LineSeries, {
@@ -105,13 +100,12 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
       for (let i = 4; i < stock.priceHistory.length; i++) {
         const sum = stock.priceHistory.slice(i - 4, i + 1).reduce((a: number, b: number) => a + b, 0);
         ma5Data.push({
-          time: `2026-01-${String(i + 1).padStart(2, '0')}`,
+          time: getDateString(i),
           value: Math.round(sum / 5),
         });
       }
       ma5Series.setData(ma5Data);
     }
-
     // Volume bars (simulated)
     const volumeSeries = chart.addSeries(HistogramSeries, {
       priceScaleId: 'volume',
@@ -123,7 +117,7 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
     const volumeData = stock.priceHistory.map((price: number, i: number) => {
       const prev = i > 0 ? stock.priceHistory[i - 1] : price;
       return {
-        time: `2026-01-${String(i + 1).padStart(2, '0')}` as any,
+        time: getDateString(i) as any,
         value: Math.floor(Math.random() * 50000) + 10000,
         color: price >= prev 
           ? (isDark ? 'rgba(255, 55, 95, 0.35)' : 'rgba(225, 29, 72, 0.25)')
@@ -131,9 +125,7 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
       };
     });
     volumeSeries.setData(volumeData);
-
     chart.timeScale().fitContent();
-
     // Resize observer
     const resizeObserver = new ResizeObserver(entries => {
       if (!entries || entries.length === 0) return;
@@ -141,22 +133,18 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
       chart.applyOptions({ width, height });
     });
     resizeObserver.observe(container);
-
     return () => {
       resizeObserver.disconnect();
       chart.remove();
       chartRef.current = null;
     };
   }, [stockId, stock?.priceHistory.length, theme]);
-
   if (!stock) return null;
-
   const prev = stock.priceHistory.length > 1 ? stock.priceHistory[stock.priceHistory.length - 2] : stock.currentPrice;
   const diff = stock.currentPrice - prev;
   const pct = prev > 0 ? (diff / prev) * 100 : 0;
   const isUp = diff > 0;
   const isDown = diff < 0;
-
   return (
     <div className={cn(
       "flex flex-col h-full bg-[var(--color-hts-panel)] transition-all duration-300",
@@ -190,7 +178,6 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
             </div>
           </div>
         </div>
-
         <div className="flex items-center gap-2">
           {onAnalyzeClick && (
             <button
@@ -212,7 +199,6 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
           )}
         </div>
       </div>
-
       {/* Chart */}
       <div ref={chartContainerRef} className="flex-1 min-h-0 w-full" />
     </div>

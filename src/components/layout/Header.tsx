@@ -1,4 +1,4 @@
-import { useGameStore } from '../../stores/gameStore';
+import { useGameStore, type Level } from '../../stores/gameStore';
 import { LogOut, CalendarDays, SkipForward, Sun, Moon } from 'lucide-react';
 import SchoolLogo from './SchoolLogo';
 import { Button } from '../ui/button';
@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { useMemo } from 'react';
 
 export default function Header() {
-  const { displayName, dayCount, nextDay, level, stocks, cash, holdings, initialCash, theme, toggleTheme } = useGameStore();
+  const { displayName, dayCount, nextDay, level, setLevel, stocks, cash, holdings, initialCash, theme, toggleTheme } = useGameStore();
 
   // Calculate total assets for header display
   const { totalAsset, totalProfitRate } = useMemo(() => {
@@ -40,8 +40,6 @@ export default function Header() {
       console.error(error);
     }
   };
-
-  const levelLabel = level === 'elementary' ? '초급' : level === 'middle' ? '중급' : '고급';
 
   return (
     <header className="shrink-0 border-b border-[var(--color-hts-border)] bg-[var(--color-hts-panel)] shadow-sm z-30 relative">
@@ -89,9 +87,19 @@ export default function Header() {
           
           <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground border-l border-[var(--color-hts-border)] pl-4 ml-1">
             <span className="font-semibold text-foreground/80">{displayName}</span>
-            <span className="bg-[var(--color-accent-gold)]/10 text-[var(--color-accent-gold)] px-2 py-0.5 rounded-full text-[10px] font-bold border border-[var(--color-accent-gold)]/20">
-              {levelLabel}
-            </span>
+            <select
+              value={level}
+              onChange={(e) => {
+                const newLevel = e.target.value as Level;
+                setLevel(newLevel);
+                toast.success(`학습 레벨이 ${newLevel === 'elementary' ? '초급' : newLevel === 'middle' ? '중급' : '고급'}으로 전환되었습니다.`);
+              }}
+              className="bg-[var(--color-accent-gold)]/10 text-[var(--color-accent-gold)] px-2 py-0.5 rounded-full text-[10px] font-bold border border-[var(--color-accent-gold)]/20 focus:outline-none cursor-pointer hover:bg-[var(--color-accent-gold)]/25 dark:bg-[var(--color-accent-gold)]/20 dark:hover:bg-[var(--color-accent-gold)]/30 transition-all font-sans"
+            >
+              <option value="elementary" className="bg-[var(--color-hts-panel)] text-foreground">초급</option>
+              <option value="middle" className="bg-[var(--color-hts-panel)] text-foreground">중급</option>
+              <option value="high" className="bg-[var(--color-hts-panel)] text-foreground">고급</option>
+            </select>
           </div>
         </div>
 

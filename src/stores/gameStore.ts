@@ -46,6 +46,8 @@ interface GameState {
   tutorialStep: number | null;
   setTutorialStep: (step: number | null) => void;
   
+  gameStates: Record<Level, any>;
+  
   // Actions
   setAuth: (uid: string | null, displayName: string | null) => void;
   setLevel: (level: Level) => void;
@@ -80,7 +82,7 @@ const saveGameState = async (uid: string | null, state: any) => {
   if (!uid) return;
   try {
     const userDocRef = doc(db, 'users', uid);
-    const gameState = {
+    const activeLevelState = {
       level: state.level,
       dayCount: state.dayCount,
       cash: state.cash,
@@ -93,14 +95,45 @@ const saveGameState = async (uid: string | null, state: any) => {
       totalAssetHistory: state.totalAssetHistory,
       tutorialStep: state.tutorialStep
     };
+    
+    const updatedGameStates = {
+      ...state.gameStates,
+      [state.level]: activeLevelState
+    };
+    
     await setDoc(userDocRef, {
       displayName: state.displayName,
-      gameState,
+      currentLevel: state.level,
+      gameStates: updatedGameStates,
+      gameState: activeLevelState, // backward compatibility
       updatedAt: new Date().toISOString()
     }, { merge: true });
   } catch (error) {
     console.error("Error saving game state to Firestore:", error);
   }
+};
+
+const updateLocalGameStates = (set: any, get: any) => {
+  const state = get();
+  const activeLevelState = {
+    level: state.level,
+    dayCount: state.dayCount,
+    cash: state.cash,
+    initialCash: state.initialCash,
+    stocks: state.stocks,
+    usedNewsIds: state.usedNewsIds,
+    currentNews: state.currentNews,
+    previousNews: state.previousNews,
+    holdings: state.holdings,
+    totalAssetHistory: state.totalAssetHistory,
+    tutorialStep: state.tutorialStep
+  };
+  set({
+    gameStates: {
+      ...state.gameStates,
+      [state.level]: activeLevelState
+    }
+  });
 };
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -120,6 +153,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   
   holdings: {},
   totalAssetHistory: [],
+  gameStates: {} as Record<Level, any>,
   
   theme: (localStorage.getItem('theme') as 'light' | 'dark') || 'light',
   toggleTheme: () => {
@@ -131,6 +165,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   tutorialStep: null,
   setTutorialStep: (step) => {
     set({ tutorialStep: step });
+    updateLocalGameStates(set, get);
     const state = get();
     saveGameState(state.uid, state);
   },
@@ -143,19 +178,31 @@ export const useGameStore = create<GameState>((set, get) => ({
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
           const data = userDoc.data();
-          if (data && data.gameState) {
+          if (data) {
+            let loadedGameStates = data.gameStates ?? {};
+            let currentLevel = data.currentLevel ?? data.gameState?.level ?? 'elementary';
+            
+            // Backward compatibility
+            if (Object.keys(loadedGameStates).length === 0 && data.gameState) {
+              const prevLevel = data.gameState.level ?? 'elementary';
+              loadedGameStates[prevLevel] = data.gameState;
+            }
+            
+            const activeState = loadedGameStates[currentLevel] || {};
+            
             set({
-              level: data.gameState.level ?? 'elementary',
-              dayCount: data.gameState.dayCount ?? 1,
-              cash: data.gameState.cash ?? 1_000_000,
-              initialCash: data.gameState.initialCash ?? 1_000_000,
-              stocks: data.gameState.stocks ?? {},
-              usedNewsIds: data.gameState.usedNewsIds ?? [],
-              currentNews: data.gameState.currentNews ?? [],
-              previousNews: data.gameState.previousNews ?? [],
-              holdings: data.gameState.holdings ?? {},
-              totalAssetHistory: data.gameState.totalAssetHistory ?? [],
-              tutorialStep: data.gameState.tutorialStep !== undefined ? data.gameState.tutorialStep : null
+              level: currentLevel,
+              dayCount: activeState.dayCount ?? 1,
+              cash: activeState.cash ?? getInitialCash(currentLevel),
+              initialCash: activeState.initialCash ?? getInitialCash(currentLevel),
+              stocks: activeState.stocks ?? {},
+              usedNewsIds: activeState.usedNewsIds ?? [],
+              currentNews: activeState.currentNews ?? [],
+              previousNews: activeState.previousNews ?? [],
+              holdings: activeState.holdings ?? {},
+              totalAssetHistory: activeState.totalAssetHistory ?? [],
+              tutorialStep: activeState.tutorialStep !== undefined ? activeState.tutorialStep : null,
+              gameStates: loadedGameStates
             });
           }
         }
@@ -178,15 +225,84 @@ export const useGameStore = create<GameState>((set, get) => ({
         holdings: {},
         totalAssetHistory: [],
         tutorialStep: null,
+        gameStates: {} as Record<Level, any>,
         isLoadingState: false
       });
     }
   },
   
-  setLevel: (level) => {
-    set({ level });
+  setLevel: (newLevel) => {
     const state = get();
-    saveGameState(state.uid, state);
+    if (state.level === newLevel) return;
+
+    // 1. Capture current level's active state
+    const currentActiveState = {
+      level: state.level,
+      dayCount: state.dayCount,
+      cash: state.cash,
+      initialCash: state.initialCash,
+      stocks: state.stocks,
+      usedNewsIds: state.usedNewsIds,
+      currentNews: state.currentNews,
+      previousNews: state.previousNews,
+      holdings: state.holdings,
+      totalAssetHistory: state.totalAssetHistory,
+      tutorialStep: state.tutorialStep
+    };
+
+    const updatedGameStates = {
+      ...state.gameStates,
+      [state.level]: currentActiveState
+    };
+
+    // 2. Check if new level state exists
+    const targetState = updatedGameStates[newLevel];
+
+    if (targetState && Object.keys(targetState.stocks || {}).length > 0) {
+      set({
+        level: newLevel,
+        dayCount: targetState.dayCount ?? 1,
+        cash: targetState.cash ?? getInitialCash(newLevel),
+        initialCash: targetState.initialCash ?? getInitialCash(newLevel),
+        stocks: targetState.stocks ?? {},
+        usedNewsIds: targetState.usedNewsIds ?? [],
+        currentNews: targetState.currentNews ?? [],
+        previousNews: targetState.previousNews ?? [],
+        holdings: targetState.holdings ?? {},
+        totalAssetHistory: targetState.totalAssetHistory ?? [],
+        tutorialStep: targetState.tutorialStep !== undefined ? targetState.tutorialStep : null,
+        gameStates: updatedGameStates
+      });
+    } else {
+      const initialCash = getInitialCash(newLevel);
+      const availableNews = PREDEFINED_NEWS.filter(n => n.difficulty.includes(newLevel));
+      const selected = shuffleArray(availableNews).slice(0, 3);
+      
+      const newLevelState = {
+        level: newLevel,
+        dayCount: 1,
+        cash: initialCash,
+        initialCash: initialCash,
+        stocks: initializeStocks(),
+        holdings: {},
+        usedNewsIds: selected.map((n: NewsItem) => n.id),
+        currentNews: selected,
+        previousNews: [],
+        totalAssetHistory: [initialCash],
+        tutorialStep: null
+      };
+
+      set({
+        ...newLevelState,
+        gameStates: {
+          ...updatedGameStates,
+          [newLevel]: newLevelState
+        }
+      });
+    }
+
+    const nextState = get();
+    saveGameState(nextState.uid, nextState);
   },
   
   initializeGame: (level) => {
@@ -196,7 +312,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const availableNews = PREDEFINED_NEWS.filter(n => n.difficulty.includes(level));
     const selected = shuffleArray(availableNews).slice(0, 3);
     
-    set({
+    const initializedState = {
       level,
       dayCount: 1,
       cash: initialCash,
@@ -206,7 +322,16 @@ export const useGameStore = create<GameState>((set, get) => ({
       usedNewsIds: selected.map((n: NewsItem) => n.id),
       currentNews: selected,
       previousNews: [],
-      totalAssetHistory: [initialCash]
+      totalAssetHistory: [initialCash],
+      tutorialStep: null
+    };
+
+    set({
+      ...initializedState,
+      gameStates: {
+        ...get().gameStates,
+        [level]: initializedState
+      }
     });
 
     const state = get();
@@ -234,6 +359,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
     });
 
+    updateLocalGameStates(set, get);
     const state = get();
     saveGameState(state.uid, state);
     return true;
@@ -261,6 +387,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       holdings: newHoldings
     });
 
+    updateLocalGameStates(set, get);
     const state = get();
     saveGameState(state.uid, state);
     return true;
@@ -330,14 +457,14 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Load new news
     let availableNews = PREDEFINED_NEWS.filter(n => n.difficulty.includes(level) && !usedNewsIds.includes(n.id));
     let nextUsedNewsIds = [...usedNewsIds];
-
+ 
     // If available news runs out (less than 3 items remaining), reset the cycle
     if (availableNews.length < 3) {
       const currentIds = currentNews.map(n => n.id);
       availableNews = PREDEFINED_NEWS.filter(n => n.difficulty.includes(level) && !currentIds.includes(n.id));
       nextUsedNewsIds = [...currentIds];
     }
-
+ 
     const selected = shuffleArray(availableNews).slice(0, 3);
     
     set({
@@ -348,7 +475,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       usedNewsIds: [...nextUsedNewsIds, ...selected.map((n: NewsItem) => n.id)],
       totalAssetHistory: [...totalAssetHistory, cash + totalStockValue]
     });
-
+ 
+    updateLocalGameStates(set, get);
     const state = get();
     saveGameState(state.uid, state);
   }

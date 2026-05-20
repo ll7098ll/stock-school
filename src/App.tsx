@@ -7,7 +7,7 @@ import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 function App() {
-  const { uid, setAuth, theme, initializeGame, level, stocks, isLoadingState } = useGameStore();
+  const { uid, setAuth, theme, initializeGame, setLevel, level, stocks, isLoadingState } = useGameStore();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -26,7 +26,7 @@ function App() {
       if (pendingLevel) {
         // 유저가 로그인 전에 난이도를 명시적으로 변경한 경우
         localStorage.removeItem('stockschool_pending_level');
-        initializeGame(pendingLevel);
+        setLevel(pendingLevel);
       } else if (Object.keys(stocks).length === 0) {
         // 새 유저이거나 저장된 게임이 없는 경우
         initializeGame(level);

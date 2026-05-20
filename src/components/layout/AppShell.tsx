@@ -61,7 +61,10 @@ export default function AppShell({ children, activeWorkspace, setActiveWorkspace
   ] as const;
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[var(--color-hts-bg)] text-foreground font-sans antialiased">
+    <div 
+      className="flex h-screen w-screen overflow-hidden bg-[var(--color-hts-bg)] text-foreground font-sans antialiased"
+      style={{ height: '100dvh' }}
+    >
       {/* LEFT SIDEBAR (Desktop Only: lg and up) */}
       <aside 
         className={cn(
@@ -245,7 +248,10 @@ export default function AppShell({ children, activeWorkspace, setActiveWorkspace
       </aside>
 
       {/* MOBILE TOP NAVIGATION BAR (under lg) */}
-      <div className="flex lg:hidden flex-col w-full h-screen overflow-hidden">
+      <div 
+        className="flex lg:hidden flex-col w-full h-screen overflow-hidden"
+        style={{ height: '100dvh' }}
+      >
         {/* Mobile Header */}
         <header className="h-14 shrink-0 bg-[var(--color-hts-panel)] border-b border-[var(--color-hts-border)] flex items-center justify-between px-4 z-20 shadow-md">
           <div className="flex items-center gap-2">

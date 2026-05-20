@@ -72,6 +72,15 @@ export default function Login() {
   const [hasChangedLevel, setHasChangedLevel] = useState(false);
   const [randomTerm, setRandomTerm] = useState<GlossaryItem | null>(null);
 
+  // Enable body scrolling when Login page is mounted, restore on unmount
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'auto';
+    return () => {
+      document.body.style.overflow = originalStyle || 'hidden';
+    };
+  }, []);
+
   // Live mockup states for preview dashboard
   const [mockPrice, setMockPrice] = useState(72500);
   const [priceHistory, setPriceHistory] = useState<number[]>([71000, 71500, 71200, 72000, 71800, 72500]);
@@ -172,12 +181,12 @@ export default function Login() {
 
   return (
     <div className={cn(
-      "min-h-screen w-screen flex items-center justify-center relative overflow-hidden tech-grid transition-colors duration-300",
+      "min-h-screen w-full flex items-center justify-center relative overflow-x-hidden tech-grid transition-colors duration-300 py-10 lg:py-6",
       isDark ? "bg-[#050811] text-white" : "bg-[#f8fafc] text-slate-800"
     )}>
       
       {/* Light/Dark theme switcher at top-right */}
-      <div className="absolute top-6 right-6 z-20">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
         <button 
           onClick={toggleTheme}
           className={cn(
@@ -320,13 +329,13 @@ export default function Login() {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
               {levels.map(l => (
                 <button
                   key={l.key}
                   onClick={() => { setLevel(l.key); setHasChangedLevel(true); }}
                   className={cn(
-                    "rounded-xl p-3.5 text-left transition-all border flex flex-col justify-between cursor-pointer select-none group min-h-[135px]",
+                    "rounded-xl p-3 sm:p-3.5 text-left transition-all border flex flex-row sm:flex-col justify-between cursor-pointer select-none group min-h-[85px] sm:min-h-[135px] items-center sm:items-stretch gap-3 sm:gap-0",
                     level === l.key
                       ? isDark 
                         ? "border-white bg-white/5 shadow-md"
@@ -336,10 +345,10 @@ export default function Login() {
                         : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
                   )}
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-2xl filter drop-shadow">{l.emoji}</span>
+                  <div className="flex sm:flex-row items-center justify-between sm:w-full gap-2 sm:gap-0">
+                    <span className="text-xl sm:text-2xl filter drop-shadow">{l.emoji}</span>
                     <span className={cn(
-                      "text-[9px] px-1.5 py-0.5 rounded font-black",
+                      "hidden sm:inline text-[9px] px-1.5 py-0.5 rounded font-black",
                       level === l.key 
                         ? "bg-slate-900 text-white dark:bg-white dark:text-black" 
                         : isDark ? "bg-slate-800 text-slate-400" : "bg-slate-100 text-slate-500"
@@ -348,15 +357,25 @@ export default function Login() {
                     </span>
                   </div>
 
-                  <div className="space-y-0.5 mt-2.5">
-                    <div className={cn(
-                      "text-[11px] font-bold group-hover:text-slate-900 dark:group-hover:text-white transition-colors",
-                      isDark ? "text-white" : "text-slate-800"
-                    )}>
-                      {l.title}
+                  <div className="flex-1 sm:flex-initial space-y-0.5 mt-0 sm:mt-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <div className={cn(
+                        "text-[11px] font-black group-hover:text-slate-900 dark:group-hover:text-white transition-colors",
+                        isDark ? "text-white" : "text-slate-800"
+                      )}>
+                        {l.title}
+                      </div>
+                      <span className={cn(
+                        "inline sm:hidden text-[8px] px-1 py-0.2 rounded font-black scale-90 origin-left",
+                        level === l.key 
+                          ? "bg-slate-900 text-white dark:bg-white dark:text-black" 
+                          : isDark ? "bg-slate-800 text-slate-400" : "bg-slate-100 text-slate-500"
+                      )}>
+                        {l.label}
+                      </span>
                     </div>
                     <p className={cn(
-                      "text-[9px] line-clamp-2 leading-snug font-medium",
+                      "text-[9px] line-clamp-1 sm:line-clamp-2 leading-snug font-medium",
                       isDark ? "text-slate-400" : "text-slate-500"
                     )}>
                       {l.desc}
@@ -364,11 +383,11 @@ export default function Login() {
                   </div>
 
                   <div className={cn(
-                    "text-[10px] text-slate-500 font-extrabold mt-2 pt-1 border-t flex items-center justify-between w-full",
-                    isDark ? "border-slate-800/60" : "border-slate-100"
+                    "text-[9px] sm:text-[10px] text-slate-500 font-extrabold mt-0 sm:mt-2 sm:pt-1 border-t-0 sm:border-t flex flex-col sm:flex-row items-end sm:items-center justify-center sm:justify-between shrink-0",
+                    isDark ? "sm:border-slate-800/60" : "sm:border-slate-100"
                   )}>
-                    <span>자본금</span>
-                    <span>{l.cash}</span>
+                    <span className="hidden sm:inline">자본금</span>
+                    <span className="text-[10px] font-black text-amber-500 sm:text-slate-500">{l.cash}</span>
                   </div>
                 </button>
               ))}

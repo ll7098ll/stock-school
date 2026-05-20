@@ -79,23 +79,23 @@ npm run dev
 
 ```mermaid
 gitgraph
-    commit id: "초기 커밋"
+    commit id: 초기 커밋
     branch develop
     checkout develop
-    commit id: "개발 시작"
+    commit id: 개발 시작
     branch feature/new-stock
     checkout feature/new-stock
-    commit id: "새 종목 추가"
-    commit id: "테스트 완료"
+    commit id: 새 종목 추가
+    commit id: 테스트 완료
     checkout develop
     merge feature/new-stock
     branch fix/price-calc
     checkout fix/price-calc
-    commit id: "가격 계산 수정"
+    commit id: 가격 계산 수정
     checkout develop
     merge fix/price-calc
     checkout main
-    merge develop id: "v1.1.0 릴리즈"
+    merge develop id: v1.1.0 릴리즈
 ```
 
 | 브랜치 | 용도 | 예시 |

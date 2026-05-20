@@ -66,7 +66,7 @@ const mockNewsByLevel: Record<Level, string[]> = {
 };
 
 export default function Login() {
-  const { initializeGame, theme, toggleTheme } = useGameStore();
+  const { theme, toggleTheme } = useGameStore();
   const [level, setLevel] = useState<Level>('elementary');
   const [isLoading, setIsLoading] = useState(false);
   const [randomTerm, setRandomTerm] = useState<GlossaryItem | null>(null);

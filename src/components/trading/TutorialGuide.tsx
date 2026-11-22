@@ -36,63 +36,63 @@ const TUTORIAL_STEPS: Step[] = [
     emoji: '🏫',
     icon: GraduationCap,
     workspace: 'trading',
-    description: '안녕하세요! 스탁스쿨의 가상 모의투자 교실에 오신 것을 진심으로 환영합니다! 🎉\n\n저는 여러분의 금융 멘토 **스탁 쌤**입니다. 지금부터 게임처럼 쉽고 재미있는 모의투자 학습을 1:1로 가르쳐 드릴게요. 화면 곳곳의 주요 기능을 하나씩 짚어가며 직접 눌러보면서 알아봅시다!'
+    description: '안녕하세요! 스탁스쿨의 **가상 금융교육 시뮬레이터**에 오신 것을 진심으로 환영합니다! 🎉\n\n저는 여러분의 금융 멘토 **스탁 쌤**입니다. 이곳의 모든 기업, 뉴스, 자금은 **실제 돈이 오가지 않는 100% 가상 교육 자료**예요. 실제 투자 권유가 아니니 안심하고 뉴스 분석과 분산투자 원리를 차근차근 배워봅시다!'
   },
   {
     title: '1단계: 오늘의 뉴스룸 분석',
     emoji: '📰',
     icon: Newspaper,
     workspace: 'news',
-    description: '화면 우측의 **경제 뉴스분석** 방이 하이라이트 되었습니다!\n\n매일 발행되는 3개의 핵심 뉴스를 읽고, 내일 주가가 변동할 섹터(기술, 바이오 등)의 힌트를 뉴스 속에서 보물찾기하듯 분석해보세요. 뉴스 리스트를 한번 읽어보며 분위기를 파악해볼까요?'
+    description: '화면의 **경제 뉴스분석** 방이 하이라이트 되었습니다!\n\n매일 발행되는 3개의 가상 경제 뉴스를 읽고, 내일 주가가 움직일 산업(기술, 바이오, 배터리, 식품 등)의 힌트를 보물찾기하듯 분석해 보세요. 같은 산업이라도 수출형·내수형 기업마다 영향이 달라질 수 있답니다!'
   },
   {
-    title: '2단계: 투자할 유망 기업 탐색',
+    title: '2단계: 가상 기업 탐색',
     emoji: '📈',
     icon: LineChart,
     workspace: 'trading',
-    description: '힌트를 분석했다면 **모의투자 교실** 탭의 좌측 **종목 리스트**를 봐주세요!\n\n현재 상장된 유망 기업들이 섹터별로 정렬되어 있습니다. 종목의 이름이나 우측의 미니 트렌드 선차트를 확인해보고, 관심 있는 기업을 **직접 클릭**해 보세요!'
+    description: '힌트를 분석했다면 **모의투자 교실** 탭의 좌측 **종목 리스트**를 봐주세요!\n\n17개 산업 섹터에 걸쳐 34개 가상 기업이 정리되어 있습니다. 기업 분석 탭에서 각 회사의 사업 구조와 변동성을 확인해 보고, 관심 있는 기업을 **직접 클릭**해 보세요!'
   },
   {
-    title: '3단계: 차트 및 호가 분석',
+    title: '3단계: 차트 및 모의 호가창 살펴보기',
     emoji: '📊',
     icon: Compass,
     workspace: 'trading',
-    description: '종목을 클릭하면 화면 중앙에 실시간 주가 변동을 보여주는 **시세 차트**와 매수/매도 대기 물량을 보여주는 **호가창**이 열립니다!\n\n차트의 등락 흐름과 호가의 매수 대기량이 어떻게 쌓여 있는지 꼼꼼하게 살피는 것이 투자의 첫걸음입니다.'
+    description: '종목을 클릭하면 화면 중앙에 주가 흐름과 거래량을 보여주는 **시세 차트**와 실제 주식시장 호가 단위를 체험해 보는 **모의 호가창(참고용)**이 열립니다!\n\n뉴스가 나온 날 주가와 거래량이 어떻게 함께 움직이는지 차트로 관찰해 보세요.'
   },
   {
-    title: '4단계: 주식 주문 및 거래',
+    title: '4단계: 모의 매수·매도 및 분산투자',
     emoji: '💰',
     icon: LineChart,
     workspace: 'trading',
-    description: '이제 거래를 실행할 차례입니다! 우측의 **주문 실행** 패널을 확인해보세요!\n\n현재 예수금 한도 내에서 원하는 수량을 적고 **매수(사기)**하여 주주가 되거나, 주가가 올랐을 때 **매도(팔기)**하여 시세 차익을 거둘 수 있습니다. 신중하게 매수 결정을 해보세요!'
+    description: '이제 거래를 연습할 차례입니다! 우측의 **주문 실행** 패널을 확인해 보세요!\n\n가상 예수금 한도 내에서 원하는 수량을 정해 **모의 매수** 또는 **모의 매도**를 실행할 수 있습니다. 한 종목에 모두 넣기보다 여러 산업에 **분산투자**하는 습관을 길러보세요!'
   },
   {
-    title: '5단계: 포트폴리오(내 자산) 확인',
+    title: '5단계: 포트폴리오(내 자산) 점검',
     emoji: '💼',
     icon: Wallet,
     workspace: 'portfolio',
-    description: '투자를 진행한 후에는 상단(또는 좌측)의 **자산 보고서** 탭으로 가보세요!\n\n내 보유 종목, 평균 매입가, 평가 금액 및 **실시간 누적 수익률**을 예쁜 원형 차트와 대시보드로 한눈에 볼 수 있답니다. 자산 현황을 주기적으로 점검해보세요!'
+    description: '주문을 실행한 후에는 **자산 보고서** 탭으로 가보세요!\n\n내 보유 종목, 평균 매입가, 섹터별 비중을 원형 차트와 추이 그래프로 한눈에 점검할 수 있습니다. 특정 산업에 너무 쏠려 있지 않은지 주기적으로 확인해 보세요!'
   },
   {
     title: '6단계: 금융 용어사전 활용',
     emoji: '📚',
     icon: BookOpen,
     workspace: 'glossary',
-    description: '주식 용어가 너무 어렵다고요? 걱정 마세요! **용어 사전방** 탭을 클릭해보세요!\n\n주요 핵심 경제 용어가 가나다순으로 깔끔하게 정리되어 있고, 클릭 시 아주 쉽고 친근한 설명이 나온답니다. 모르는 용어는 언제든지 검색해 보세요!'
+    description: '주식 용어가 어렵게 느껴진다면 **용어 사전방** 탭을 클릭해 보세요!\n\n주식, PER, PBR, 환율, 분산투자 등 핵심 금융 개념이 초·중·고 눈높이별로 알기 쉽게 정리되어 있답니다. 모르는 용어는 언제든지 검색해 보세요!'
   },
   {
-    title: '7단계: 다음 날로 시장 진행',
+    title: '7단계: 다음 날로 진행 및 결과 복기',
     emoji: '🚀',
     icon: Sparkles,
     workspace: 'trading',
-    description: '뉴스 분석, 종목 탐색, 그리고 주문까지 모두 완료하셨나요?\n\n그렇다면 사이드바(또는 헤더)의 **다음 날 진행** 버튼을 눌러보세요! 하룻밤이 지나 새로운 뉴스가 뜨고, 어제 분석한 정보가 반영되어 주가가 변동합니다. 짜릿한 결과를 확인해 보세요!'
+    description: '뉴스 분석과 주문 연습을 마쳤나요?\n\n사이드바의 **다음 날 진행** 버튼을 누르면 어제 뉴스가 반영되어 주가가 변동하고 새로운 뉴스가 도착합니다. **어제 뉴스 해설** 탭에서 실제 변동 결과와 스탁 쌤 해설을 꼭 복기해 보세요!'
   },
   {
-    title: '스탁스쿨 졸업 & 모의투자 시작!',
+    title: '스탁스쿨 오리엔테이션 완료!',
     emoji: '🎓',
     icon: Award,
     workspace: 'trading',
-    description: '와! 대단하십니다! 모든 기초 과정을 완벽하게 이수하셨습니다! 🏆\n\n이제 가상 자금으로 나만의 전략을 실행해 볼 시간입니다. 뉴스를 통해 세상의 변화를 먼저 감지하고 현명한 주주가 되어보세요. 스탁스쿨의 전설적인 투자자로 성장하시길 응원합니다! 파이팅! 🔥'
+    description: '훌륭합니다! 모든 기초 과정을 완료하셨습니다! 🏆\n\n이제 가상 자금으로 뉴스 독해와 분산투자 전략을 스스로 실험해 보세요. 수익률 숫자보다 "왜 올랐는지, 왜 내렸는지" 원인을 이해하는 과정이 가장 큰 실력이 됩니다. 파이팅! 🔥'
   }
 ];
 
@@ -158,17 +158,13 @@ export default function TutorialGuide({ activeWorkspace, setActiveWorkspace, onC
   const StepIcon = stepInfo.icon;
   const progressPercent = ((currentStep + 1) / TUTORIAL_STEPS.length) * 100;
 
-  // Step 0 and the final step (Step 8) are shown in full-screen modal mode.
-  // Steps 1 to 7 are rendered in non-blocking floating bubble mode.
-  // Step 0 and the final step (Step 8) are shown in full-screen modal mode.
-  // Steps 1 to 7 are rendered in non-blocking floating bubble mode.
   const isOverlayStep = currentStep === 0 || currentStep === TUTORIAL_STEPS.length - 1;
 
   const renderContent = () => {
     if (isOverlayStep) {
       return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-955/65 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-xl overflow-hidden rounded-[28px] border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-955/95 shadow-2xl p-6 md:p-8 flex flex-col gap-6 backdrop-blur-xl animate-scale-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-xl overflow-hidden rounded-[28px] border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 shadow-2xl p-6 md:p-8 flex flex-col gap-6 backdrop-blur-xl animate-scale-in">
             
             {/* Top Progress Line */}
             <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100 dark:bg-slate-900 overflow-hidden">
@@ -284,7 +280,7 @@ export default function TutorialGuide({ activeWorkspace, setActiveWorkspace, onC
 
     return (
       <div className="fixed inset-0 z-45 pointer-events-none flex items-end justify-end p-4 md:p-6 animate-fade-in">
-        <div className="pointer-events-auto w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/98 dark:bg-slate-955/98 shadow-[0_10px_40px_rgba(0,0,0,0.25)] p-5 flex flex-col gap-4.5 backdrop-blur-xl animate-scale-in md:mr-6 md:mb-12">
+        <div className="pointer-events-auto w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/95 dark:bg-slate-950/95 shadow-[0_10px_40px_rgba(0,0,0,0.25)] p-5 flex flex-col gap-4.5 backdrop-blur-xl animate-scale-in md:mr-6 md:mb-12">
           
           {/* Top Progress Line */}
           <div className="absolute top-0 left-0 w-full h-1 bg-slate-100 dark:bg-slate-900 overflow-hidden">

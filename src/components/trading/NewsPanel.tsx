@@ -1,93 +1,300 @@
 import { useGameStore } from '../../stores/gameStore';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '../../lib/utils';
-import { useState, useEffect } from 'react';
-import { Newspaper, AlertCircle, TrendingUp, TrendingDown, Minus, Lock, Sparkles, Layers } from 'lucide-react';
+import { useState } from 'react';
+import {
+  Newspaper,
+  AlertCircle,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Lock,
+  Sparkles,
+  Layers,
+  Zap,
+  Scale,
+} from 'lucide-react';
+import { getScaledImpact, isMixedNews } from '../../lib/priceEngine';
+import type { NewsCategory, NewsItem, SectorId } from '../../lib/types';
+
+function getCategoryLabel(category: NewsCategory): string {
+  switch (category) {
+    case 'macro':
+      return '거시경제';
+    case 'sector':
+      return '산업/경제';
+    case 'company':
+      return '기업/종목';
+    case 'social':
+      return '사회/트렌드';
+    case 'global':
+    default:
+      return '글로벌 변수';
+  }
+}
 
 export default function NewsPanel() {
-  const { currentNews, previousNews, level, tutorialStep } = useGameStore();
+  const { currentNews, previousNews, level, tutorialStep, stocks, lastDayBreakdown } = useGameStore();
   const [selectedNewsId, setSelectedNewsId] = useState<string | null>(null);
+  const [collapsedOnMobile, setCollapsedOnMobile] = useState(false);
   const [tab, setTab] = useState<'current' | 'previous'>('current');
 
   const news = tab === 'current' ? currentNews : previousNews;
+  const selectedNews = news.find((item) => item.id === selectedNewsId) || news[0];
+  const activeNewsId = collapsedOnMobile ? null : (selectedNews?.id ?? null);
 
-  // Find currently selected news item
-  const selectedNews = news.find(item => item.id === selectedNewsId) || news[0];
-
-  // Auto-select first news item on desktop tab change or list change
-  useEffect(() => {
-    if (news.length > 0) {
-      setSelectedNewsId(news[0].id);
-    } else {
-      setSelectedNewsId(null);
+  const getSentimentBadge = (item: NewsItem) => {
+    if (isMixedNews(item)) {
+      return {
+        label: '섹터 혼조 (수혜/피해 공존)',
+        icon: <Scale className="w-4 h-4 text-amber-500" />,
+        border: 'border-l-amber-500',
+        pill: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+      };
     }
-  }, [news]);
-
-  const getSentimentIcon = (s: number) => {
-    if (s > 0) return <TrendingUp className="w-4 h-4 text-[var(--color-price-up)]" />;
-    if (s < 0) return <TrendingDown className="w-4 h-4 text-[var(--color-price-down)]" />;
-    return <Minus className="w-4 h-4 text-[var(--color-price-flat)]" />;
+    if (item.sentiment >= 2) {
+      return {
+        label: '강한 호재',
+        icon: <TrendingUp className="w-4 h-4 text-[var(--color-price-up)]" />,
+        border: 'border-l-[var(--color-price-up)]',
+        pill: 'bg-[var(--color-price-up)]/10 text-[var(--color-price-up)] border-[var(--color-price-up)]/20',
+      };
+    }
+    if (item.sentiment === 1) {
+      return {
+        label: '호재',
+        icon: <TrendingUp className="w-4 h-4 text-[var(--color-price-up)]" />,
+        border: 'border-l-[var(--color-price-up)]/60',
+        pill: 'bg-[var(--color-price-up)]/10 text-[var(--color-price-up)] border-[var(--color-price-up)]/20',
+      };
+    }
+    if (item.sentiment <= -2) {
+      return {
+        label: '강한 악재',
+        icon: <TrendingDown className="w-4 h-4 text-[var(--color-price-down)]" />,
+        border: 'border-l-[var(--color-price-down)]',
+        pill: 'bg-[var(--color-price-down)]/10 text-[var(--color-price-down)] border-[var(--color-price-down)]/20',
+      };
+    }
+    if (item.sentiment === -1) {
+      return {
+        label: '악재',
+        icon: <TrendingDown className="w-4 h-4 text-[var(--color-price-down)]" />,
+        border: 'border-l-[var(--color-price-down)]/60',
+        pill: 'bg-[var(--color-price-down)]/10 text-[var(--color-price-down)] border-[var(--color-price-down)]/20',
+      };
+    }
+    return {
+      label: '중립',
+      icon: <Minus className="w-4 h-4 text-[var(--color-price-flat)]" />,
+      border: 'border-l-[var(--color-price-flat)]/60',
+      pill: 'bg-[var(--color-price-flat)]/10 text-[var(--color-price-flat)] border-[var(--color-price-flat)]/20',
+    };
   };
 
-  const getSentimentBg = (s: number) => {
-    if (s >= 2) return 'border-l-[var(--color-price-up)]';
-    if (s <= -2) return 'border-l-[var(--color-price-down)]';
-    if (s > 0) return 'border-l-[var(--color-price-up)]/60';
-    if (s < 0) return 'border-l-[var(--color-price-down)]/60';
-    return 'border-l-[var(--color-price-flat)]/60';
+  /**
+   * 어제 뉴스에 관련된 섹터 소속 종목들의 실제 전일 변동률 추출
+   */
+  const getAffectedStockResults = (item: NewsItem) => {
+    const relatedSectorSet = new Set<SectorId>(item.relatedSectors);
+    const overrideIds = new Set<string>(Object.keys(item.stockImpactOverrides ?? {}));
+
+    return Object.values(stocks)
+      .filter((s) => relatedSectorSet.has(s.sector) || overrideIds.has(s.id))
+      .map((s) => {
+        const bd = lastDayBreakdown[s.id];
+        return {
+          id: s.id,
+          name: s.name,
+          sector: s.sector,
+          actualPct: bd ? bd.actualChangePct : 0,
+          newsPct: bd ? bd.newsContribution : 0,
+          shockReason: bd?.shockReason,
+          hasBreakdown: Boolean(bd),
+        };
+      });
   };
 
-  const getSentimentLabel = (s: number) => {
-    if (s >= 2) return '매우 호재';
-    if (s === 1) return '호재';
-    if (s === 0) return '중립';
-    if (s === -1) return '악재';
-    return '매우 악재';
-  };
+  const renderImpactBlock = (item: NewsItem, compact = false) => {
+    const affectedStocks = getAffectedStockResults(item);
 
-  const handleTabChange = (newTab: 'current' | 'previous') => {
-    setTab(newTab);
+    return (
+      <div
+        className={cn(
+          'border border-[var(--color-hts-border)] space-y-3',
+          compact
+            ? 'bg-black/[0.02] dark:bg-black/35 rounded-lg p-3'
+            : 'bg-[var(--color-hts-panel)] rounded-2xl p-5 space-y-4'
+        )}
+      >
+        <div
+          className={cn(
+            'font-black text-muted-foreground uppercase tracking-wider flex items-center gap-1.5',
+            compact ? 'text-[9px]' : 'text-xs'
+          )}
+        >
+          <Layers className={cn('text-[var(--color-accent-gold)]', compact ? 'w-3 h-3' : 'w-4 h-4')} />
+          뉴스 반영 강도 & 실제 주가 변화
+        </div>
+
+        {/* 1. Scaled Sector News Impacts (matches engine's newsScale!) */}
+        <div className={cn(compact ? 'space-y-1.5' : 'space-y-2.5')}>
+          {(Object.entries(item.sectorImpact) as [SectorId, number][]).map(([sector, rawImpact]) => {
+            const appliedImpact = getScaledImpact(rawImpact, level);
+            return (
+              <div
+                key={sector}
+                className={cn('flex items-center gap-2', compact ? 'text-[10px]' : 'text-xs')}
+              >
+                <span className={cn('text-muted-foreground truncate font-bold', compact ? 'w-16' : 'w-24')}>
+                  {sector.split('(')[0]}
+                </span>
+                <div className="flex-1 h-2 bg-black/[0.04] dark:bg-white/[0.04] rounded-full overflow-hidden relative">
+                  <div
+                    className={cn(
+                      'h-full rounded-full absolute right-1/2 left-auto',
+                      appliedImpact > 0
+                        ? 'bg-[var(--color-price-up)] left-1/2 right-auto'
+                        : 'bg-[var(--color-price-down)]'
+                    )}
+                    style={{ width: `${Math.min(50, Math.abs(appliedImpact) * 500)}%` }}
+                  />
+                </div>
+                <span
+                  className={cn(
+                    'w-14 text-right font-black tabular-nums',
+                    appliedImpact > 0
+                      ? 'text-[var(--color-price-up)]'
+                      : appliedImpact < 0
+                        ? 'text-[var(--color-price-down)]'
+                        : 'text-muted-foreground'
+                  )}
+                >
+                  {appliedImpact > 0 ? '+' : ''}
+                  {(appliedImpact * 100).toFixed(1)}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 2. Stock-specific overrides (e.g. export vs domestic FX sensitivity) */}
+        {item.stockImpactOverrides && Object.keys(item.stockImpactOverrides).length > 0 && (
+          <div className="pt-2 border-t border-[var(--color-hts-border)]/50 space-y-1">
+            <div className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400">
+              기업 특성별 차별화 반영 (수출형 vs 내수형)
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {Object.entries(item.stockImpactOverrides).map(([stockId, raw]) => {
+                const st = stocks[stockId];
+                if (!st) return null;
+                const scaled = getScaledImpact(raw, level);
+                return (
+                  <span
+                    key={stockId}
+                    className={cn(
+                      'text-[10px] font-extrabold px-2 py-0.5 rounded-md border tabular-nums',
+                      scaled > 0
+                        ? 'bg-[var(--color-price-up)]/10 text-[var(--color-price-up)] border-[var(--color-price-up)]/20'
+                        : 'bg-[var(--color-price-down)]/10 text-[var(--color-price-down)] border-[var(--color-price-down)]/20'
+                    )}
+                  >
+                    {st.name} {scaled > 0 ? '+' : ''}
+                    {(scaled * 100).toFixed(1)}%
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 3. Actual Observed Stock Moves (News + Market Noise + Shock Transparency) */}
+        {affectedStocks.some((s) => s.hasBreakdown) && (
+          <div className="pt-2.5 border-t border-[var(--color-hts-border)]/50 space-y-1.5">
+            <div className="text-[10px] font-extrabold text-muted-foreground">
+              관련 종목 실제 전일 등락 결과 (시장 변동 포함)
+            </div>
+            <div className="space-y-1">
+              {affectedStocks.map((st) => (
+                <div key={st.id} className="flex items-center justify-between gap-2 text-[11px]">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="font-bold text-foreground truncate">{st.name}</span>
+                    {st.shockReason && (
+                      <span
+                        className="inline-flex items-center gap-0.5 text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 shrink-0"
+                        title={st.shockReason}
+                      >
+                        <Zap className="w-2.5 h-2.5" />
+                        {st.shockReason}
+                      </span>
+                    )}
+                  </div>
+                  <span
+                    className={cn(
+                      'font-black tabular-nums shrink-0',
+                      st.actualPct > 0
+                        ? 'text-[var(--color-price-up)]'
+                        : st.actualPct < 0
+                          ? 'text-[var(--color-price-down)]'
+                          : 'text-muted-foreground'
+                    )}
+                  >
+                    {st.actualPct > 0 ? '+' : ''}
+                    {(st.actualPct * 100).toFixed(2)}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
-    <div className={cn(
-      "flex flex-col h-full bg-[var(--color-hts-panel)] overflow-hidden transition-all duration-300",
-      tutorialStep === 1 && "ring-4 ring-amber-500 shadow-[0_0_30px_rgba(245,158,11,0.55)] z-30 relative"
-    )}>
+    <div
+      className={cn(
+        'flex flex-col h-full bg-[var(--color-hts-panel)] overflow-hidden transition-all duration-300',
+        tutorialStep === 1 && 'ring-4 ring-amber-500 shadow-[0_0_30px_rgba(245,158,11,0.55)] z-30 relative'
+      )}
+    >
       {/* Tutorial Instruction Banner */}
       {tutorialStep === 1 && (
         <div className="bg-amber-500 text-slate-950 px-4 py-2 text-xs font-black flex items-center justify-between border-b border-amber-600 shadow-md animate-fade-in shrink-0 relative z-30">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block animate-bounce">👉</span> 1단계: 오늘의 실시간 경제 뉴스를 읽고 다음 날 주가가 오를 섹터의 힌트를 얻어보세요!
+            <span className="inline-block animate-bounce">👉</span> 1단계: 오늘의 가상 경제 뉴스를 읽고 내일 주가가 움직일 산업의 힌트를 찾아보세요!
           </span>
-          <span className="text-[9px] bg-slate-950 text-white px-2 py-0.5 rounded font-black shrink-0">분석 시작</span>
+          <span className="text-[9px] bg-slate-950 text-white px-2 py-0.5 rounded font-black shrink-0">
+            분석 시작
+          </span>
         </div>
       )}
+
       {/* Header */}
       <div className="px-4 py-3 border-b border-[var(--color-hts-border)] flex items-center justify-between bg-black/[0.01] dark:bg-white/[0.01] shrink-0">
         <div className="flex items-center gap-2">
           <Newspaper className="w-4 h-4 text-[var(--color-accent-gold)] animate-pulse" />
-          <span className="font-extrabold text-sm text-foreground tracking-tight">실시간 시장 속보</span>
+          <span className="font-extrabold text-sm text-foreground tracking-tight">가상 경제 뉴스룸</span>
         </div>
         <div className="flex gap-1 bg-black/[0.04] dark:bg-black/50 p-1 rounded-full border border-[var(--color-hts-border)]">
           <button
-            onClick={() => handleTabChange('current')}
+            onClick={() => setTab('current')}
             className={cn(
-              "px-3.5 py-1 rounded-full text-[10px] font-extrabold transition-all duration-200 cursor-pointer",
-              tab === 'current' 
-                ? "bg-slate-900 dark:bg-slate-950 text-white shadow-sm" 
-                : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+              'px-3.5 py-1 rounded-full text-[10px] font-extrabold transition-all duration-200 cursor-pointer',
+              tab === 'current'
+                ? 'bg-slate-900 dark:bg-slate-950 text-white shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             )}
           >
             오늘의 뉴스
           </button>
           <button
-            onClick={() => handleTabChange('previous')}
+            onClick={() => setTab('previous')}
             className={cn(
-              "px-3.5 py-1 rounded-full text-[10px] font-extrabold transition-all duration-200 cursor-pointer",
-              tab === 'previous' 
-                ? "bg-slate-900 dark:bg-slate-950 text-white shadow-sm" 
-                : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+              'px-3.5 py-1 rounded-full text-[10px] font-extrabold transition-all duration-200 cursor-pointer',
+              tab === 'previous'
+                ? 'bg-slate-900 dark:bg-slate-950 text-white shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             )}
           >
             어제 뉴스 해설
@@ -100,66 +307,60 @@ export default function NewsPanel() {
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-muted-foreground text-center">
           <AlertCircle className="w-10 h-10 mb-2 opacity-30 text-[var(--color-accent-gold)]" />
           <p className="text-xs font-bold text-foreground/70">
-            {tab === 'current' ? '오늘 발행된 시장 뉴스가 아직 없습니다.' : '이전 뉴스가 존재하지 않습니다.'}
+            {tab === 'current' ? '오늘 발행된 가상 뉴스가 아직 없습니다.' : '어제 발행된 뉴스 기록이 아직 없습니다.'}
           </p>
-          <p className="text-[10px] opacity-60 mt-1">상단 예수금 우측의 '다음 날' 버튼을 눌러보세요.</p>
+          <p className="text-[10px] opacity-60 mt-1">
+            '다음 날 진행' 버튼을 누르면 오늘 뉴스의 해설과 실제 변동 결과를 확인할 수 있습니다.
+          </p>
         </div>
       ) : (
-        /* Split layout on large screens, single column scroll on smaller screens */
         <div className="flex-1 flex overflow-hidden">
-          {/* LEFT: News Headline List (Mobile expands inline) */}
+          {/* LEFT: News Headline List */}
           <div className="w-full lg:w-[360px] shrink-0 border-r border-[var(--color-hts-border)] flex flex-col bg-black/[0.01] dark:bg-black/10">
             <ScrollArea className="flex-1">
               <div className="p-3 space-y-2">
                 {news.map((item) => {
-                  const isSelected = selectedNewsId === item.id;
-                  const sentimentBorder = tab === 'previous' ? getSentimentBg(item.sentiment) : 'border-l-[var(--color-hts-border)]';
-                  
+                  const isSelected = activeNewsId === item.id;
+                  const badge = getSentimentBadge(item);
+                  const sentimentBorder = tab === 'previous' ? badge.border : 'border-l-[var(--color-hts-border)]';
+
                   return (
                     <button
                       key={item.id}
                       onClick={() => {
-                        // Toggle logic for mobile: if clicked again, it collapses
-                        setSelectedNewsId(isSelected ? null : item.id);
+                        if (isSelected) {
+                          setCollapsedOnMobile(true);
+                        } else {
+                          setCollapsedOnMobile(false);
+                          setSelectedNewsId(item.id);
+                        }
                       }}
                       className={cn(
-                        "w-full text-left p-3.5 rounded-xl border transition-all duration-200 cursor-pointer border-l-[4px] flex flex-col gap-2 relative",
+                        'w-full text-left p-3.5 rounded-xl border transition-all duration-200 cursor-pointer border-l-[4px] flex flex-col gap-2 relative',
                         sentimentBorder,
                         isSelected
-                          ? "bg-[var(--color-hts-hover)] border-[var(--color-hts-border)] border-l-[var(--color-accent-gold)] dark:border-l-[var(--color-accent-gold)] shadow-sm"
-                          : "bg-black/[0.02] dark:bg-black/25 border-[var(--color-hts-border)] hover:bg-black/[0.04] dark:hover:bg-black/35"
+                          ? 'bg-[var(--color-hts-hover)] border-[var(--color-hts-border)] border-l-[var(--color-accent-gold)] dark:border-l-[var(--color-accent-gold)] shadow-sm'
+                          : 'bg-black/[0.02] dark:bg-black/25 border-[var(--color-hts-border)] hover:bg-black/[0.04] dark:hover:bg-black/35'
                       )}
                     >
                       <div className="flex items-start justify-between gap-2.5 w-full">
-                        <span className={cn(
-                          "text-xs leading-snug text-foreground/90 line-clamp-2",
-                          isSelected ? "font-extrabold" : "font-bold"
-                        )}>
+                        <span
+                          className={cn(
+                            'text-xs leading-snug text-foreground/90 line-clamp-2',
+                            isSelected ? 'font-extrabold' : 'font-bold'
+                          )}
+                        >
                           {item.title}
                         </span>
-                        {tab === 'previous' && (
-                          <span className="shrink-0 pt-0.5">
-                            {getSentimentIcon(item.sentiment)}
-                          </span>
-                        )}
+                        {tab === 'previous' && <span className="shrink-0 pt-0.5">{badge.icon}</span>}
                       </div>
-                      
-                      {/* Sub-info */}
+
                       <div className="flex items-center gap-1.5 flex-wrap text-[9px] font-bold text-muted-foreground">
                         {tab === 'previous' && (
-                          <span className={cn(
-                            "px-1.5 py-0.5 rounded",
-                            item.sentiment > 0 ? "bg-[var(--color-price-up)]/10 text-[var(--color-price-up)]" :
-                            item.sentiment < 0 ? "bg-[var(--color-price-down)]/10 text-[var(--color-price-down)]" :
-                            "bg-[var(--color-price-flat)]/10 text-[var(--color-price-flat)]"
-                          )}>
-                            {getSentimentLabel(item.sentiment)}
-                          </span>
+                          <span className={cn('px-1.5 py-0.5 rounded border', badge.pill)}>{badge.label}</span>
                         )}
                         <span className="px-1.5 py-0.5 rounded bg-black/[0.04] dark:bg-white/[0.04]">
-                          {item.category === 'macro' ? '거시경제' :
-                           item.category === 'sector' ? '산업/경제' :
-                           item.category === 'company' ? '기업/종목' : '글로벌 변수'}
+                          {getCategoryLabel(item.category)}
                         </span>
                       </div>
 
@@ -172,39 +373,12 @@ export default function NewsPanel() {
 
                           {tab === 'previous' ? (
                             <div className="space-y-3">
-                              {/* Sector Impacts */}
-                              <div className="bg-black/[0.02] dark:bg-black/35 border border-[var(--color-hts-border)] rounded-lg p-3 space-y-2">
-                                <div className="text-[9px] font-black text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                                  <Layers className="w-3 h-3 text-[var(--color-accent-gold)]" />
-                                  영향받은 섹터 시세 변화
-                                </div>
-                                <div className="space-y-1.5">
-                                  {Object.entries(item.sectorImpact).map(([sector, impact]) => (
-                                    <div key={sector} className="flex items-center gap-2 text-[10px]">
-                                      <span className="w-16 text-muted-foreground truncate font-bold">{sector.split('(')[0]}</span>
-                                      <div className="flex-1 h-1.5 bg-black/[0.04] dark:bg-white/[0.04] rounded-full overflow-hidden relative">
-                                        <div 
-                                          className={cn("h-full rounded-full absolute right-1/2 left-auto", 
-                                            impact > 0 ? "bg-[var(--color-price-up)] left-1/2 right-auto" : "bg-[var(--color-price-down)]"
-                                          )}
-                                          style={{ width: `${Math.min(50, Math.abs(impact) * 200)}%` }}
-                                        />
-                                      </div>
-                                      <span className={cn("w-10 text-right font-black tabular-nums",
-                                        impact > 0 ? 'text-[var(--color-price-up)]' : impact < 0 ? 'text-[var(--color-price-down)]' : 'text-muted-foreground'
-                                      )}>
-                                        {impact > 0 ? '+' : ''}{(impact * 100).toFixed(1)}%
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
+                              {renderImpactBlock(item, true)}
 
-                              {/* AI Explanation */}
                               <div className="bg-gradient-to-br from-black/[0.01] to-[var(--color-accent-gold)]/5 border border-[var(--color-accent-gold)]/20 rounded-lg p-3 space-y-1">
                                 <div className="text-[9px] font-black text-[var(--color-accent-gold)] flex items-center gap-1 uppercase tracking-wider">
                                   <Sparkles className="w-3 h-3 text-[var(--color-accent-gold)]" />
-                                  AI 해설 ({level === 'elementary' ? '초급 맞춤' : level === 'middle' ? '중급 맞춤' : '고급 맞춤'})
+                                  스탁 쌤 경제 해설 ({level === 'elementary' ? '초급 맞춤' : level === 'middle' ? '중급 맞춤' : '고급 맞춤'})
                                 </div>
                                 <p className="text-[11px] leading-relaxed text-foreground/80 font-bold whitespace-pre-wrap">
                                   {item.explanations[level]}
@@ -212,11 +386,10 @@ export default function NewsPanel() {
                               </div>
                             </div>
                           ) : (
-                            /* Locked message */
                             <div className="bg-black/[0.02] dark:bg-black/35 border border-dashed border-[var(--color-hts-border)] rounded-lg p-3 text-center">
                               <div className="flex items-center justify-center text-muted-foreground/90 font-bold text-[10px] gap-1">
                                 <Lock className="w-3 h-3 text-[var(--color-accent-gold)]" />
-                                AI 해설 비공개 (다음 날 공개)
+                                스탁 쌤 경제 해설 (다음 날 공개)
                               </div>
                             </div>
                           )}
@@ -229,29 +402,27 @@ export default function NewsPanel() {
             </ScrollArea>
           </div>
 
-          {/* RIGHT: Article Detail Viewer (PC Only, hidden on Mobile/Tablet) */}
+          {/* RIGHT: Article Detail Viewer (PC Only) */}
           <div className="hidden lg:flex flex-1 flex-col bg-black/[0.01] dark:bg-black/5 overflow-hidden">
             {selectedNews ? (
               <ScrollArea className="flex-1">
                 <div className="p-6 max-w-3xl mx-auto space-y-6">
-                  {/* Article Title & Meta */}
                   <div className="space-y-3 border-b border-[var(--color-hts-border)]/50 pb-5">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="px-2.5 py-0.5 rounded bg-[var(--color-accent-gold)]/10 text-[var(--color-accent-gold)] text-[10px] font-extrabold border border-[var(--color-accent-gold)]/20 uppercase tracking-wider">
-                        {selectedNews.category === 'macro' ? '거시경제' :
-                         selectedNews.category === 'sector' ? '산업/경제' :
-                         selectedNews.category === 'company' ? '기업/종목' : '글로벌 변수'}
+                        {getCategoryLabel(selectedNews.category)}
                       </span>
-                      {tab === 'previous' && (
-                        <span className={cn(
-                          "px-2.5 py-0.5 rounded text-[10px] font-extrabold border",
-                          selectedNews.sentiment > 0 ? "bg-[var(--color-price-up)]/10 text-[var(--color-price-up)] border-[var(--color-price-up)]/20" :
-                          selectedNews.sentiment < 0 ? "bg-[var(--color-price-down)]/10 text-[var(--color-price-down)] border-[var(--color-price-down)]/20" :
-                          "bg-[var(--color-price-flat)]/10 text-[var(--color-price-flat)] border-[var(--color-price-flat)]/20"
-                        )}>
-                          {getSentimentLabel(selectedNews.sentiment)}
-                        </span>
-                      )}
+                      {tab === 'previous' && (() => {
+                        const badge = getSentimentBadge(selectedNews);
+                        return (
+                          <span className={cn('px-2.5 py-0.5 rounded text-[10px] font-extrabold border', badge.pill)}>
+                            {badge.label}
+                          </span>
+                        );
+                      })()}
+                      <span className="text-[10px] font-semibold text-muted-foreground ml-auto">
+                        교육용 가상 뉴스 시나리오
+                      </span>
                     </div>
                     <h3 className="text-xl md:text-2xl font-black text-foreground leading-snug tracking-tight">
                       {selectedNews.title}
@@ -259,63 +430,38 @@ export default function NewsPanel() {
                   </div>
 
                   {/* Article Content */}
-                  <div className="bg-[var(--color-hts-panel)] border border-[var(--color-hts-border)] rounded-2xl p-6 shadow-sm">
+                  <div className="bg-[var(--color-hts-panel)] border border-[var(--color-hts-border)] rounded-2xl p-6 shadow-sm space-y-3">
                     <p className="text-sm md:text-base leading-relaxed text-foreground/90 whitespace-pre-wrap font-medium">
                       {selectedNews.content}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground/70 font-semibold pt-2 border-t border-[var(--color-hts-border)]/40">
+                      ※ 본 기사는 금융 교육을 위해 창작된 가상의 시나리오이며, 실제 사건이나 투자 권유가 아닙니다.
                     </p>
                   </div>
 
                   {/* Analysis details */}
                   {tab === 'previous' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      {/* Left: Sector Impacts */}
-                      <div className="bg-[var(--color-hts-panel)] border border-[var(--color-hts-border)] rounded-2xl p-5 space-y-4">
-                        <div className="text-xs font-black text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                          <Layers className="w-4 h-4 text-[var(--color-accent-gold)]" />
-                          영향받은 섹터 시세 변화
-                        </div>
-                        <div className="space-y-3">
-                          {Object.entries(selectedNews.sectorImpact).map(([sector, impact]) => (
-                            <div key={sector} className="flex items-center gap-3 text-xs md:text-sm">
-                              <span className="w-20 text-muted-foreground truncate font-bold">{sector.split('(')[0]}</span>
-                              <div className="flex-1 h-2 bg-black/[0.04] dark:bg-white/[0.04] rounded-full overflow-hidden relative">
-                                <div 
-                                  className={cn("h-full rounded-full absolute right-1/2 left-auto", 
-                                    impact > 0 ? "bg-[var(--color-price-up)] left-1/2 right-auto" : "bg-[var(--color-price-down)]"
-                                  )}
-                                  style={{ width: `${Math.min(50, Math.abs(impact) * 200)}%` }}
-                                />
-                              </div>
-                              <span className={cn("w-12 text-right font-black tabular-nums",
-                                impact > 0 ? 'text-[var(--color-price-up)]' : impact < 0 ? 'text-[var(--color-price-down)]' : 'text-muted-foreground'
-                              )}>
-                                {impact > 0 ? '+' : ''}{(impact * 100).toFixed(1)}%
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                      {renderImpactBlock(selectedNews, false)}
 
-                      {/* Right: AI Explanation */}
                       <div className="bg-gradient-to-br from-[var(--color-hts-panel)] to-[var(--color-accent-gold)]/[0.02] border border-[var(--color-accent-gold)]/20 rounded-2xl p-5 space-y-3">
                         <div className="text-xs font-black text-[var(--color-accent-gold)] flex items-center gap-1.5 uppercase tracking-wider">
                           <Sparkles className="w-4 h-4 text-[var(--color-accent-gold)]" />
-                          AI 해설 브리핑 ({level === 'elementary' ? '초급 맞춤' : level === 'middle' ? '중급 맞춤' : '고급 맞춤'})
+                          스탁 쌤 경제 해설 ({level === 'elementary' ? '초급 맞춤' : level === 'middle' ? '중급 맞춤' : '고급 맞춤'})
                         </div>
-                        <p className="text-xs md:text-sm leading-relaxed text-foreground/80 font-bold whitespace-pre-wrap">
+                        <p className="text-xs md:text-sm leading-relaxed text-foreground/85 font-bold whitespace-pre-wrap">
                           {selectedNews.explanations[level]}
                         </p>
                       </div>
                     </div>
                   ) : (
-                    /* Locked AI Explanation */
                     <div className="bg-black/[0.02] dark:bg-black/35 border border-dashed border-[var(--color-hts-border)] rounded-2xl p-6 text-center">
                       <div className="flex items-center justify-center mb-1.5 text-muted-foreground/90 font-bold text-sm gap-2">
                         <Lock className="w-4 h-4 text-[var(--color-accent-gold)] animate-pulse" />
-                        AI 분석 리포트 비공개 (당일 열람 제한)
+                        스탁 쌤 학습 해설 비공개 (당일 열람 제한)
                       </div>
                       <div className="text-xs text-muted-foreground/60 leading-relaxed font-semibold mt-1">
-                        뉴스를 분석하고 투자를 완료하면, <span className="text-[var(--color-accent-gold)] font-bold">다음 날</span> 이 뉴스에 대한 영향도 및 상세 AI 해설 리포트가 잠금 해제됩니다.
+                        기사를 스스로 분석해 투자 판단을 내린 뒤 <span className="text-[var(--color-accent-gold)] font-bold">다음 날</span>로 진행하면, 실제 뉴스 반영 강도와 종목별 변동 결과 및 상세 해설이 공개됩니다.
                       </div>
                     </div>
                   )}

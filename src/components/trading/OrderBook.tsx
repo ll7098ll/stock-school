@@ -1,5 +1,6 @@
 import { useGameStore } from '../../stores/gameStore';
 import { useMemo } from 'react';
+import { getTickSize } from '../../lib/priceEngine';
 
 interface OrderBookProps {
   stockId: string;
@@ -9,29 +10,29 @@ export default function OrderBook({ stockId }: OrderBookProps) {
   const { stocks } = useGameStore();
   const stock = stocks[stockId];
 
-  // Generate 5 ask (매도) and 5 bid (매수) levels around currentPrice
+  // Generate 5 ask (매도) and 5 bid (매수) levels using realistic Korean stock market tick sizes
   const orderBookData = useMemo(() => {
-    if (!stock) return { asks: [], bids: [] };
+    if (!stock) return { asks: [], bids: [], tick: 100 };
     const current = stock.currentPrice;
-    
+    const tick = getTickSize(current);
+
     // Ask levels (above current price, sorted descending)
     const asks = Array.from({ length: 5 }, (_, i) => {
       const step = 5 - i;
-      const price = Math.round(current * (1 + step * 0.01));
-      // Deterministic volume based on price and dayCount to avoid flickering
-      const volume = Math.floor((Math.sin(price) + 1.5) * 500) + 100;
+      const price = current + step * tick;
+      const volume = Math.floor((Math.sin(price * 0.01) + 1.5) * 450) + 120;
       return { price, volume, type: 'ask' as const };
     });
 
     // Bid levels (below current price, sorted descending)
     const bids = Array.from({ length: 5 }, (_, i) => {
       const step = i + 1;
-      const price = Math.max(1, Math.round(current * (1 - step * 0.01)));
-      const volume = Math.floor((Math.cos(price) + 1.5) * 450) + 120;
+      const price = Math.max(100, current - step * tick);
+      const volume = Math.floor((Math.cos(price * 0.01) + 1.5) * 420) + 140;
       return { price, volume, type: 'bid' as const };
     });
 
-    return { asks, bids };
+    return { asks, bids, tick };
   }, [stock]);
 
   if (!stock) return null;
@@ -46,9 +47,11 @@ export default function OrderBook({ stockId }: OrderBookProps) {
       <div className="px-4 py-2 border-b border-[var(--color-hts-border)] bg-black/[0.01] dark:bg-white/[0.01] flex items-center justify-between shrink-0">
         <span className="font-extrabold text-foreground tracking-tight flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent-gold)]" />
-          실시간 호가창 (Simulated)
+          모의 호가창 (학습 참고용)
         </span>
-        <span className="text-[10px] text-muted-foreground font-semibold">5단계 가격 호가</span>
+        <span className="text-[10px] text-muted-foreground font-semibold">
+          호가 단위 {orderBookData.tick.toLocaleString()}원 · 현재가 체결
+        </span>
       </div>
 
       <div className="flex-1 overflow-y-auto font-mono">
@@ -57,21 +60,22 @@ export default function OrderBook({ stockId }: OrderBookProps) {
             <tr className="bg-black/[0.01] dark:bg-white/[0.01] text-muted-foreground border-b border-[var(--color-hts-border)]/50 text-[10px] uppercase font-bold">
               <th className="py-1 px-3 text-left w-1/4">구분</th>
               <th className="py-1 px-3 text-center w-1/3">호가 (원)</th>
-              <th className="py-1 px-3 text-right">잔량 (주)</th>
+              <th className="py-1 px-3 text-right">예시 잔량 (주)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--color-hts-border)]/20">
-            {/* ASKS (Sell orders) - Blue-ish tint */}
             {orderBookData.asks.map((item, idx) => {
               const widthPct = (item.volume / maxVolume) * 100;
               return (
                 <tr key={`ask-${idx}`} className="hover:bg-[var(--price-down)]/[0.03] transition-colors relative">
-                  <td className="py-1 px-3 text-left text-[var(--price-down)] font-bold bg-[var(--price-down)]/[0.02]">매도</td>
+                  <td className="py-1 px-3 text-left text-[var(--price-down)] font-bold bg-[var(--price-down)]/[0.02]">
+                    매도
+                  </td>
                   <td className="py-1 px-3 text-center text-[var(--price-down)] font-bold tabular-nums">
                     {item.price.toLocaleString()}
                   </td>
                   <td className="py-1 px-3 text-right relative pr-6">
-                    <div 
+                    <div
                       className="absolute right-0 top-0 bottom-0 bg-[var(--price-down)]/[0.08] dark:bg-[var(--price-down)]/[0.12] transition-all duration-300"
                       style={{ width: `${widthPct}%` }}
                     />
@@ -83,28 +87,30 @@ export default function OrderBook({ stockId }: OrderBookProps) {
               );
             })}
 
-            {/* CURRENT PRICE BAR */}
             <tr className="bg-gradient-to-r from-amber-500/5 via-amber-500/10 to-amber-500/5 border-y border-amber-500/30">
-              <td className="py-1.5 px-3 text-left font-black text-[var(--color-accent-gold)] animate-pulse">현재가</td>
+              <td className="py-1.5 px-3 text-left font-black text-[var(--color-accent-gold)] animate-pulse">
+                현재가
+              </td>
               <td className="py-1.5 px-3 text-center font-black text-foreground text-sm tabular-nums tracking-wide">
                 {stock.currentPrice.toLocaleString()}
               </td>
               <td className="py-1.5 px-3 text-right text-[10px] font-black text-muted-foreground pr-6">
-                Spread 1.0%
+                시뮬레이션 기준가
               </td>
             </tr>
 
-            {/* BIDS (Buy orders) - Red-ish tint */}
             {orderBookData.bids.map((item, idx) => {
               const widthPct = (item.volume / maxVolume) * 100;
               return (
                 <tr key={`bid-${idx}`} className="hover:bg-[var(--price-up)]/[0.03] transition-colors relative">
-                  <td className="py-1 px-3 text-left text-[var(--price-up)] font-bold bg-[var(--price-up)]/[0.02]">매수</td>
+                  <td className="py-1 px-3 text-left text-[var(--price-up)] font-bold bg-[var(--price-up)]/[0.02]">
+                    매수
+                  </td>
                   <td className="py-1 px-3 text-center text-[var(--price-up)] font-bold tabular-nums">
                     {item.price.toLocaleString()}
                   </td>
                   <td className="py-1 px-3 text-right relative pr-6">
-                    <div 
+                    <div
                       className="absolute right-0 top-0 bottom-0 bg-[var(--price-up)]/[0.08] dark:bg-[var(--price-up)]/[0.12] transition-all duration-300"
                       style={{ width: `${widthPct}%` }}
                     />

@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 사용자 학습 데이터는 본인(request.auth.uid)만 읽기/쓰기/삭제 가능
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      allow create, update: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'schemaVersion',
+          'displayName',
+          'currentLevel',
+          'gameStates',
+          'updatedAt'
+        ])
+        && request.resource.data.currentLevel in ['elementary', 'middle', 'high']
+        && request.resource.data.schemaVersion is int
+        && (request.resource.data.displayName == null ||
+            (request.resource.data.displayName is string && request.resource.data.displayName.size() <= 80))
+        && request.resource.data.updatedAt is string;
+
+      // 개인정보 보호법 제21조·제36조 준수: 본인 계정 탈퇴 시 즉시 파기 허용
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 그 외 모든 컬렉션 접근 기본 차단
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

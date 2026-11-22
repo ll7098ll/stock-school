@@ -1,121 +1,311 @@
 import { create } from 'zustand';
-import { INITIAL_STOCKS, type StockDefinition } from '../lib/stockData';
-import { PREDEFINED_NEWS, shuffleArray, type NewsItem } from '../lib/newsData';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { INITIAL_STOCKS, STOCK_BY_ID } from '../lib/stockData';
+import { NEWS_BY_ID, PREDEFINED_NEWS } from '../lib/newsData';
+import {
+  calculateDailyVolume,
+  createInitialStocks,
+  selectDailyNews,
+  simulateNextDay,
+} from '../lib/priceEngine';
+import type {
+  AuthMode,
+  CompactStockSave,
+  DayStockBreakdown,
+  Holding,
+  Level,
+  LevelGameSnapshot,
+  NewsItem,
+  StockState,
+} from '../lib/types';
+import { deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore';
+import {
+  deleteUser,
+  GoogleAuthProvider,
+  reauthenticateWithPopup,
+  signOut,
+} from 'firebase/auth';
+import { auth, db } from '../lib/firebase';
 
-export type Level = 'elementary' | 'middle' | 'high';
+export type { AuthMode, DayStockBreakdown, Holding, Level, StockState };
 
-export interface Holding {
-  quantity: number;
-  avgPrice: number;
+const GUEST_STORAGE_KEY = 'stockschool_guest_state_v2';
+const PENDING_LEVEL_KEY = 'stockschool_pending_level';
+const CONSENT_RECORD_KEY = 'stockschool_consent_v1';
+
+interface CompactLevelSave {
+  schemaVersion: number;
+  level: Level;
+  dayCount: number;
+  cash: number;
+  initialCash: number;
+  stocks: Record<string, CompactStockSave>;
+  usedNewsIds: string[];
+  currentNewsIds: string[];
+  previousNewsIds: string[];
+  holdings: Record<string, Holding>;
+  totalAssetHistory: number[];
+  tutorialStep: number | null;
+  lastDayBreakdown?: Record<string, DayStockBreakdown>;
+  carryoverImpacts?: Record<string, number>;
 }
 
-export interface StockState extends StockDefinition {
-  currentPrice: number;
-  priceHistory: number[];
+interface PersistedUserData {
+  schemaVersion: number;
+  displayName: string | null;
+  currentLevel: Level;
+  gameStates: Partial<Record<Level, CompactLevelSave>>;
+  updatedAt: string;
 }
 
 interface GameState {
-  // User/Auth
+  // User / Auth
+  authMode: AuthMode;
   uid: string | null;
   displayName: string | null;
   level: Level;
   isLoadingState: boolean;
-  
+  wasLegacyMigrated: boolean;
+
   // Game progress
   dayCount: number;
   cash: number;
   initialCash: number;
-  
+
   // Market Data
   stocks: Record<string, StockState>;
   usedNewsIds: string[];
   currentNews: NewsItem[];
-  previousNews: NewsItem[]; // For explanation tab
-  
+  previousNews: NewsItem[];
+  lastDayBreakdown: Record<string, DayStockBreakdown>;
+  carryoverImpacts: Record<string, number>;
+
   // Portfolio
-  holdings: Record<string, Holding>; // keyed by stock id
+  holdings: Record<string, Holding>;
   totalAssetHistory: number[];
-  
+
   // Theme
   theme: 'light' | 'dark';
   toggleTheme: () => void;
-  
+
   // Onboarding Tutorial State
   tutorialStep: number | null;
   setTutorialStep: (step: number | null) => void;
-  
-  gameStates: Record<Level, any>;
-  
+
+  gameStates: Partial<Record<Level, LevelGameSnapshot>>;
+
   // Actions
-  setAuth: (uid: string | null, displayName: string | null) => void;
+  enterGuestMode: (nickname: string, level: Level) => void;
+  restoreGuestSession: () => boolean;
+  exitSession: () => Promise<void>;
+  setAuth: (uid: string | null, displayName: string | null) => Promise<void>;
   setLevel: (level: Level) => void;
   initializeGame: (level: Level) => void;
+  resetCurrentLevel: () => void;
+  deleteAccountAndData: () => Promise<{ ok: boolean; message: string }>;
+  clearMigrationNotice: () => void;
   buyStock: (stockId: string, quantity: number) => boolean;
   sellStock: (stockId: string, quantity: number) => boolean;
   nextDay: () => void;
 }
 
-const getInitialCash = (level: Level) => {
+export const getInitialCash = (level: Level): number => {
   if (level === 'elementary') return 1_000_000;
   if (level === 'middle') return 5_000_000;
   return 10_000_000;
 };
 
-const initializeStocks = (): Record<string, StockState> => {
-  const stocks: Record<string, StockState> = {};
-  INITIAL_STOCKS.forEach(s => {
-    // Randomize initial price slightly around basePrice
-    const variance = (Math.random() - 0.5) * 0.1; // +/- 5%
-    const initialPrice = Math.max(100, Math.round(s.basePrice * (1 + variance)));
-    stocks[s.id] = {
-      ...s,
-      currentPrice: initialPrice,
-      priceHistory: [initialPrice]
+function createFreshLevelSnapshot(level: Level): LevelGameSnapshot {
+  const initialCash = getInitialCash(level);
+  const { selected, nextUsedNewsIds } = selectDailyNews(
+    PREDEFINED_NEWS,
+    level,
+    [],
+    [],
+    3
+  );
+  return {
+    level,
+    dayCount: 1,
+    cash: initialCash,
+    initialCash,
+    stocks: createInitialStocks(INITIAL_STOCKS),
+    holdings: {},
+    usedNewsIds: nextUsedNewsIds,
+    currentNews: selected,
+    previousNews: [],
+    totalAssetHistory: [initialCash],
+    tutorialStep: null,
+    lastDayBreakdown: {},
+    carryoverImpacts: {},
+  };
+}
+
+/**
+ * Firestore/localStorage 저장 시 정적 descriptions 및 기사 전문을 제거해
+ * 저장 용량을 95% 이상 경량화 (1MB 문서 한도 초과 방지)
+ */
+function serializeLevelSnapshot(snap: LevelGameSnapshot): CompactLevelSave {
+  const compactStocks: Record<string, CompactStockSave> = {};
+  Object.entries(snap.stocks).forEach(([id, s]) => {
+    compactStocks[id] = {
+      currentPrice: s.currentPrice,
+      priceHistory: s.priceHistory.slice(-180), // 최대 180거래일 이력 보관
+      volumeHistory: (s.volumeHistory ?? []).slice(-180),
     };
   });
-  return stocks;
-};
 
-const saveGameState = async (uid: string | null, state: any) => {
-  if (!uid) return;
-  try {
-    const userDocRef = doc(db, 'users', uid);
-    const activeLevelState = {
-      level: state.level,
-      dayCount: state.dayCount,
-      cash: state.cash,
-      initialCash: state.initialCash,
-      stocks: state.stocks,
-      usedNewsIds: state.usedNewsIds,
-      currentNews: state.currentNews,
-      previousNews: state.previousNews,
-      holdings: state.holdings,
-      totalAssetHistory: state.totalAssetHistory,
-      tutorialStep: state.tutorialStep
-    };
-    
-    const updatedGameStates = {
-      ...state.gameStates,
-      [state.level]: activeLevelState
-    };
-    
-    await setDoc(userDocRef, {
-      displayName: state.displayName,
-      currentLevel: state.level,
-      gameStates: updatedGameStates,
-      gameState: activeLevelState, // backward compatibility
-      updatedAt: new Date().toISOString()
-    }, { merge: true });
-  } catch (error) {
-    console.error("Error saving game state to Firestore:", error);
+  return {
+    schemaVersion: 2,
+    level: snap.level,
+    dayCount: snap.dayCount,
+    cash: snap.cash,
+    initialCash: snap.initialCash,
+    stocks: compactStocks,
+    usedNewsIds: snap.usedNewsIds,
+    currentNewsIds: snap.currentNews.map((n) => n.id),
+    previousNewsIds: snap.previousNews.map((n) => n.id),
+    holdings: snap.holdings,
+    totalAssetHistory: snap.totalAssetHistory.slice(-180),
+    tutorialStep: snap.tutorialStep,
+    lastDayBreakdown: snap.lastDayBreakdown,
+    carryoverImpacts: snap.carryoverImpacts,
+  };
+}
+
+/**
+ * 경량 저장 포맷을 런타임 상태로 복원 (구버전 실기업 ID 감지 시 안전 마이그레이션)
+ */
+function hydrateLevelSnapshot(
+  rawInput: unknown,
+  fallbackLevel: Level
+): { snapshot: LevelGameSnapshot; migrated: boolean } {
+  if (!rawInput || typeof rawInput !== 'object') {
+    return { snapshot: createFreshLevelSnapshot(fallbackLevel), migrated: false };
   }
-};
+  const raw = rawInput as Record<string, unknown>;
 
-const updateLocalGameStates = (set: any, get: any) => {
-  const state = get();
-  const activeLevelState = {
+  const level: Level =
+    raw.level === 'elementary' || raw.level === 'middle' || raw.level === 'high'
+      ? raw.level
+      : fallbackLevel;
+
+  const rawStocks =
+    raw.stocks && typeof raw.stocks === 'object'
+      ? (raw.stocks as Record<string, Record<string, unknown>>)
+      : {};
+  const validKeys = Object.keys(rawStocks).filter((id) => Boolean(STOCK_BY_ID[id]));
+
+  // 구버전 실제 기업명 데이터이거나 종목이 비어 있으면 신규 가상 기업 시장으로 안전 초기화
+  if (validKeys.length < Math.floor(INITIAL_STOCKS.length * 0.5)) {
+    const hadOldStocks = Object.keys(rawStocks).length > 0;
+    return { snapshot: createFreshLevelSnapshot(level), migrated: hadOldStocks };
+  }
+
+  const stocks: Record<string, StockState> = {};
+  INITIAL_STOCKS.forEach((def) => {
+    const saved = rawStocks[def.id];
+    if (saved && typeof saved.currentPrice === 'number') {
+      const priceHistory: number[] =
+        Array.isArray(saved.priceHistory) && saved.priceHistory.length > 0
+          ? (saved.priceHistory as number[])
+          : [saved.currentPrice];
+      const volumeHistory: number[] =
+        Array.isArray(saved.volumeHistory) && saved.volumeHistory.length === priceHistory.length
+          ? (saved.volumeHistory as number[])
+          : priceHistory.map(() => calculateDailyVolume(def.basePrice, 0.01, false));
+      stocks[def.id] = {
+        ...def,
+        currentPrice: saved.currentPrice,
+        priceHistory,
+        volumeHistory,
+      };
+    } else {
+      const fresh = createInitialStocks([def])[def.id];
+      stocks[def.id] = fresh;
+    }
+  });
+
+  // 뉴스 복원 (ID 배열 우선, 구버전 객체 배열 폴백)
+  const resolveNewsList = (ids: unknown, legacyObjs: unknown): NewsItem[] => {
+    if (Array.isArray(ids)) {
+      return ids
+        .map((id) => (typeof id === 'string' ? NEWS_BY_ID[id] : undefined))
+        .filter((n): n is NewsItem => Boolean(n));
+    }
+    if (Array.isArray(legacyObjs)) {
+      return legacyObjs
+        .map((obj) => {
+          const rec = obj && typeof obj === 'object' ? (obj as { id?: unknown }) : null;
+          return typeof rec?.id === 'string' ? NEWS_BY_ID[rec.id] : undefined;
+        })
+        .filter((n): n is NewsItem => Boolean(n));
+    }
+    return [];
+  };
+
+  let currentNews = resolveNewsList(raw.currentNewsIds, raw.currentNews);
+  let usedNewsIds: string[] = Array.isArray(raw.usedNewsIds)
+    ? raw.usedNewsIds.filter(
+        (id: unknown): id is string => typeof id === 'string' && Boolean(NEWS_BY_ID[id])
+      )
+    : [];
+
+  if (currentNews.length === 0) {
+    const picked = selectDailyNews(PREDEFINED_NEWS, level, usedNewsIds, [], 3);
+    currentNews = picked.selected;
+    usedNewsIds = picked.nextUsedNewsIds;
+  }
+
+  const previousNews = resolveNewsList(raw.previousNewsIds, raw.previousNews);
+
+  // 보유 종목 중 유효한 stockId만 유지
+  const cleanHoldings: Record<string, Holding> = {};
+  if (raw.holdings && typeof raw.holdings === 'object') {
+    Object.entries(raw.holdings as Record<string, unknown>).forEach(([id, h]) => {
+      const rec = h && typeof h === 'object' ? (h as { quantity?: unknown; avgPrice?: unknown }) : null;
+      if (STOCK_BY_ID[id] && rec && typeof rec.quantity === 'number' && rec.quantity > 0) {
+        cleanHoldings[id] = {
+          quantity: Math.floor(rec.quantity),
+          avgPrice: Math.round(Number(rec.avgPrice) || stocks[id].currentPrice),
+        };
+      }
+    });
+  }
+
+  const initialCash = typeof raw.initialCash === 'number' ? raw.initialCash : getInitialCash(level);
+  const cash = typeof raw.cash === 'number' ? raw.cash : initialCash;
+
+  return {
+    migrated: false,
+    snapshot: {
+      level,
+      dayCount: typeof raw.dayCount === 'number' && raw.dayCount >= 1 ? raw.dayCount : 1,
+      cash,
+      initialCash,
+      stocks,
+      usedNewsIds,
+      currentNews,
+      previousNews,
+      holdings: cleanHoldings,
+      totalAssetHistory:
+        Array.isArray(raw.totalAssetHistory) && raw.totalAssetHistory.length > 0
+          ? (raw.totalAssetHistory as number[])
+          : [initialCash],
+      tutorialStep: typeof raw.tutorialStep === 'number' ? raw.tutorialStep : null,
+      lastDayBreakdown:
+        raw.lastDayBreakdown && typeof raw.lastDayBreakdown === 'object'
+          ? (raw.lastDayBreakdown as Record<string, DayStockBreakdown>)
+          : {},
+      carryoverImpacts:
+        raw.carryoverImpacts && typeof raw.carryoverImpacts === 'object'
+          ? (raw.carryoverImpacts as Record<string, number>)
+          : {},
+    },
+  };
+}
+
+function captureActiveSnapshot(state: GameState): LevelGameSnapshot {
+  return {
     level: state.level,
     dayCount: state.dayCount,
     cash: state.cash,
@@ -126,358 +316,494 @@ const updateLocalGameStates = (set: any, get: any) => {
     previousNews: state.previousNews,
     holdings: state.holdings,
     totalAssetHistory: state.totalAssetHistory,
-    tutorialStep: state.tutorialStep
+    tutorialStep: state.tutorialStep,
+    lastDayBreakdown: state.lastDayBreakdown,
+    carryoverImpacts: state.carryoverImpacts,
   };
+}
+
+async function persistState(state: GameState): Promise<void> {
+  if (!state.authMode) return;
+
+  const activeSnap = captureActiveSnapshot(state);
+  const allSnapshots: Partial<Record<Level, LevelGameSnapshot>> = {
+    ...state.gameStates,
+    [state.level]: activeSnap,
+  };
+
+  const compactGameStates: Partial<Record<Level, CompactLevelSave>> = {};
+  (Object.entries(allSnapshots) as [Level, LevelGameSnapshot | undefined][]).forEach(
+    ([lvl, snap]) => {
+      if (snap && Object.keys(snap.stocks || {}).length > 0) {
+        compactGameStates[lvl] = serializeLevelSnapshot(snap);
+      }
+    }
+  );
+
+  const payload: PersistedUserData = {
+    schemaVersion: 2,
+    displayName: state.displayName,
+    currentLevel: state.level,
+    gameStates: compactGameStates,
+    updatedAt: new Date().toISOString(),
+  };
+
+  if (state.authMode === 'guest') {
+    try {
+      localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(payload));
+    } catch (error) {
+      console.error('Error saving guest state to localStorage:', error);
+    }
+    return;
+  }
+
+  if (state.authMode === 'google' && state.uid) {
+    try {
+      const userDocRef = doc(db, 'users', state.uid);
+      await setDoc(userDocRef, payload, { merge: false });
+    } catch (error) {
+      console.error('Error saving game state to Firestore:', error);
+    }
+  }
+}
+
+const syncLocalGameStates = (
+  set: (partial: Partial<GameState>) => void,
+  get: () => GameState
+) => {
+  const state = get();
+  const activeSnap = captureActiveSnapshot(state);
   set({
     gameStates: {
       ...state.gameStates,
-      [state.level]: activeLevelState
-    }
+      [state.level]: activeSnap,
+    },
   });
 };
 
-export const useGameStore = create<GameState>((set, get) => ({
+const EMPTY_LOGGED_OUT_STATE: Partial<GameState> = {
+  authMode: null,
   uid: null,
   displayName: null,
   level: 'elementary',
-  isLoadingState: false,
-  
   dayCount: 1,
   cash: 1_000_000,
   initialCash: 1_000_000,
-  
   stocks: {},
   usedNewsIds: [],
   currentNews: [],
   previousNews: [],
-  
+  lastDayBreakdown: {},
+  carryoverImpacts: {},
   holdings: {},
   totalAssetHistory: [],
-  gameStates: {} as Record<Level, any>,
-  
-  theme: (localStorage.getItem('theme') as 'light' | 'dark') || 'light',
+  tutorialStep: null,
+  gameStates: {},
+  isLoadingState: false,
+  wasLegacyMigrated: false,
+};
+
+export const useGameStore = create<GameState>((set, get) => ({
+  authMode: null,
+  uid: null,
+  displayName: null,
+  level: 'elementary',
+  isLoadingState: false,
+  wasLegacyMigrated: false,
+
+  dayCount: 1,
+  cash: 1_000_000,
+  initialCash: 1_000_000,
+
+  stocks: {},
+  usedNewsIds: [],
+  currentNews: [],
+  previousNews: [],
+  lastDayBreakdown: {},
+  carryoverImpacts: {},
+
+  holdings: {},
+  totalAssetHistory: [],
+  gameStates: {},
+
+  theme:
+    (typeof localStorage !== 'undefined' &&
+      (localStorage.getItem('theme') as 'light' | 'dark')) ||
+    'light',
   toggleTheme: () => {
     const nextTheme = get().theme === 'dark' ? 'light' : 'dark';
     localStorage.setItem('theme', nextTheme);
     set({ theme: nextTheme });
   },
-  
+
   tutorialStep: null,
   setTutorialStep: (step) => {
     set({ tutorialStep: step });
-    updateLocalGameStates(set, get);
-    const state = get();
-    saveGameState(state.uid, state);
+    syncLocalGameStates(set, get);
+    void persistState(get());
   },
-  
+
+  clearMigrationNotice: () => set({ wasLegacyMigrated: false }),
+
+  enterGuestMode: (nickname, chosenLevel) => {
+    const cleanName = nickname.trim() || '모의투자 학생';
+    let loadedStates: Partial<Record<Level, LevelGameSnapshot>> = {};
+    let migratedAny = false;
+
+    try {
+      const savedRaw = localStorage.getItem(GUEST_STORAGE_KEY);
+      if (savedRaw) {
+        const parsed = JSON.parse(savedRaw) as PersistedUserData;
+        if (parsed?.gameStates) {
+          (Object.keys(parsed.gameStates) as Level[]).forEach((lvl) => {
+            const { snapshot, migrated } = hydrateLevelSnapshot(parsed.gameStates[lvl], lvl);
+            loadedStates[lvl] = snapshot;
+            if (migrated) migratedAny = true;
+          });
+        }
+      }
+    } catch {
+      loadedStates = {};
+    }
+
+    const activeSnap = loadedStates[chosenLevel] ?? createFreshLevelSnapshot(chosenLevel);
+    loadedStates[chosenLevel] = activeSnap;
+
+    set({
+      authMode: 'guest',
+      uid: 'guest-local',
+      displayName: cleanName,
+      ...activeSnap,
+      gameStates: loadedStates,
+      isLoadingState: false,
+      wasLegacyMigrated: migratedAny,
+    });
+
+    void persistState(get());
+  },
+
+  restoreGuestSession: () => {
+    try {
+      const savedRaw = localStorage.getItem(GUEST_STORAGE_KEY);
+      if (!savedRaw) return false;
+      const parsed = JSON.parse(savedRaw) as PersistedUserData;
+      if (!parsed || !parsed.currentLevel) return false;
+
+      const loadedStates: Partial<Record<Level, LevelGameSnapshot>> = {};
+      let migratedAny = false;
+      if (parsed.gameStates) {
+        (Object.keys(parsed.gameStates) as Level[]).forEach((lvl) => {
+          const { snapshot, migrated } = hydrateLevelSnapshot(parsed.gameStates[lvl], lvl);
+          loadedStates[lvl] = snapshot;
+          if (migrated) migratedAny = true;
+        });
+      }
+
+      const targetLevel = parsed.currentLevel;
+      const activeSnap = loadedStates[targetLevel] ?? createFreshLevelSnapshot(targetLevel);
+      loadedStates[targetLevel] = activeSnap;
+
+      set({
+        authMode: 'guest',
+        uid: 'guest-local',
+        displayName: parsed.displayName || '모의투자 학생',
+        ...activeSnap,
+        gameStates: loadedStates,
+        isLoadingState: false,
+        wasLegacyMigrated: migratedAny,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  exitSession: async () => {
+    const { authMode } = get();
+    if (authMode === 'google') {
+      await signOut(auth);
+    }
+    set(EMPTY_LOGGED_OUT_STATE);
+  },
+
   setAuth: async (uid, displayName) => {
     if (uid) {
-      set({ uid, displayName, isLoadingState: true });
+      set({ authMode: 'google', uid, displayName, isLoadingState: true });
       try {
         const userDocRef = doc(db, 'users', uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
           const data = userDoc.data();
           if (data) {
-            let loadedGameStates = data.gameStates ?? {};
-            let currentLevel = data.currentLevel ?? data.gameState?.level ?? 'elementary';
-            
-            // Backward compatibility
-            if (Object.keys(loadedGameStates).length === 0 && data.gameState) {
-              const prevLevel = data.gameState.level ?? 'elementary';
-              loadedGameStates[prevLevel] = data.gameState;
+            const rawStates = data.gameStates ?? {};
+            const currentLevel: Level =
+              data.currentLevel === 'elementary' ||
+              data.currentLevel === 'middle' ||
+              data.currentLevel === 'high'
+                ? data.currentLevel
+                : data.gameState?.level ?? 'elementary';
+
+            if (Object.keys(rawStates).length === 0 && data.gameState) {
+              const prevLevel: Level = data.gameState.level ?? 'elementary';
+              rawStates[prevLevel] = data.gameState;
             }
-            
-            const activeState = loadedGameStates[currentLevel] || {};
-            
-            set({
-              level: currentLevel,
-              dayCount: activeState.dayCount ?? 1,
-              cash: activeState.cash ?? getInitialCash(currentLevel),
-              initialCash: activeState.initialCash ?? getInitialCash(currentLevel),
-              stocks: activeState.stocks ?? {},
-              usedNewsIds: activeState.usedNewsIds ?? [],
-              currentNews: activeState.currentNews ?? [],
-              previousNews: activeState.previousNews ?? [],
-              holdings: activeState.holdings ?? {},
-              totalAssetHistory: activeState.totalAssetHistory ?? [],
-              tutorialStep: activeState.tutorialStep !== undefined ? activeState.tutorialStep : null,
-              gameStates: loadedGameStates
+
+            const hydratedStates: Partial<Record<Level, LevelGameSnapshot>> = {};
+            let migratedAny = false;
+            (Object.keys(rawStates) as Level[]).forEach((lvl) => {
+              if (lvl === 'elementary' || lvl === 'middle' || lvl === 'high') {
+                const { snapshot, migrated } = hydrateLevelSnapshot(rawStates[lvl], lvl);
+                hydratedStates[lvl] = snapshot;
+                if (migrated) migratedAny = true;
+              }
             });
+
+            const activeSnap =
+              hydratedStates[currentLevel] ?? createFreshLevelSnapshot(currentLevel);
+            hydratedStates[currentLevel] = activeSnap;
+
+            set({
+              ...activeSnap,
+              gameStates: hydratedStates,
+              wasLegacyMigrated: migratedAny,
+            });
+
+            if (migratedAny || data.schemaVersion !== 2) {
+              void persistState(get());
+            }
           }
         }
       } catch (error) {
-        console.error("Error loading game state from Firestore:", error);
+        console.error('Error loading game state from Firestore:', error);
       } finally {
         set({ isLoadingState: false });
       }
     } else {
-      // Clear game state on logout
-      set({
-        level: 'elementary',
-        dayCount: 1,
-        cash: 1_000_000,
-        initialCash: 1_000_000,
-        stocks: {},
-        usedNewsIds: [],
-        currentNews: [],
-        previousNews: [],
-        holdings: {},
-        totalAssetHistory: [],
-        tutorialStep: null,
-        gameStates: {} as Record<Level, any>,
-        isLoadingState: false
-      });
+      // Google 로그아웃 시 게스트 세션이 아닌 경우에만 상태 초기화
+      if (get().authMode === 'google') {
+        set(EMPTY_LOGGED_OUT_STATE);
+      }
     }
   },
-  
+
   setLevel: (newLevel) => {
     const state = get();
-    if (state.level === newLevel) return;
+    if (state.level === newLevel && Object.keys(state.stocks).length > 0) return;
 
-    // 1. Capture current level's active state
-    const currentActiveState = {
-      level: state.level,
-      dayCount: state.dayCount,
-      cash: state.cash,
-      initialCash: state.initialCash,
-      stocks: state.stocks,
-      usedNewsIds: state.usedNewsIds,
-      currentNews: state.currentNews,
-      previousNews: state.previousNews,
-      holdings: state.holdings,
-      totalAssetHistory: state.totalAssetHistory,
-      tutorialStep: state.tutorialStep
-    };
-
-    const updatedGameStates = {
+    const updatedGameStates: Partial<Record<Level, LevelGameSnapshot>> = {
       ...state.gameStates,
-      [state.level]: currentActiveState
     };
 
-    // 2. Check if new level state exists
-    const targetState = updatedGameStates[newLevel];
-
-    if (targetState && Object.keys(targetState.stocks || {}).length > 0) {
-      set({
-        level: newLevel,
-        dayCount: targetState.dayCount ?? 1,
-        cash: targetState.cash ?? getInitialCash(newLevel),
-        initialCash: targetState.initialCash ?? getInitialCash(newLevel),
-        stocks: targetState.stocks ?? {},
-        usedNewsIds: targetState.usedNewsIds ?? [],
-        currentNews: targetState.currentNews ?? [],
-        previousNews: targetState.previousNews ?? [],
-        holdings: targetState.holdings ?? {},
-        totalAssetHistory: targetState.totalAssetHistory ?? [],
-        tutorialStep: targetState.tutorialStep !== undefined ? targetState.tutorialStep : null,
-        gameStates: updatedGameStates
-      });
-    } else {
-      const initialCash = getInitialCash(newLevel);
-      const availableNews = PREDEFINED_NEWS.filter(n => n.difficulty.includes(newLevel));
-      const selected = shuffleArray(availableNews).slice(0, 3);
-      
-      const newLevelState = {
-        level: newLevel,
-        dayCount: 1,
-        cash: initialCash,
-        initialCash: initialCash,
-        stocks: initializeStocks(),
-        holdings: {},
-        usedNewsIds: selected.map((n: NewsItem) => n.id),
-        currentNews: selected,
-        previousNews: [],
-        totalAssetHistory: [initialCash],
-        tutorialStep: null
-      };
-
-      set({
-        ...newLevelState,
-        gameStates: {
-          ...updatedGameStates,
-          [newLevel]: newLevelState
-        }
-      });
+    if (Object.keys(state.stocks).length > 0) {
+      updatedGameStates[state.level] = captureActiveSnapshot(state);
     }
 
-    const nextState = get();
-    saveGameState(nextState.uid, nextState);
+    const targetState =
+      updatedGameStates[newLevel] &&
+      Object.keys(updatedGameStates[newLevel]!.stocks || {}).length > 0
+        ? updatedGameStates[newLevel]!
+        : createFreshLevelSnapshot(newLevel);
+
+    updatedGameStates[newLevel] = targetState;
+
+    set({
+      ...targetState,
+      gameStates: updatedGameStates,
+    });
+
+    void persistState(get());
   },
-  
+
   initializeGame: (level) => {
-    const initialCash = getInitialCash(level);
-    
-    // Pick first news
-    const availableNews = PREDEFINED_NEWS.filter(n => n.difficulty.includes(level));
-    const selected = shuffleArray(availableNews).slice(0, 3);
-    
-    const initializedState = {
-      level,
-      dayCount: 1,
-      cash: initialCash,
-      initialCash: initialCash,
-      stocks: initializeStocks(),
-      holdings: {},
-      usedNewsIds: selected.map((n: NewsItem) => n.id),
-      currentNews: selected,
-      previousNews: [],
-      totalAssetHistory: [initialCash],
-      tutorialStep: null
-    };
+    const initializedState = createFreshLevelSnapshot(level);
 
     set({
       ...initializedState,
       gameStates: {
         ...get().gameStates,
-        [level]: initializedState
-      }
+        [level]: initializedState,
+      },
     });
 
-    const state = get();
-    saveGameState(state.uid, state);
+    void persistState(get());
   },
-  
+
+  resetCurrentLevel: () => {
+    const { level } = get();
+    const fresh = createFreshLevelSnapshot(level);
+    set({
+      ...fresh,
+      gameStates: {
+        ...get().gameStates,
+        [level]: fresh,
+      },
+    });
+    void persistState(get());
+  },
+
+  deleteAccountAndData: async () => {
+    const { authMode, uid } = get();
+    try {
+      if (authMode === 'guest') {
+        localStorage.removeItem(GUEST_STORAGE_KEY);
+        localStorage.removeItem(PENDING_LEVEL_KEY);
+        localStorage.removeItem('stockschool_tutorial_completed');
+        set(EMPTY_LOGGED_OUT_STATE);
+        return { ok: true, message: '브라우저에 저장된 모든 학습 데이터가 영구 삭제되었습니다.' };
+      }
+
+      if (authMode === 'google' && uid) {
+        // 1. Firestore 사용자 문서 삭제
+        await deleteDoc(doc(db, 'users', uid));
+
+        // 2. Firebase Auth 계정 삭제 (재인증 필요 시 팝업 재인증 후 재시도)
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          try {
+            await deleteUser(currentUser);
+          } catch (err: unknown) {
+            const authErr = err as { code?: string };
+            if (authErr?.code === 'auth/requires-recent-login') {
+              await reauthenticateWithPopup(currentUser, new GoogleAuthProvider());
+              await deleteUser(currentUser);
+            } else {
+              throw err;
+            }
+          }
+        }
+
+        localStorage.removeItem(PENDING_LEVEL_KEY);
+        localStorage.removeItem(CONSENT_RECORD_KEY);
+        set(EMPTY_LOGGED_OUT_STATE);
+        return {
+          ok: true,
+          message: '회원 탈퇴 및 클라우드 개인정보·학습 기록이 모두 영구 파기되었습니다.',
+        };
+      }
+
+      return { ok: false, message: '활성화된 계정이 없습니다.' };
+    } catch (error: unknown) {
+      console.error('Account deletion error:', error);
+      const msg = error instanceof Error ? error.message : '다시 시도해 주세요.';
+      return {
+        ok: false,
+        message: `데이터 삭제 중 오류가 발생했습니다: ${msg}`,
+      };
+    }
+  },
+
   buyStock: (stockId, quantity) => {
     const { cash, stocks, holdings } = get();
     const stock = stocks[stockId];
-    if (!stock || quantity <= 0) return false;
-    
+    if (!stock || !Number.isInteger(quantity) || quantity <= 0) return false;
+
     const cost = stock.currentPrice * quantity;
     if (cash < cost) return false;
-    
+
     const currentHolding = holdings[stockId] || { quantity: 0, avgPrice: 0 };
     const newQuantity = currentHolding.quantity + quantity;
-    const newTotalCost = (currentHolding.quantity * currentHolding.avgPrice) + cost;
+    const newTotalCost = currentHolding.quantity * currentHolding.avgPrice + cost;
     const newAvgPrice = Math.round(newTotalCost / newQuantity);
-    
+
     set({
       cash: cash - cost,
       holdings: {
         ...holdings,
-        [stockId]: { quantity: newQuantity, avgPrice: newAvgPrice }
-      }
+        [stockId]: { quantity: newQuantity, avgPrice: newAvgPrice },
+      },
     });
 
-    updateLocalGameStates(set, get);
-    const state = get();
-    saveGameState(state.uid, state);
+    syncLocalGameStates(set, get);
+    void persistState(get());
     return true;
   },
-  
+
   sellStock: (stockId, quantity) => {
     const { stocks, holdings, cash } = get();
     const stock = stocks[stockId];
     const currentHolding = holdings[stockId];
-    
-    if (!stock || !currentHolding || quantity <= 0 || quantity > currentHolding.quantity) return false;
-    
+
+    if (
+      !stock ||
+      !currentHolding ||
+      !Number.isInteger(quantity) ||
+      quantity <= 0 ||
+      quantity > currentHolding.quantity
+    ) {
+      return false;
+    }
+
     const revenue = stock.currentPrice * quantity;
     const newQuantity = currentHolding.quantity - quantity;
-    
+
     const newHoldings = { ...holdings };
     if (newQuantity === 0) {
       delete newHoldings[stockId];
     } else {
       newHoldings[stockId] = { ...currentHolding, quantity: newQuantity };
     }
-    
+
     set({
       cash: cash + revenue,
-      holdings: newHoldings
+      holdings: newHoldings,
     });
 
-    updateLocalGameStates(set, get);
-    const state = get();
-    saveGameState(state.uid, state);
+    syncLocalGameStates(set, get);
+    void persistState(get());
     return true;
   },
-  
+
   nextDay: () => {
-    const { stocks, currentNews, usedNewsIds, level, dayCount, cash, holdings, totalAssetHistory } = get();
-    
-    // Calculate sector impacts from current news
-    const sectorImpacts: Record<string, number> = {};
-    currentNews.forEach(news => {
-      Object.entries(news.sectorImpact).forEach(([sector, impact]) => {
-        sectorImpacts[sector] = (sectorImpacts[sector] || 0) + impact;
-      });
-    });
-    
-    // Update stock prices with realistic simulation
-    const newStocks = { ...stocks };
+    const {
+      stocks,
+      currentNews,
+      usedNewsIds,
+      level,
+      dayCount,
+      cash,
+      holdings,
+      totalAssetHistory,
+      carryoverImpacts,
+    } = get();
+
+    // 1. 난이도별 주가·거래량 시뮬레이션 실행
+    const { newStocks, breakdownByStock, nextCarryoverImpacts } = simulateNextDay(
+      stocks,
+      currentNews,
+      level,
+      carryoverImpacts
+    );
+
+    // 2. 보유 주식 평가총액 계산
     let totalStockValue = 0;
-    
-    // Market-wide sentiment factor (macro noise affecting all stocks)
-    // Slight negative bias to prevent constant upward drift
-    const marketFactor = (Math.random() - 0.53) * 0.02;
-    
-    Object.keys(newStocks).forEach(id => {
-      const stock = { ...newStocks[id] };
-      const rawImpact = sectorImpacts[stock.sector] || 0;
-      
-      // Scale down news impact significantly (original +6~9% values are way too strong)
-      // Real single-day sector moves from news are typically 1-3%
-      const newsImpact = rawImpact * 0.3;
-      
-      // Base random volatility: daily noise
-      const randomChange = (Math.random() - 0.5) * 0.04 * stock.volatility;
-      
-      // Mean reversion: pull price back toward base price over time
-      // Prevents runaway trends in either direction
-      const deviation = (stock.currentPrice - stock.basePrice) / stock.basePrice;
-      const meanReversion = -deviation * 0.05;
-      
-      // Occasional shock events (rare large moves, ~5% chance)
-      const shockRoll = Math.random();
-      let shock = 0;
-      if (shockRoll < 0.025) {
-        shock = -(Math.random() * 0.05 + 0.02) * stock.volatility; // negative shock
-      } else if (shockRoll > 0.975) {
-        shock = (Math.random() * 0.05 + 0.02) * stock.volatility;  // positive shock
-      }
-      
-      // Total change, capped at +/- 15%
-      let totalChange = marketFactor + newsImpact + randomChange + meanReversion + shock;
-      totalChange = Math.max(-0.15, Math.min(0.15, totalChange));
-      
-      let newPrice = stock.currentPrice * (1 + totalChange);
-      newPrice = Math.max(1, Math.round(newPrice)); // min price 1
-      
-      stock.currentPrice = newPrice;
-      stock.priceHistory = [...stock.priceHistory, newPrice];
-      newStocks[id] = stock;
-      
-      // Calculate new total value
-      if (holdings[id]) {
-        totalStockValue += newPrice * holdings[id].quantity;
+    Object.entries(holdings).forEach(([id, h]) => {
+      const updated = newStocks[id];
+      if (updated) {
+        totalStockValue += updated.currentPrice * h.quantity;
       }
     });
-    
-    // Load new news
-    let availableNews = PREDEFINED_NEWS.filter(n => n.difficulty.includes(level) && !usedNewsIds.includes(n.id));
-    let nextUsedNewsIds = [...usedNewsIds];
- 
-    // If available news runs out (less than 3 items remaining), reset the cycle
-    if (availableNews.length < 3) {
-      const currentIds = currentNews.map(n => n.id);
-      availableNews = PREDEFINED_NEWS.filter(n => n.difficulty.includes(level) && !currentIds.includes(n.id));
-      nextUsedNewsIds = [...currentIds];
-    }
- 
-    const selected = shuffleArray(availableNews).slice(0, 3);
-    
+
+    // 3. 충돌 방지·균형 뉴스 선별
+    const { selected, nextUsedNewsIds } = selectDailyNews(
+      PREDEFINED_NEWS,
+      level,
+      usedNewsIds,
+      currentNews,
+      3
+    );
+
     set({
       dayCount: dayCount + 1,
       stocks: newStocks,
       previousNews: currentNews,
       currentNews: selected,
-      usedNewsIds: [...nextUsedNewsIds, ...selected.map((n: NewsItem) => n.id)],
-      totalAssetHistory: [...totalAssetHistory, cash + totalStockValue]
+      usedNewsIds: nextUsedNewsIds,
+      lastDayBreakdown: breakdownByStock,
+      carryoverImpacts: nextCarryoverImpacts,
+      totalAssetHistory: [...totalAssetHistory, cash + totalStockValue],
     });
- 
-    updateLocalGameStates(set, get);
-    const state = get();
-    saveGameState(state.uid, state);
-  }
+
+    syncLocalGameStates(set, get);
+    void persistState(get());
+  },
 }));

@@ -254,11 +254,14 @@ export default function OrderPanel({ stockId }: Props) {
             disabled={qty <= 0}
           >
             {tab === 'buy' ? (
-              <><ShoppingCart className="w-4 h-4 mr-1.5" /> 즉시 매수</>
+              <><ShoppingCart className="w-4 h-4 mr-1.5" /> 모의 매수</>
             ) : (
-              <><TrendingDown className="w-4 h-4 mr-1.5" /> 즉시 매도</>
+              <><TrendingDown className="w-4 h-4 mr-1.5" /> 모의 매도</>
             )}
           </Button>
+          <p className="text-[10px] text-muted-foreground/75 text-center font-semibold">
+            가상 자금 모의 주문 (학습 편의를 위해 거래 수수료·세금 미적용)
+          </p>
         </div>
       </ScrollArea>
     </div>

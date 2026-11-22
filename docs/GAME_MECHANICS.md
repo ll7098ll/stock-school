@@ -5,9 +5,9 @@
 **스탁스쿨 (StockSchool) — 게임 로직 & 시뮬레이션 엔진 문서**
 
 <p>
-  <img src="https://img.shields.io/badge/시뮬레이션-주가_엔진-red?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/종목-30개-blue?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/뉴스-60%2B개-green?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/시뮬레이션-난이도별_엔진-red?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/가상종목-34개_(17섹터)-blue?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/가상뉴스-102건-green?style=for-the-badge" />
 </p>
 
 </div>
@@ -28,20 +28,20 @@
 
 ## 1. 🎮 게임 개요
 
-스탁스쿨의 게임 루프는 **일(Day) 단위**로 진행됩니다.
+스탁스쿨의 학습 루프는 **일(Day) 단위**로 진행되며, 모든 종목과 뉴스는 100% 창작된 가상 교육 데이터입니다.
 
 ```mermaid
 flowchart LR
-    A["📰 뉴스 분석"] --> B["📈 종목 선택"]
-    B --> C["🛒 매수/매도"]
-    C --> D["📊 포트폴리오 확인"]
+    A["📰 가상 뉴스 분석"] --> B["📈 가상 기업 탐색"]
+    B --> C["🛒 모의 매수/매도"]
+    C --> D["📊 포트폴리오 점검"]
     D --> E["⏭️ 다음 날"]
-    E -->|"주가 변동 + 새 뉴스"| A
+    E -->|"난이도별 주가 변동 + 결과 리포트"| A
 ```
 
-### 게임 목표
+### 학습 목표
 
-> 💡 **가상 자금으로 주식을 사고팔아 수익을 극대화하면서, 뉴스 분석과 금융 용어를 자연스럽게 학습합니다.**
+> 💡 **실제 돈이 오가지 않는 가상 자금으로 뉴스 독해, 산업 인과관계, 분산투자 원리를 안전하게 학습합니다.**
 
 ---
 
@@ -49,135 +49,38 @@ flowchart LR
 
 ### 난이도별 비교표
 
-| 항목 | 🟢 초등학생 (`elementary`) | 🟡 중학생 (`middle`) | 🔴 고등학생 (`high`) |
+| 항목 | 🟢 초급 (`elementary`) | 🟡 중급 (`middle`) | 🔴 고급 (`high`) |
 |:---|:---:|:---:|:---:|
-| **초기 자금** | ₩1,000,000 | ₩5,000,000 | ₩10,000,000 |
-| **뉴스 스타일** | 일상 이야기 | 산업 분석 | 밸류에이션 전문 |
-| **종목 설명** | 비유/예시 | 사업 모델 분석 | IR 리포트 수준 |
-| **용어 정의** | 피자 가게 비유 | 개념 정의 | 수식/이론 포함 |
-
-### 초기 자금 결정 로직
-
-```typescript
-const getInitialCash = (level: Level) => {
-  if (level === 'elementary') return 1_000_000;   // 100만원
-  if (level === 'middle')     return 5_000_000;   // 500만원
-  return 10_000_000;                               // 1,000만원 (high)
-};
-```
-
-### 뉴스 콘텐츠 예시
-
-**같은 이벤트, 3가지 설명:**
-
-<table>
-<tr><th>🟢 초등학생</th></tr>
-<tr><td>삼성전자는 우리나라에서 제일 유명하고 전 세계에서도 손꼽히는 아주 큰 공장이에요. 스마트폰인 '갤럭시' 시리즈로 전 세계 사람들의 마음을 사로잡았고...</td></tr>
-<tr><th>🟡 중학생</th></tr>
-<tr><td>대한민국 KOSPI 시가총액 부동의 1위 기업인 삼성전자는 반도체(DS), 스마트폰(MX), 가전(CE), 디스플레이(DP) 등 다양한 IT 사업 포트폴리오를 보유하고 있습니다...</td></tr>
-<tr><th>🔴 고등학생</th></tr>
-<tr><td>대한민국 증시의 벤치마크이자 글로벌 IT H/W 섹터의 대장주입니다. 밸류에이션은 메모리 반도체의 ASP 추이와 Bit Growth에 연동됩니다. HBM 퀄 통과 여부 및 공급 물량 확대가 핵심...</td></tr>
-</table>
+| **초기 가상 자금** | ₩1,000,000 | ₩5,000,000 | ₩10,000,000 |
+| **뉴스 풀** | 34건 (전 17섹터 호재/악재) | 34건 (전 17섹터 호재/악재) | 34건 (복합·환율 차별화 포함) |
+| **뉴스 반영 배수 (`newsScale`)** | ×0.65 | ×0.52 | ×0.45 |
+| **랜덤 노이즈 (`× volatility`)** | ±0.9% | ±1.5% | ±2.0% |
+| **돌발 수급 충격** | 없음 (0%) | 3.0% (사유 배지 표시) | 4.5% (사유 배지 표시) |
+| **전일 뉴스 이월 모멘텀** | 없음 | 없음 | 25% 이월 |
+| **동일 섹터 상반 뉴스 충돌 방지** | ✅ 적용 | ✅ 적용 | 복합 혼조 허용 |
 
 ---
 
-## 3. 📈 주가 시뮬레이션 알고리즘
+## 3. 📈 주가 시뮬레이션 알고리즘 (`src/lib/priceEngine.ts`)
 
 ### 핵심 공식
 
-매일(`nextDay()`) 호출 시 각 종목의 가격이 다음 **5가지 요소**의 합으로 결정됩니다:
+매일(`nextDay()`) 호출 시 [`simulateNextDay`](../src/lib/priceEngine.ts)가 각 종목의 가격을 계산합니다:
 
 ```
-새 가격 = 현재가 × (1 + totalChange)
-
-totalChange = marketFactor + newsImpact + randomChange + meanReversion + shock
-             (시장 요인)    (뉴스 영향)   (랜덤 변동)    (평균 회귀)     (충격)
+totalChange = newsContribution + carryoverContribution + marketAndNoise + shockContribution
+              (뉴스 기여분)       (전일 이월, 고급)      (시장+랜덤+회귀)    (돌발 수급)
 
 단, totalChange는 [-0.15, +0.15] 범위로 제한 (일일 최대 ±15%)
+새 가격 = roundToTickSize(현재가 × (1 + totalChange))  // 한국 거래소 호가 단위 반올림
 ```
 
-### 각 구성 요소 상세
+### 핵심 개선 사항 (v2.0)
 
-#### 1️⃣ 시장 요인 (Market Factor)
-
-```typescript
-const marketFactor = (Math.random() - 0.53) * 0.02;
-```
-
-| 항목 | 값 |
-|:---|:---|
-| 범위 | 약 -1.06% ~ +0.94% |
-| 편향 | **약간의 음의 편향** (0.5 대신 0.53) |
-| 목적 | 무한 상승 트렌드 방지, 현실적 시장 시뮬레이션 |
-
-#### 2️⃣ 뉴스 임팩트 (News Impact)
-
-```typescript
-const rawImpact = sectorImpacts[stock.sector] || 0;
-const newsImpact = rawImpact * 0.3;
-```
-
-| 항목 | 값 |
-|:---|:---|
-| 원본 범위 | -9% ~ +9% (뉴스 데이터 정의) |
-| 스케일링 | **×0.3** (현실적 단일 뉴스 영향: 약 ±2.7%) |
-| 적용 | 동일 섹터 뉴스가 여러 개면 누적 |
-
-#### 3️⃣ 랜덤 변동성 (Random Volatility)
-
-```typescript
-const randomChange = (Math.random() - 0.5) * 0.04 * stock.volatility;
-```
-
-| 항목 | 값 |
-|:---|:---|
-| 기본 범위 | ±2% |
-| 변동성 계수 | 종목별 `volatility` (0.5 ~ 1.8) |
-| 실제 범위 | 삼성생명(0.5): ±1% ~ HMM(1.8): ±3.6% |
-
-#### 4️⃣ 평균 회귀 (Mean Reversion)
-
-```typescript
-const deviation = (stock.currentPrice - stock.basePrice) / stock.basePrice;
-const meanReversion = -deviation * 0.05;
-```
-
-| 항목 | 값 |
-|:---|:---|
-| 목적 | 가격이 기준가에서 벗어날수록 복귀 압력 |
-| 강도 | 이탈률의 5% |
-| 예시 | 기준가 대비 +50% → -2.5% 복귀 압력 |
-
-#### 5️⃣ 충격 이벤트 (Shock Events)
-
-```typescript
-const shockRoll = Math.random();
-let shock = 0;
-if (shockRoll < 0.025) {           // 2.5% 확률 (음의 충격)
-  shock = -(Math.random() * 0.05 + 0.02) * stock.volatility;
-} else if (shockRoll > 0.975) {    // 2.5% 확률 (양의 충격)
-  shock = (Math.random() * 0.05 + 0.02) * stock.volatility;
-}
-```
-
-| 항목 | 값 |
-|:---|:---|
-| 발생 확률 | 각 방향 **2.5%** (총 5%) |
-| 충격 크기 | 2% ~ 7% × 변동성 |
-| 목적 | 실제 주식 시장의 블랙스완 이벤트 시뮬레이션 |
-
-### 가격 확정
-
-```typescript
-let totalChange = marketFactor + newsImpact + randomChange + meanReversion + shock;
-totalChange = Math.max(-0.15, Math.min(0.15, totalChange));  // ±15% 캡
-
-let newPrice = stock.currentPrice * (1 + totalChange);
-newPrice = Math.max(1, Math.round(newPrice));  // 최소 1원, 정수
-```
-
-> [!WARNING]
-> 모든 가격 변동은 일일 **±15%**로 제한됩니다. 이는 한국 주식 시장의 상한/하한가(±30%)보다 보수적인 설정입니다.
+1. **수출형 vs 내수형 종목별 예외(`stockImpactOverrides`)**: 고환율 뉴스 시 같은 식품 섹터 내에서도 수출형 `불꽃푸드`는 상승(+), 수입 원가 비중이 높은 `온가족식품`은 하락(-)으로 차별화됩니다.
+2. **표시 수치와 실제 반영 일치**: `어제 뉴스 해설` 탭에 난이도별 `newsScale`이 적용된 뉴스 반영 강도와 각 종목의 **실제 전일 등락률 및 돌발 수급 사유**를 함께 공개합니다.
+3. **결정론적 거래량 연동**: 거래량(`volumeHistory`)은 `nextDay()` 시점에 가격 변동폭과 뉴스 유무에 비례하여 계산·저장되므로 차트 리렌더 시에도 일관되게 유지됩니다.
+4. **KRX 호가 단위 반올림**: 가격대별 호가 단위(5원/10원/50원/100원/500원/1,000원)를 적용해 현실적인 가격과 모의 호가창을 제공합니다.
 
 ---
 

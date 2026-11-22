@@ -5,35 +5,62 @@ import { Toaster } from './components/ui/sonner';
 import { useEffect } from 'react';
 import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { toast } from 'sonner';
 
 function App() {
-  const { uid, setAuth, theme, initializeGame, setLevel, level, stocks, isLoadingState } = useGameStore();
+  const {
+    authMode,
+    uid,
+    setAuth,
+    restoreGuestSession,
+    theme,
+    initializeGame,
+    setLevel,
+    level,
+    stocks,
+    isLoadingState,
+    wasLegacyMigrated,
+    clearMigrationNotice,
+  } = useGameStore();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setAuth(user.uid, user.displayName || '게스트');
+        void setAuth(user.uid, user.displayName || '학습자');
       } else {
-        setAuth(null, null);
+        // Google 세션이 없는 경우 기존 게스트(로컬) 세션이 있으면 복원
+        const currentMode = useGameStore.getState().authMode;
+        if (currentMode === 'google') {
+          void setAuth(null, null);
+        } else if (currentMode === null) {
+          restoreGuestSession();
+        }
       }
     });
     return () => unsubscribe();
-  }, [setAuth]);
+  }, [setAuth, restoreGuestSession]);
 
   useEffect(() => {
-    if (uid && !isLoadingState) {
+    if (authMode === 'google' && uid && !isLoadingState) {
       const pendingLevel = localStorage.getItem('stockschool_pending_level') as Level | null;
       if (pendingLevel) {
-        // 유저가 로그인 전에 난이도를 명시적으로 변경한 경우
         localStorage.removeItem('stockschool_pending_level');
         setLevel(pendingLevel);
       } else if (Object.keys(stocks).length === 0) {
-        // 새 유저이거나 저장된 게임이 없는 경우
         initializeGame(level);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uid, isLoadingState]);
+  }, [authMode, uid, isLoadingState]);
+
+  useEffect(() => {
+    if (wasLegacyMigrated) {
+      toast.info(
+        '교육 안전성을 위해 가상 기업(34개 종목)과 개선된 뉴스 엔진으로 시장이 새롭게 개편되었습니다!'
+      );
+      clearMigrationNotice();
+    }
+  }, [wasLegacyMigrated, clearMigrationNotice]);
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -45,7 +72,7 @@ function App() {
 
   return (
     <>
-      {uid ? <Dashboard /> : <Login />}
+      {authMode ? <Dashboard /> : <Login />}
       <Toaster />
     </>
   );

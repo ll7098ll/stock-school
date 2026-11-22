@@ -131,10 +131,11 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
     });
     const volumeData = stock.priceHistory.map((price: number, i: number) => {
       const prev = i > 0 ? stock.priceHistory[i - 1] : price;
+      const recordedVolume = stock.volumeHistory?.[i];
       return {
         time: getDateString(i) as any,
-        value: Math.floor(Math.random() * 50000) + 10000,
-        color: price >= prev 
+        value: typeof recordedVolume === 'number' ? recordedVolume : 20000,
+        color: price >= prev
           ? (isDark ? 'rgba(255, 55, 95, 0.35)' : 'rgba(225, 29, 72, 0.25)')
           : (isDark ? 'rgba(10, 132, 255, 0.35)' : 'rgba(37, 99, 235, 0.25)'),
       };

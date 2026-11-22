@@ -165,6 +165,9 @@ export function getNewsRawImpactForStock(news: NewsItem, stock: StockDefinition)
   if (news.stockImpactOverrides && stock.id in news.stockImpactOverrides) {
     return news.stockImpactOverrides[stock.id];
   }
+  if (news.stockImpact && stock.id in news.stockImpact) {
+    return news.stockImpact[stock.id];
+  }
   return news.sectorImpact[stock.sector] ?? 0;
 }
 
@@ -178,7 +181,7 @@ export function getScaledImpact(rawImpact: number, level: Level): number {
 /**
  * 두 뉴스가 같은 섹터에 정반대(+/-) 영향을 주어 상충하는지 검사
  */
-function hasOppositeSectorConflict(a: NewsItem, b: NewsItem): boolean {
+export function hasOppositeSectorConflict(a: NewsItem, b: NewsItem): boolean {
   for (const [sector, impactA] of Object.entries(a.sectorImpact) as [SectorId, number][]) {
     const impactB = b.sectorImpact[sector];
     if (typeof impactA === 'number' && typeof impactB === 'number') {
@@ -201,7 +204,8 @@ export function selectDailyNews(
   level: Level,
   usedNewsIds: string[],
   currentNews: NewsItem[],
-  count = 3
+  count = 3,
+  seedSelected: NewsItem[] = []
 ): { selected: NewsItem[]; nextUsedNewsIds: string[] } {
   const levelPool = allNews.filter((n) => n.difficulty.includes(level));
   let available = levelPool.filter((n) => !usedNewsIds.includes(n.id));
@@ -215,7 +219,7 @@ export function selectDailyNews(
   }
 
   const shuffled = shuffleArray(available);
-  const selected: NewsItem[] = [];
+  const selected: NewsItem[] = [...seedSelected];
   const avoidConflicts = level === 'elementary' || level === 'middle';
 
   // 1차 패스: 충돌 없고 호재/악재 균형을 맞추며 선별

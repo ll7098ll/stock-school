@@ -28,6 +28,23 @@ export type TradeExposure = 'export' | 'domestic' | 'mixed';
 
 export type NewsCategory = 'macro' | 'sector' | 'company' | 'global' | 'social';
 
+export type NewsTwistType =
+  | 'direct'
+  | 'mixed'
+  | 'contrarian'
+  | 'rumor'
+  | 'earnings'
+  | 'competition';
+
+export type ScenarioTheme =
+  | 'macro'
+  | 'geopolitics'
+  | 'tech'
+  | 'mobility'
+  | 'bio'
+  | 'corporate'
+  | 'trend';
+
 export interface StockDefinition {
   id: string;
   name: string;
@@ -64,14 +81,74 @@ export interface NewsItem {
   sentiment: number;
   relatedSectors: SectorId[];
   sectorImpact: Partial<Record<SectorId, number>>;
-  /** 동일 섹터 내에서도 수출/내수 등 특성 차이로 영향이 다른 종목별 개별 영향도 */
+  /** 동일 섹터 내에서도 수출/내수·개별 수주 등 특성 차이로 영향이 다른 종목별 개별 영향도 */
   stockImpactOverrides?: Record<string, number>;
+  relatedStocks?: string[];
+  stockImpact?: Record<string, number>;
   explanations: {
     elementary: string;
     middle: string;
     high: string;
   };
   difficulty: Level[];
+  scenarioId?: string;
+  scenarioTitle?: string;
+  scenarioStep?: number;
+  scenarioTotalSteps?: number;
+  twistType?: NewsTwistType;
+  readingHint?: Record<Level, string>;
+  marketBias?: number;
+}
+
+export interface CompanyNewsTemplate {
+  id: string;
+  category: 'company';
+  sentiment: number;
+  relatedSectors: SectorId[];
+  sectorImpact: Partial<Record<SectorId, number>>;
+  relatedStocks: string[];
+  stockImpact: Record<string, number>;
+  stockImpactOverrides?: Record<string, number>;
+  twistType: NewsTwistType;
+  headlines: Record<Level, string>;
+  contents: Record<Level, string>;
+  explanations: Record<Level, string>;
+  readingHint: Record<Level, string>;
+}
+
+export interface ScenarioEpisode {
+  step: number;
+  category: NewsCategory;
+  sentiment: number;
+  relatedSectors: SectorId[];
+  sectorImpact: Partial<Record<SectorId, number>>;
+  relatedStocks?: string[];
+  stockImpact?: Record<string, number>;
+  stockImpactOverrides?: Record<string, number>;
+  twistType: NewsTwistType;
+  headlines: Record<Level, string>;
+  contents: Record<Level, string>;
+  explanations: Record<Level, string>;
+  readingHint: Record<Level, string>;
+  marketBias?: number;
+}
+
+export interface ScenarioArc {
+  id: string;
+  title: string;
+  theme: ScenarioTheme;
+  icon: string;
+  totalDays: number;
+  subtitle: Record<Level, string>;
+  summary: Record<Level, string>;
+  featuredSectors: SectorId[];
+  episodes: ScenarioEpisode[];
+}
+
+export interface ActiveScenarioState {
+  scenarioId: string;
+  currentStep: number;
+  startedDay: number;
 }
 
 export interface Holding {
@@ -105,4 +182,34 @@ export interface LevelGameSnapshot {
   tutorialStep: number | null;
   lastDayBreakdown: Record<string, DayStockBreakdown>;
   carryoverImpacts: Record<string, number>;
+  activeScenario?: ActiveScenarioState | null;
+  completedScenarioIds?: string[];
+  scenarioCooldown?: number;
 }
+
+export const NEWS_CATEGORY_LABELS: Record<NewsCategory, string> = {
+  macro: '거시경제',
+  sector: '산업/경제',
+  company: '기업/종목',
+  global: '글로벌 변수',
+  social: '사회/트렌드',
+};
+
+export const NEWS_TWIST_LABELS: Record<NewsTwistType, string> = {
+  direct: '핵심 재료',
+  mixed: '복합 교차',
+  contrarian: '기대치 반전',
+  rumor: '루머·변수',
+  earnings: '실적 해석',
+  competition: '경쟁사 희비',
+};
+
+export const SCENARIO_THEME_LABELS: Record<ScenarioTheme, string> = {
+  macro: '거시경제',
+  geopolitics: '지정학·무역',
+  tech: '테크·AI',
+  mobility: '모빌리티·에너지',
+  bio: '바이오·헬스케어',
+  corporate: '기업·자본시장',
+  trend: '소비·기후',
+};

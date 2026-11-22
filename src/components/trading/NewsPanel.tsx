@@ -1,7 +1,7 @@
 import { useGameStore } from '../../stores/gameStore';
 import { ScrollArea } from '../ui/scroll-area';
 import { cn } from '../../lib/utils';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Newspaper,
   AlertCircle,
@@ -13,9 +13,14 @@ import {
   Layers,
   Zap,
   Scale,
+  BookMarked,
+  Flame,
+  Lightbulb,
 } from 'lucide-react';
 import { getScaledImpact, isMixedNews } from '../../lib/priceEngine';
+import { NEWS_TWIST_LABELS, SCENARIO_ARCS } from '../../lib/newsData';
 import type { NewsCategory, NewsItem, SectorId } from '../../lib/types';
+import ScenarioModal from './ScenarioModal';
 
 function getCategoryLabel(category: NewsCategory): string {
   switch (category) {
@@ -34,10 +39,28 @@ function getCategoryLabel(category: NewsCategory): string {
 }
 
 export default function NewsPanel() {
-  const { currentNews, previousNews, level, tutorialStep, stocks, lastDayBreakdown } = useGameStore();
+  const {
+    currentNews,
+    previousNews,
+    level,
+    tutorialStep,
+    stocks,
+    lastDayBreakdown,
+    activeScenario,
+    completedScenarioIds,
+  } = useGameStore();
   const [selectedNewsId, setSelectedNewsId] = useState<string | null>(null);
   const [collapsedOnMobile, setCollapsedOnMobile] = useState(false);
   const [tab, setTab] = useState<'current' | 'previous'>('current');
+  const [showScenarioModal, setShowScenarioModal] = useState(false);
+
+  const completedCount = useMemo(
+    () =>
+      (completedScenarioIds ?? []).filter((id) =>
+        SCENARIO_ARCS.some((arc) => arc.id === id)
+      ).length,
+    [completedScenarioIds]
+  );
 
   const news = tab === 'current' ? currentNews : previousNews;
   const selectedNews = news.find((item) => item.id === selectedNewsId) || news[0];
@@ -251,7 +274,29 @@ export default function NewsPanel() {
     );
   };
 
+  const renderScenarioProgressDots = (step: number, total: number) => (
+    <div className="inline-flex items-center gap-1 ml-1">
+      {Array.from({ length: total }, (_, idx) => {
+        const dotStep = idx + 1;
+        return (
+          <span
+            key={dotStep}
+            className={cn(
+              'h-1.5 rounded-full transition-all',
+              dotStep === step
+                ? 'w-3.5 bg-amber-500'
+                : dotStep < step
+                  ? 'w-1.5 bg-amber-500/55'
+                  : 'w-1.5 bg-black/15 dark:bg-white/15'
+            )}
+          />
+        );
+      })}
+    </div>
+  );
+
   return (
+    <>
     <div
       className={cn(
         'flex flex-col h-full bg-[var(--color-hts-panel)] overflow-hidden transition-all duration-300',
@@ -271,10 +316,25 @@ export default function NewsPanel() {
       )}
 
       {/* Header */}
-      <div className="px-4 py-3 border-b border-[var(--color-hts-border)] flex items-center justify-between bg-black/[0.01] dark:bg-white/[0.01] shrink-0">
-        <div className="flex items-center gap-2">
+      <div className="px-4 py-3 border-b border-[var(--color-hts-border)] flex items-center justify-between gap-2 flex-wrap bg-black/[0.01] dark:bg-white/[0.01] shrink-0">
+        <div className="flex items-center gap-2.5">
           <Newspaper className="w-4 h-4 text-[var(--color-accent-gold)] animate-pulse" />
           <span className="font-extrabold text-sm text-foreground tracking-tight">가상 경제 뉴스룸</span>
+          <button
+            onClick={() => setShowScenarioModal(true)}
+            className={cn(
+              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold border transition-all cursor-pointer',
+              activeScenario
+                ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/35 hover:bg-amber-500/25'
+                : 'bg-black/[0.03] dark:bg-white/[0.04] text-muted-foreground border-[var(--color-hts-border)] hover:text-foreground hover:border-amber-500/40'
+            )}
+            title="테마 시나리오 도감 열기"
+          >
+            <BookMarked className="w-3 h-3" />
+            <span>
+              시나리오 도감 ({completedCount}/{SCENARIO_ARCS.length})
+            </span>
+          </button>
         </div>
         <div className="flex gap-1 bg-black/[0.04] dark:bg-black/50 p-1 rounded-full border border-[var(--color-hts-border)]">
           <button
@@ -316,13 +376,19 @@ export default function NewsPanel() {
       ) : (
         <div className="flex-1 flex overflow-hidden">
           {/* LEFT: News Headline List */}
-          <div className="w-full lg:w-[360px] shrink-0 border-r border-[var(--color-hts-border)] flex flex-col bg-black/[0.01] dark:bg-black/10">
+          <div className="w-full lg:w-[365px] shrink-0 border-r border-[var(--color-hts-border)] flex flex-col bg-black/[0.01] dark:bg-black/10">
             <ScrollArea className="flex-1">
               <div className="p-3 space-y-2">
                 {news.map((item) => {
                   const isSelected = activeNewsId === item.id;
+                  const isScenario = Boolean(item.scenarioId);
                   const badge = getSentimentBadge(item);
-                  const sentimentBorder = tab === 'previous' ? badge.border : 'border-l-[var(--color-hts-border)]';
+                  const sentimentBorder =
+                    tab === 'previous'
+                      ? badge.border
+                      : isScenario
+                        ? 'border-l-amber-500'
+                        : 'border-l-[var(--color-hts-border)]';
 
                   return (
                     <button
@@ -343,6 +409,16 @@ export default function NewsPanel() {
                           : 'bg-black/[0.02] dark:bg-black/25 border-[var(--color-hts-border)] hover:bg-black/[0.04] dark:hover:bg-black/35'
                       )}
                     >
+                      {isScenario && item.scenarioStep && item.scenarioTotalSteps && (
+                        <div className="flex items-center justify-between gap-2 w-full">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[9px] font-black">
+                            <Flame className="w-2.5 h-2.5" />
+                            연속 시나리오 · {item.scenarioStep}/{item.scenarioTotalSteps}일차
+                          </span>
+                          {renderScenarioProgressDots(item.scenarioStep, item.scenarioTotalSteps)}
+                        </div>
+                      )}
+
                       <div className="flex items-start justify-between gap-2.5 w-full">
                         <span
                           className={cn(
@@ -362,6 +438,16 @@ export default function NewsPanel() {
                         <span className="px-1.5 py-0.5 rounded bg-black/[0.04] dark:bg-white/[0.04]">
                           {getCategoryLabel(item.category)}
                         </span>
+                        {tab === 'previous' && item.twistType && item.twistType !== 'direct' && (
+                          <span className="px-1.5 py-0.5 rounded bg-amber-500/12 text-amber-700 dark:text-amber-400">
+                            {NEWS_TWIST_LABELS[item.twistType]}
+                          </span>
+                        )}
+                        {isScenario && item.scenarioTitle && (
+                          <span className="truncate max-w-[155px] opacity-75">
+                            {item.scenarioTitle}
+                          </span>
+                        )}
                       </div>
 
                       {/* Inline Details (Visible on Mobile/Tablet only) */}
@@ -375,7 +461,7 @@ export default function NewsPanel() {
                             <div className="space-y-3">
                               {renderImpactBlock(item, true)}
 
-                              <div className="bg-gradient-to-br from-black/[0.01] to-[var(--color-accent-gold)]/5 border border-[var(--color-accent-gold)]/20 rounded-lg p-3 space-y-1">
+                              <div className="bg-gradient-to-br from-black/[0.01] to-[var(--color-accent-gold)]/5 border border-[var(--color-accent-gold)]/20 rounded-lg p-3 space-y-2">
                                 <div className="text-[9px] font-black text-[var(--color-accent-gold)] flex items-center gap-1 uppercase tracking-wider">
                                   <Sparkles className="w-3 h-3 text-[var(--color-accent-gold)]" />
                                   스탁 쌤 경제 해설 ({level === 'elementary' ? '초급 맞춤' : level === 'middle' ? '중급 맞춤' : '고급 맞춤'})
@@ -383,6 +469,12 @@ export default function NewsPanel() {
                                 <p className="text-[11px] leading-relaxed text-foreground/80 font-bold whitespace-pre-wrap">
                                   {item.explanations[level]}
                                 </p>
+                                {item.readingHint?.[level] && (
+                                  <div className="pt-2 border-t border-[var(--color-accent-gold)]/15 flex items-start gap-1.5 text-[10px] text-foreground/75 font-semibold">
+                                    <Lightbulb className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                                    <span>{item.readingHint[level]}</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           ) : (
@@ -407,6 +499,28 @@ export default function NewsPanel() {
             {selectedNews ? (
               <ScrollArea className="flex-1">
                 <div className="p-6 max-w-3xl mx-auto space-y-6">
+                  {selectedNews.scenarioId &&
+                    selectedNews.scenarioStep &&
+                    selectedNews.scenarioTotalSteps && (
+                      <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Flame className="w-4 h-4 text-amber-500 shrink-0" />
+                          <div className="text-xs font-black text-foreground truncate">
+                            연속 시나리오: {selectedNews.scenarioTitle}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-[11px] font-black text-amber-700 dark:text-amber-400 tabular-nums">
+                            {selectedNews.scenarioStep} / {selectedNews.scenarioTotalSteps}일차
+                          </span>
+                          {renderScenarioProgressDots(
+                            selectedNews.scenarioStep,
+                            selectedNews.scenarioTotalSteps
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                   <div className="space-y-3 border-b border-[var(--color-hts-border)]/50 pb-5">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="px-2.5 py-0.5 rounded bg-[var(--color-accent-gold)]/10 text-[var(--color-accent-gold)] text-[10px] font-extrabold border border-[var(--color-accent-gold)]/20 uppercase tracking-wider">
@@ -420,6 +534,13 @@ export default function NewsPanel() {
                           </span>
                         );
                       })()}
+                      {tab === 'previous' &&
+                        selectedNews.twistType &&
+                        selectedNews.twistType !== 'direct' && (
+                          <span className="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/25">
+                            {NEWS_TWIST_LABELS[selectedNews.twistType]}
+                          </span>
+                        )}
                       <span className="text-[10px] font-semibold text-muted-foreground ml-auto">
                         교육용 가상 뉴스 시나리오
                       </span>
@@ -444,14 +565,28 @@ export default function NewsPanel() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       {renderImpactBlock(selectedNews, false)}
 
-                      <div className="bg-gradient-to-br from-[var(--color-hts-panel)] to-[var(--color-accent-gold)]/[0.02] border border-[var(--color-accent-gold)]/20 rounded-2xl p-5 space-y-3">
-                        <div className="text-xs font-black text-[var(--color-accent-gold)] flex items-center gap-1.5 uppercase tracking-wider">
-                          <Sparkles className="w-4 h-4 text-[var(--color-accent-gold)]" />
-                          스탁 쌤 경제 해설 ({level === 'elementary' ? '초급 맞춤' : level === 'middle' ? '중급 맞춤' : '고급 맞춤'})
+                      <div className="bg-gradient-to-br from-[var(--color-hts-panel)] to-[var(--color-accent-gold)]/[0.02] border border-[var(--color-accent-gold)]/20 rounded-2xl p-5 space-y-4">
+                        <div className="space-y-3">
+                          <div className="text-xs font-black text-[var(--color-accent-gold)] flex items-center gap-1.5 uppercase tracking-wider">
+                            <Sparkles className="w-4 h-4 text-[var(--color-accent-gold)]" />
+                            스탁 쌤 경제 해설 ({level === 'elementary' ? '초급 맞춤' : level === 'middle' ? '중급 맞춤' : '고급 맞춤'})
+                          </div>
+                          <p className="text-xs md:text-sm leading-relaxed text-foreground/85 font-bold whitespace-pre-wrap">
+                            {selectedNews.explanations[level]}
+                          </p>
                         </div>
-                        <p className="text-xs md:text-sm leading-relaxed text-foreground/85 font-bold whitespace-pre-wrap">
-                          {selectedNews.explanations[level]}
-                        </p>
+
+                        {selectedNews.readingHint?.[level] && (
+                          <div className="pt-3.5 border-t border-[var(--color-hts-border)]/60 space-y-1.5">
+                            <div className="text-[11px] font-black text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                              <Lightbulb className="w-3.5 h-3.5" />
+                              핵심 독해 포인트
+                            </div>
+                            <p className="text-xs leading-relaxed text-foreground/80 font-semibold">
+                              {selectedNews.readingHint[level]}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -478,5 +613,11 @@ export default function NewsPanel() {
         </div>
       )}
     </div>
+    <ScenarioModal
+      open={showScenarioModal}
+      onOpenChange={setShowScenarioModal}
+      onScenarioStarted={() => setTab('current')}
+    />
+    </>
   );
 }

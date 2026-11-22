@@ -1,13 +1,22 @@
 import { create } from 'zustand';
 import { INITIAL_STOCKS, STOCK_BY_ID } from '../lib/stockData';
-import { NEWS_BY_ID, PREDEFINED_NEWS } from '../lib/newsData';
+import {
+  getScenarioById,
+  materializeScenarioNews,
+  NEWS_BY_ID,
+  PREDEFINED_NEWS,
+  SCENARIO_ARCS,
+  shuffleArray,
+} from '../lib/newsData';
 import {
   calculateDailyVolume,
   createInitialStocks,
+  hasOppositeSectorConflict,
   selectDailyNews,
   simulateNextDay,
 } from '../lib/priceEngine';
 import type {
+  ActiveScenarioState,
   AuthMode,
   CompactStockSave,
   DayStockBreakdown,
@@ -47,6 +56,9 @@ interface CompactLevelSave {
   tutorialStep: number | null;
   lastDayBreakdown?: Record<string, DayStockBreakdown>;
   carryoverImpacts?: Record<string, number>;
+  activeScenario?: ActiveScenarioState | null;
+  completedScenarioIds?: string[];
+  scenarioCooldown?: number;
 }
 
 interface PersistedUserData {
@@ -79,6 +91,11 @@ interface GameState {
   lastDayBreakdown: Record<string, DayStockBreakdown>;
   carryoverImpacts: Record<string, number>;
 
+  // Multi-day Scenario State
+  activeScenario: ActiveScenarioState | null;
+  completedScenarioIds: string[];
+  scenarioCooldown: number;
+
   // Portfolio
   holdings: Record<string, Holding>;
   totalAssetHistory: number[];
@@ -101,6 +118,7 @@ interface GameState {
   setLevel: (level: Level) => void;
   initializeGame: (level: Level) => void;
   resetCurrentLevel: () => void;
+  startScenario: (scenarioId: string) => boolean;
   deleteAccountAndData: () => Promise<{ ok: boolean; message: string }>;
   clearMigrationNotice: () => void;
   buyStock: (stockId: string, quantity: number) => boolean;
@@ -137,6 +155,9 @@ function createFreshLevelSnapshot(level: Level): LevelGameSnapshot {
     tutorialStep: null,
     lastDayBreakdown: {},
     carryoverImpacts: {},
+    activeScenario: null,
+    completedScenarioIds: [],
+    scenarioCooldown: 0,
   };
 }
 
@@ -169,6 +190,9 @@ function serializeLevelSnapshot(snap: LevelGameSnapshot): CompactLevelSave {
     tutorialStep: snap.tutorialStep,
     lastDayBreakdown: snap.lastDayBreakdown,
     carryoverImpacts: snap.carryoverImpacts,
+    activeScenario: snap.activeScenario ?? null,
+    completedScenarioIds: snap.completedScenarioIds ?? [],
+    scenarioCooldown: snap.scenarioCooldown ?? 0,
   };
 }
 
@@ -275,6 +299,11 @@ function hydrateLevelSnapshot(
   const initialCash = typeof raw.initialCash === 'number' ? raw.initialCash : getInitialCash(level);
   const cash = typeof raw.cash === 'number' ? raw.cash : initialCash;
 
+  const rawActiveScenario =
+    raw.activeScenario && typeof raw.activeScenario === 'object'
+      ? (raw.activeScenario as ActiveScenarioState)
+      : null;
+
   return {
     migrated: false,
     snapshot: {
@@ -300,6 +329,15 @@ function hydrateLevelSnapshot(
         raw.carryoverImpacts && typeof raw.carryoverImpacts === 'object'
           ? (raw.carryoverImpacts as Record<string, number>)
           : {},
+      activeScenario:
+        rawActiveScenario && getScenarioById(rawActiveScenario.scenarioId)
+          ? rawActiveScenario
+          : null,
+      completedScenarioIds: Array.isArray(raw.completedScenarioIds)
+        ? raw.completedScenarioIds.filter((id): id is string => typeof id === 'string')
+        : [],
+      scenarioCooldown:
+        typeof raw.scenarioCooldown === 'number' ? raw.scenarioCooldown : 0,
     },
   };
 }
@@ -319,6 +357,9 @@ function captureActiveSnapshot(state: GameState): LevelGameSnapshot {
     tutorialStep: state.tutorialStep,
     lastDayBreakdown: state.lastDayBreakdown,
     carryoverImpacts: state.carryoverImpacts,
+    activeScenario: state.activeScenario,
+    completedScenarioIds: state.completedScenarioIds,
+    scenarioCooldown: state.scenarioCooldown,
   };
 }
 
@@ -395,6 +436,9 @@ const EMPTY_LOGGED_OUT_STATE: Partial<GameState> = {
   previousNews: [],
   lastDayBreakdown: {},
   carryoverImpacts: {},
+  activeScenario: null,
+  completedScenarioIds: [],
+  scenarioCooldown: 0,
   holdings: {},
   totalAssetHistory: [],
   tutorialStep: null,
@@ -421,6 +465,10 @@ export const useGameStore = create<GameState>((set, get) => ({
   previousNews: [],
   lastDayBreakdown: {},
   carryoverImpacts: {},
+
+  activeScenario: null,
+  completedScenarioIds: [],
+  scenarioCooldown: 0,
 
   holdings: {},
   totalAssetHistory: [],
@@ -641,6 +689,54 @@ export const useGameStore = create<GameState>((set, get) => ({
     void persistState(get());
   },
 
+  startScenario: (scenarioId) => {
+    const state = get();
+    const arc = getScenarioById(scenarioId);
+    if (!arc) return false;
+
+    const firstEpisode = materializeScenarioNews(arc, 1, state.level);
+    if (!firstEpisode) return false;
+
+    const avoidConflicts = state.level === 'elementary' || state.level === 'middle';
+    const nonScenarioNews = state.currentNews.filter(
+      (item) =>
+        !item.scenarioId &&
+        (!avoidConflicts || !hasOppositeSectorConflict(firstEpisode, item))
+    );
+
+    let updatedCurrentNews: NewsItem[];
+    let nextUsedIds = state.usedNewsIds;
+    if (nonScenarioNews.length >= 2) {
+      updatedCurrentNews = [firstEpisode, ...nonScenarioNews.slice(0, 2)];
+    } else {
+      const picked = selectDailyNews(
+        PREDEFINED_NEWS,
+        state.level,
+        state.usedNewsIds,
+        state.currentNews,
+        3,
+        [firstEpisode]
+      );
+      updatedCurrentNews = picked.selected;
+      nextUsedIds = picked.nextUsedNewsIds;
+    }
+
+    set({
+      activeScenario: {
+        scenarioId: arc.id,
+        currentStep: 1,
+        startedDay: state.dayCount,
+      },
+      scenarioCooldown: 0,
+      currentNews: updatedCurrentNews,
+      usedNewsIds: nextUsedIds,
+    });
+
+    syncLocalGameStates(set, get);
+    void persistState(get());
+    return true;
+  },
+
   deleteAccountAndData: async () => {
     const { authMode, uid } = get();
     try {
@@ -764,6 +860,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       holdings,
       totalAssetHistory,
       carryoverImpacts,
+      activeScenario,
+      completedScenarioIds,
+      scenarioCooldown,
     } = get();
 
     // 1. 난이도별 주가·거래량 시뮬레이션 실행
@@ -783,23 +882,77 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
     });
 
-    // 3. 충돌 방지·균형 뉴스 선별
+    // 3. 멀티데이 시나리오 상태 전이
+    const nextDayNum = dayCount + 1;
+    let nextActiveScenario: ActiveScenarioState | null = activeScenario;
+    const nextCompletedScenarioIds = [...completedScenarioIds];
+    let nextCooldown = scenarioCooldown;
+
+    if (activeScenario) {
+      const currentArc = getScenarioById(activeScenario.scenarioId);
+      if (currentArc && activeScenario.currentStep < currentArc.totalDays) {
+        nextActiveScenario = {
+          ...activeScenario,
+          currentStep: activeScenario.currentStep + 1,
+        };
+      } else {
+        if (!nextCompletedScenarioIds.includes(activeScenario.scenarioId)) {
+          nextCompletedScenarioIds.push(activeScenario.scenarioId);
+        }
+        nextActiveScenario = null;
+        nextCooldown = 1;
+      }
+    } else if (nextDayNum >= 2) {
+      if (nextCooldown > 0) {
+        nextCooldown = nextCooldown - 1;
+      } else if (nextDayNum === 2 || Math.random() < 0.78) {
+        const uncompleted = SCENARIO_ARCS.filter(
+          (arc) => !nextCompletedScenarioIds.includes(arc.id)
+        );
+        const candidates = uncompleted.length > 0 ? uncompleted : SCENARIO_ARCS;
+        if (candidates.length > 0) {
+          const chosen = shuffleArray(candidates)[0];
+          nextActiveScenario = {
+            scenarioId: chosen.id,
+            currentStep: 1,
+            startedDay: nextDayNum,
+          };
+        }
+      }
+    }
+
+    const seedSelected: NewsItem[] = [];
+    if (nextActiveScenario) {
+      const arc = getScenarioById(nextActiveScenario.scenarioId);
+      const epNews = arc
+        ? materializeScenarioNews(arc, nextActiveScenario.currentStep, level)
+        : null;
+      if (epNews) {
+        seedSelected.push(epNews);
+      }
+    }
+
+    // 4. 충돌 방지·균형 뉴스 선별 (시나리오 에피소드가 있으면 1번 슬롯에 배치하고 나머지 2건을 충돌 없이 선별)
     const { selected, nextUsedNewsIds } = selectDailyNews(
       PREDEFINED_NEWS,
       level,
       usedNewsIds,
       currentNews,
-      3
+      3,
+      seedSelected
     );
 
     set({
-      dayCount: dayCount + 1,
+      dayCount: nextDayNum,
       stocks: newStocks,
       previousNews: currentNews,
       currentNews: selected,
       usedNewsIds: nextUsedNewsIds,
       lastDayBreakdown: breakdownByStock,
       carryoverImpacts: nextCarryoverImpacts,
+      activeScenario: nextActiveScenario,
+      completedScenarioIds: nextCompletedScenarioIds,
+      scenarioCooldown: nextCooldown,
       totalAssetHistory: [...totalAssetHistory, cash + totalStockValue],
     });
 

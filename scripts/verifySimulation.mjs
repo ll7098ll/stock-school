@@ -36,7 +36,7 @@ for (const [sec, cnt] of Object.entries(sectorCounts)) {
 console.log('   ✅ 17개 섹터 × 2종목 = 34개 가상 종목 통과');
 
 console.log('🔍 2. 뉴스 데이터 정합성 및 전 난이도 섹터 균형 검증...');
-assert.equal(PREDEFINED_NEWS.length, 102, '총 뉴스 수는 102건이어야 합니다.');
+assert.equal(PREDEFINED_NEWS.length, 588, '총 뉴스 수는 588건(레벨당 196건)이어야 합니다.');
 const newsIdSet = new Set();
 const validCategories = new Set(['macro', 'sector', 'company', 'global', 'social']);
 
@@ -64,7 +64,7 @@ for (const news of PREDEFINED_NEWS) {
 
 for (const level of ['elementary', 'middle', 'high']) {
   const pool = PREDEFINED_NEWS.filter((n) => n.difficulty.includes(level));
-  assert.equal(pool.length, 34, `${level} 뉴스 수는 34건이어야 합니다.`);
+  assert.equal(pool.length, 196, `${level} 뉴스 수는 196건(단독 94 + 개별기업 102)이어야 합니다.`);
   const cov = Object.fromEntries(ALL_SECTORS.map((s) => [s, { pos: 0, neg: 0 }]));
   for (const n of pool) {
     for (const [sec, val] of Object.entries(n.sectorImpact)) {
@@ -73,11 +73,11 @@ for (const level of ['elementary', 'middle', 'high']) {
     }
   }
   for (const [sec, c] of Object.entries(cov)) {
-    assert.ok(c.pos >= 1, `${level} 난이도 ${sec} 호재 뉴스 없음!`);
-    assert.ok(c.neg >= 1, `${level} 난이도 ${sec} 악재 뉴스 없음!`);
+    assert.ok(c.pos >= 2, `${level} 난이도 ${sec} 호재 뉴스 부족!`);
+    assert.ok(c.neg >= 2, `${level} 난이도 ${sec} 악재 뉴스 부족!`);
   }
 }
-console.log('   ✅ 102건 뉴스 전 난이도·전 17개 섹터 호재/악재 100% 균형 통과');
+console.log('   ✅ 588건 뉴스(+24종 시나리오 255편 = 총 843편) 전 난이도·전 17개 섹터 호재/악재 균형 통과');
 
 console.log('🔍 3. 실제 기업명·등록 상표·부적절 문구 누출 검사...');
 const forbiddenPattern =
@@ -88,8 +88,18 @@ const dataFilesToScan = [
   'src/lib/news/elementaryNews.ts',
   'src/lib/news/middleNews.ts',
   'src/lib/news/highNews.ts',
+  'src/lib/news/elementaryExtra.ts',
+  'src/lib/news/middleExtra.ts',
+  'src/lib/news/highExtra.ts',
+  'src/lib/news/companyNewsTechAuto.ts',
+  'src/lib/news/companyNewsEnergyBio.ts',
+  'src/lib/news/companyNewsIndFin.ts',
+  'src/lib/scenarios/macroGeoScenarios.ts',
+  'src/lib/scenarios/techMobScenarios.ts',
+  'src/lib/scenarios/corpBioTrendScenarios.ts',
   'src/lib/glossaryData.ts',
   'src/components/trading/NewsPanel.tsx',
+  'src/components/trading/ScenarioModal.tsx',
   'src/components/trading/CompanyInfoPanel.tsx',
   'src/components/trading/TutorialGuide.tsx',
 ];

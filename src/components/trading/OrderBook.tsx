@@ -43,43 +43,43 @@ export default function OrderBook({ stockId }: OrderBookProps) {
   );
 
   return (
-    <div className="flex flex-col h-full bg-[var(--color-hts-panel)] border-t border-[var(--color-hts-border)] text-xs">
-      <div className="px-4 py-2 border-b border-[var(--color-hts-border)] bg-black/[0.01] dark:bg-white/[0.01] flex items-center justify-between shrink-0">
-        <span className="font-extrabold text-foreground tracking-tight flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent-gold)]" />
+    <div className="flex flex-col h-full bg-[var(--color-hts-panel)] text-[13px] overflow-hidden">
+      <div className="px-4 py-2 border-b border-[var(--color-hts-border)] bg-black/[0.01] dark:bg-white/[0.01] flex items-center justify-between gap-2 shrink-0">
+        <span className="font-extrabold text-foreground tracking-tight flex items-center gap-1.5 text-[13px]">
+          <span className="w-2 h-2 rounded-full bg-[var(--color-accent-gold)]" />
           모의 호가창 (학습 참고용)
         </span>
-        <span className="text-[10px] text-muted-foreground font-semibold">
+        <span className="text-xs text-muted-foreground font-semibold">
           호가 단위 {orderBookData.tick.toLocaleString()}원 · 현재가 체결
         </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto font-mono">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain font-mono">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-black/[0.01] dark:bg-white/[0.01] text-muted-foreground border-b border-[var(--color-hts-border)]/50 text-[10px] uppercase font-bold">
-              <th className="py-1 px-3 text-left w-1/4">구분</th>
-              <th className="py-1 px-3 text-center w-1/3">호가 (원)</th>
-              <th className="py-1 px-3 text-right">예시 잔량 (주)</th>
+            <tr className="bg-black/[0.015] dark:bg-white/[0.02] text-muted-foreground border-b border-[var(--color-hts-border)]/50 text-xs font-bold">
+              <th className="py-1.5 px-3 text-left w-1/4">구분</th>
+              <th className="py-1.5 px-3 text-center w-1/3">호가 (원)</th>
+              <th className="py-1.5 px-3 text-right">예시 잔량 (주)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--color-hts-border)]/20">
             {orderBookData.asks.map((item, idx) => {
               const widthPct = (item.volume / maxVolume) * 100;
               return (
-                <tr key={`ask-${idx}`} className="hover:bg-[var(--price-down)]/[0.03] transition-colors relative">
-                  <td className="py-1 px-3 text-left text-[var(--price-down)] font-bold bg-[var(--price-down)]/[0.02]">
+                <tr key={`ask-${idx}`} className="hover:bg-[var(--color-price-down)]/[0.04] transition-colors relative">
+                  <td className="py-1.5 px-3 text-left text-[var(--color-price-down)] font-bold bg-[var(--color-price-down)]/[0.03]">
                     매도
                   </td>
-                  <td className="py-1 px-3 text-center text-[var(--price-down)] font-bold tabular-nums">
+                  <td className="py-1.5 px-3 text-center text-[var(--color-price-down)] font-bold tabular-nums">
                     {item.price.toLocaleString()}
                   </td>
-                  <td className="py-1 px-3 text-right relative pr-6">
+                  <td className="py-1.5 px-3 text-right relative pr-5">
                     <div
-                      className="absolute right-0 top-0 bottom-0 bg-[var(--price-down)]/[0.08] dark:bg-[var(--price-down)]/[0.12] transition-all duration-300"
+                      className="absolute right-0 top-0 bottom-0 bg-[var(--color-price-down)]/[0.09] dark:bg-[var(--color-price-down)]/[0.14] transition-all duration-300"
                       style={{ width: `${widthPct}%` }}
                     />
-                    <span className="relative z-10 font-bold text-foreground/80 tabular-nums">
+                    <span className="relative z-10 font-bold text-foreground/85 tabular-nums">
                       {item.volume.toLocaleString()}
                     </span>
                   </td>
@@ -87,14 +87,14 @@ export default function OrderBook({ stockId }: OrderBookProps) {
               );
             })}
 
-            <tr className="bg-gradient-to-r from-amber-500/5 via-amber-500/10 to-amber-500/5 border-y border-amber-500/30">
-              <td className="py-1.5 px-3 text-left font-black text-[var(--color-accent-gold)] animate-pulse">
+            <tr className="bg-gradient-to-r from-amber-500/5 via-amber-500/12 to-amber-500/5 border-y border-amber-500/35">
+              <td className="py-2 px-3 text-left font-black text-[var(--color-accent-gold)]">
                 현재가
               </td>
-              <td className="py-1.5 px-3 text-center font-black text-foreground text-sm tabular-nums tracking-wide">
+              <td className="py-2 px-3 text-center font-black text-foreground text-[15px] tabular-nums tracking-wide">
                 {stock.currentPrice.toLocaleString()}
               </td>
-              <td className="py-1.5 px-3 text-right text-[10px] font-black text-muted-foreground pr-6">
+              <td className="py-2 px-3 text-right text-xs font-extrabold text-muted-foreground pr-5">
                 시뮬레이션 기준가
               </td>
             </tr>
@@ -102,19 +102,19 @@ export default function OrderBook({ stockId }: OrderBookProps) {
             {orderBookData.bids.map((item, idx) => {
               const widthPct = (item.volume / maxVolume) * 100;
               return (
-                <tr key={`bid-${idx}`} className="hover:bg-[var(--price-up)]/[0.03] transition-colors relative">
-                  <td className="py-1 px-3 text-left text-[var(--price-up)] font-bold bg-[var(--price-up)]/[0.02]">
+                <tr key={`bid-${idx}`} className="hover:bg-[var(--color-price-up)]/[0.04] transition-colors relative">
+                  <td className="py-1.5 px-3 text-left text-[var(--color-price-up)] font-bold bg-[var(--color-price-up)]/[0.03]">
                     매수
                   </td>
-                  <td className="py-1 px-3 text-center text-[var(--price-up)] font-bold tabular-nums">
+                  <td className="py-1.5 px-3 text-center text-[var(--color-price-up)] font-bold tabular-nums">
                     {item.price.toLocaleString()}
                   </td>
-                  <td className="py-1 px-3 text-right relative pr-6">
+                  <td className="py-1.5 px-3 text-right relative pr-5">
                     <div
-                      className="absolute right-0 top-0 bottom-0 bg-[var(--price-up)]/[0.08] dark:bg-[var(--price-up)]/[0.12] transition-all duration-300"
+                      className="absolute right-0 top-0 bottom-0 bg-[var(--color-price-up)]/[0.09] dark:bg-[var(--color-price-up)]/[0.14] transition-all duration-300"
                       style={{ width: `${widthPct}%` }}
                     />
-                    <span className="relative z-10 font-bold text-foreground/80 tabular-nums">
+                    <span className="relative z-10 font-bold text-foreground/85 tabular-nums">
                       {item.volume.toLocaleString()}
                     </span>
                   </td>

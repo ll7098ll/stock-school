@@ -123,6 +123,16 @@ export function isMixedNews(item: NewsItem): boolean {
 }
 
 /**
+ * 학생의 1클릭 뉴스 판단(호재/악재/혼조)과 비교할 실제 뉴스 방향 판정
+ */
+export function getActualNewsDirection(item: NewsItem): 'bullish' | 'bearish' | 'mixed' {
+  if (isMixedNews(item)) return 'mixed';
+  if (item.sentiment > 0) return 'bullish';
+  if (item.sentiment < 0) return 'bearish';
+  return 'mixed';
+}
+
+/**
  * 일일 변동률과 뉴스 영향 유무에 비례하는 현실적 거래량 계산
  */
 export function calculateDailyVolume(

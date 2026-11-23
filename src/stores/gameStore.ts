@@ -11,6 +11,7 @@ import {
 import {
   calculateDailyVolume,
   createInitialStocks,
+  getActualNewsDirection,
   hasOppositeSectorConflict,
   selectDailyNews,
   simulateNextDay,
@@ -21,9 +22,12 @@ import type {
   CompactStockSave,
   DayStockBreakdown,
   Holding,
+  LastDayRecap,
   Level,
   LevelGameSnapshot,
   NewsItem,
+  NewsPrediction,
+  PredictionStats,
   StockState,
 } from '../lib/types';
 import { deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore';
@@ -35,7 +39,31 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
 
-export type { AuthMode, DayStockBreakdown, Holding, Level, StockState };
+export type {
+  AuthMode,
+  DayStockBreakdown,
+  Holding,
+  LastDayRecap,
+  Level,
+  NewsPrediction,
+  PredictionStats,
+  StockState,
+};
+
+export function countCheckedTodayNews(
+  currentNews: NewsItem[],
+  todayNewsChecks: Record<string, NewsPrediction>
+): number {
+  return currentNews.filter((item) => Boolean(todayNewsChecks[item.id])).length;
+}
+
+export function isTodayNewsComplete(
+  currentNews: NewsItem[],
+  todayNewsChecks: Record<string, NewsPrediction>
+): boolean {
+  if (currentNews.length === 0) return true;
+  return countCheckedTodayNews(currentNews, todayNewsChecks) >= currentNews.length;
+}
 
 const GUEST_STORAGE_KEY = 'stockschool_guest_state_v2';
 const PENDING_LEVEL_KEY = 'stockschool_pending_level';
@@ -59,6 +87,10 @@ interface CompactLevelSave {
   activeScenario?: ActiveScenarioState | null;
   completedScenarioIds?: string[];
   scenarioCooldown?: number;
+  todayNewsChecks?: Record<string, NewsPrediction>;
+  previousNewsChecks?: Record<string, NewsPrediction>;
+  predictionStats?: PredictionStats;
+  lastDayRecap?: LastDayRecap | null;
 }
 
 interface PersistedUserData {
@@ -96,6 +128,13 @@ interface GameState {
   completedScenarioIds: string[];
   scenarioCooldown: number;
 
+  // News-First Learning Journey State
+  todayNewsChecks: Record<string, NewsPrediction>;
+  previousNewsChecks: Record<string, NewsPrediction>;
+  predictionStats: PredictionStats;
+  lastDayRecap: LastDayRecap | null;
+  showRecapModal: boolean;
+
   // Portfolio
   holdings: Record<string, Holding>;
   totalAssetHistory: number[];
@@ -119,6 +158,8 @@ interface GameState {
   initializeGame: (level: Level) => void;
   resetCurrentLevel: () => void;
   startScenario: (scenarioId: string) => boolean;
+  markNewsChecked: (newsId: string, prediction: NewsPrediction) => void;
+  dismissRecap: () => void;
   deleteAccountAndData: () => Promise<{ ok: boolean; message: string }>;
   clearMigrationNotice: () => void;
   buyStock: (stockId: string, quantity: number) => boolean;
@@ -158,6 +199,10 @@ function createFreshLevelSnapshot(level: Level): LevelGameSnapshot {
     activeScenario: null,
     completedScenarioIds: [],
     scenarioCooldown: 0,
+    todayNewsChecks: {},
+    previousNewsChecks: {},
+    predictionStats: { total: 0, correct: 0 },
+    lastDayRecap: null,
   };
 }
 
@@ -193,6 +238,10 @@ function serializeLevelSnapshot(snap: LevelGameSnapshot): CompactLevelSave {
     activeScenario: snap.activeScenario ?? null,
     completedScenarioIds: snap.completedScenarioIds ?? [],
     scenarioCooldown: snap.scenarioCooldown ?? 0,
+    todayNewsChecks: snap.todayNewsChecks ?? {},
+    previousNewsChecks: snap.previousNewsChecks ?? {},
+    predictionStats: snap.predictionStats ?? { total: 0, correct: 0 },
+    lastDayRecap: snap.lastDayRecap ?? null,
   };
 }
 
@@ -304,6 +353,23 @@ function hydrateLevelSnapshot(
       ? (raw.activeScenario as ActiveScenarioState)
       : null;
 
+  const sanitizeChecks = (input: unknown): Record<string, NewsPrediction> => {
+    const out: Record<string, NewsPrediction> = {};
+    if (input && typeof input === 'object') {
+      Object.entries(input as Record<string, unknown>).forEach(([k, v]) => {
+        if (v === 'bullish' || v === 'bearish' || v === 'mixed') {
+          out[k] = v;
+        }
+      });
+    }
+    return out;
+  };
+
+  const rawStats =
+    raw.predictionStats && typeof raw.predictionStats === 'object'
+      ? (raw.predictionStats as { total?: unknown; correct?: unknown })
+      : null;
+
   return {
     migrated: false,
     snapshot: {
@@ -338,6 +404,16 @@ function hydrateLevelSnapshot(
         : [],
       scenarioCooldown:
         typeof raw.scenarioCooldown === 'number' ? raw.scenarioCooldown : 0,
+      todayNewsChecks: sanitizeChecks(raw.todayNewsChecks),
+      previousNewsChecks: sanitizeChecks(raw.previousNewsChecks),
+      predictionStats: {
+        total: typeof rawStats?.total === 'number' ? rawStats.total : 0,
+        correct: typeof rawStats?.correct === 'number' ? rawStats.correct : 0,
+      },
+      lastDayRecap:
+        raw.lastDayRecap && typeof raw.lastDayRecap === 'object'
+          ? (raw.lastDayRecap as LastDayRecap)
+          : null,
     },
   };
 }
@@ -360,6 +436,10 @@ function captureActiveSnapshot(state: GameState): LevelGameSnapshot {
     activeScenario: state.activeScenario,
     completedScenarioIds: state.completedScenarioIds,
     scenarioCooldown: state.scenarioCooldown,
+    todayNewsChecks: state.todayNewsChecks,
+    previousNewsChecks: state.previousNewsChecks,
+    predictionStats: state.predictionStats,
+    lastDayRecap: state.lastDayRecap,
   };
 }
 
@@ -439,6 +519,11 @@ const EMPTY_LOGGED_OUT_STATE: Partial<GameState> = {
   activeScenario: null,
   completedScenarioIds: [],
   scenarioCooldown: 0,
+  todayNewsChecks: {},
+  previousNewsChecks: {},
+  predictionStats: { total: 0, correct: 0 },
+  lastDayRecap: null,
+  showRecapModal: false,
   holdings: {},
   totalAssetHistory: [],
   tutorialStep: null,
@@ -469,6 +554,12 @@ export const useGameStore = create<GameState>((set, get) => ({
   activeScenario: null,
   completedScenarioIds: [],
   scenarioCooldown: 0,
+
+  todayNewsChecks: {},
+  previousNewsChecks: {},
+  predictionStats: { total: 0, correct: 0 },
+  lastDayRecap: null,
+  showRecapModal: false,
 
   holdings: {},
   totalAssetHistory: [],
@@ -681,6 +772,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const fresh = createFreshLevelSnapshot(level);
     set({
       ...fresh,
+      showRecapModal: false,
       gameStates: {
         ...get().gameStates,
         [level]: fresh,
@@ -721,6 +813,15 @@ export const useGameStore = create<GameState>((set, get) => ({
       nextUsedIds = picked.nextUsedNewsIds;
     }
 
+    // Keep checks only for surviving news items so the new scenario episode must be read
+    const survivingIds = new Set(updatedCurrentNews.map((n) => n.id));
+    const filteredChecks: Record<string, NewsPrediction> = {};
+    Object.entries(state.todayNewsChecks).forEach(([id, pred]) => {
+      if (survivingIds.has(id)) {
+        filteredChecks[id] = pred;
+      }
+    });
+
     set({
       activeScenario: {
         scenarioId: arc.id,
@@ -730,12 +831,28 @@ export const useGameStore = create<GameState>((set, get) => ({
       scenarioCooldown: 0,
       currentNews: updatedCurrentNews,
       usedNewsIds: nextUsedIds,
+      todayNewsChecks: filteredChecks,
     });
 
     syncLocalGameStates(set, get);
     void persistState(get());
     return true;
   },
+
+  markNewsChecked: (newsId, prediction) => {
+    const state = get();
+    if (!state.currentNews.some((n) => n.id === newsId)) return;
+    set({
+      todayNewsChecks: {
+        ...state.todayNewsChecks,
+        [newsId]: prediction,
+      },
+    });
+    syncLocalGameStates(set, get);
+    void persistState(get());
+  },
+
+  dismissRecap: () => set({ showRecapModal: false }),
 
   deleteAccountAndData: async () => {
     const { authMode, uid } = get();
@@ -863,7 +980,19 @@ export const useGameStore = create<GameState>((set, get) => ({
       activeScenario,
       completedScenarioIds,
       scenarioCooldown,
+      todayNewsChecks,
+      predictionStats,
     } = get();
+
+    // 0. 전일(오늘 마감 시점) 평가총액 계산
+    let prevStockValue = 0;
+    Object.entries(holdings).forEach(([id, h]) => {
+      const existing = stocks[id];
+      if (existing) {
+        prevStockValue += existing.currentPrice * h.quantity;
+      }
+    });
+    const prevTotalAsset = cash + prevStockValue;
 
     // 1. 난이도별 주가·거래량 시뮬레이션 실행
     const { newStocks, breakdownByStock, nextCarryoverImpacts } = simulateNextDay(
@@ -879,6 +1008,22 @@ export const useGameStore = create<GameState>((set, get) => ({
       const updated = newStocks[id];
       if (updated) {
         totalStockValue += updated.currentPrice * h.quantity;
+      }
+    });
+    const newTotalAsset = cash + totalStockValue;
+    const assetDelta = newTotalAsset - prevTotalAsset;
+    const assetDeltaPct = prevTotalAsset > 0 ? (assetDelta / prevTotalAsset) * 100 : 0;
+
+    // 2-1. 학생의 오늘 뉴스 예측 채점
+    let checkedCount = 0;
+    let correctCount = 0;
+    currentNews.forEach((item) => {
+      const userPred = todayNewsChecks[item.id];
+      if (userPred) {
+        checkedCount += 1;
+        if (getActualNewsDirection(item) === userPred) {
+          correctCount += 1;
+        }
       }
     });
 
@@ -953,7 +1098,23 @@ export const useGameStore = create<GameState>((set, get) => ({
       activeScenario: nextActiveScenario,
       completedScenarioIds: nextCompletedScenarioIds,
       scenarioCooldown: nextCooldown,
-      totalAssetHistory: [...totalAssetHistory, cash + totalStockValue],
+      previousNewsChecks: { ...todayNewsChecks },
+      todayNewsChecks: {},
+      predictionStats: {
+        total: predictionStats.total + checkedCount,
+        correct: predictionStats.correct + correctCount,
+      },
+      lastDayRecap: {
+        dayNumber: nextDayNum,
+        prevTotalAsset,
+        newTotalAsset,
+        assetDelta,
+        assetDeltaPct,
+        checkedCount,
+        correctCount,
+      },
+      showRecapModal: true,
+      totalAssetHistory: [...totalAssetHistory, newTotalAsset],
     });
 
     syncLocalGameStates(set, get);

@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { useGameStore } from '../../stores/gameStore';
+import {
+  useGameStore,
+  countCheckedTodayNews,
+  isTodayNewsComplete,
+} from '../../stores/gameStore';
 import {
   LineChart,
   Wallet,
@@ -14,6 +18,8 @@ import {
   ChevronRight,
   Settings,
   ShieldCheck,
+  Lock,
+  CheckCircle2,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
@@ -26,6 +32,7 @@ interface AppShellProps {
   children: React.ReactNode;
   activeWorkspace: 'trading' | 'portfolio' | 'news' | 'glossary';
   setActiveWorkspace: (workspace: 'trading' | 'portfolio' | 'news' | 'glossary') => void;
+  onNextDaySuccess?: () => void;
   onReplayTutorial?: () => void;
   onOpenLegal?: (tab: LegalTab) => void;
 }
@@ -34,6 +41,7 @@ export default function AppShell({
   children,
   activeWorkspace,
   setActiveWorkspace,
+  onNextDaySuccess,
   onReplayTutorial,
   onOpenLegal,
 }: AppShellProps) {
@@ -47,12 +55,18 @@ export default function AppShell({
     toggleTheme,
     tutorialStep,
     exitSession,
+    currentNews,
+    todayNewsChecks,
   } = useGameStore();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [internalLegalOpen, setInternalLegalOpen] = useState(false);
   const [internalLegalTab, setInternalLegalTab] = useState<LegalTab>('disclaimer');
+
+  const checkedCount = countCheckedTodayNews(currentNews, todayNewsChecks);
+  const allTodayChecked = isTodayNewsComplete(currentNews, todayNewsChecks);
+  const remainingCount = Math.max(0, currentNews.length - checkedCount);
 
   const handleOpenLegal = (tab: LegalTab) => {
     if (onOpenLegal) {
@@ -61,6 +75,18 @@ export default function AppShell({
       setInternalLegalTab(tab);
       setInternalLegalOpen(true);
     }
+  };
+
+  const handleNextDayClick = () => {
+    if (!allTodayChecked) {
+      toast.info(
+        `오늘의 뉴스 ${remainingCount}건을 먼저 읽고 호재·악재 판단을 체크해 주세요! 📰`
+      );
+      setActiveWorkspace('news');
+      return;
+    }
+    nextDay();
+    onNextDaySuccess?.();
   };
 
   const handleLogout = async () => {
@@ -79,16 +105,16 @@ export default function AppShell({
   const levelLabel = level === 'elementary' ? '초급' : level === 'middle' ? '중급' : '고급';
   const levelColor =
     level === 'elementary'
-      ? 'from-slate-400 to-slate-500'
+      ? 'from-slate-500 to-slate-600'
       : level === 'middle'
-        ? 'from-slate-500 to-slate-600'
-        : 'from-slate-700 to-slate-800';
+        ? 'from-slate-600 to-slate-700'
+        : 'from-slate-800 to-slate-900';
 
   const menuItems = [
-    { id: 'trading', label: '모의투자 교실', icon: LineChart },
-    { id: 'portfolio', label: '자산 보고서', icon: Wallet },
-    { id: 'news', label: '경제 뉴스분석', icon: Newspaper },
-    { id: 'glossary', label: '용어 사전방', icon: BookOpen },
+    { id: 'news', label: '오늘의 뉴스', mobileLabel: '뉴스', icon: Newspaper },
+    { id: 'trading', label: '모의투자 교실', mobileLabel: '투자', icon: LineChart },
+    { id: 'portfolio', label: '자산 보고서', mobileLabel: '내 자산', icon: Wallet },
+    { id: 'glossary', label: '용어 사전방', mobileLabel: '용어사전', icon: BookOpen },
   ] as const;
 
   return (
@@ -105,21 +131,23 @@ export default function AppShell({
       >
         {/* Toggle Collapse Button */}
         <button
+          type="button"
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           className="absolute -right-3 top-6 w-6 h-6 rounded-full border border-[var(--color-hts-border)] bg-[var(--color-hts-panel)] hover:bg-[var(--color-hts-hover)] flex items-center justify-center text-muted-foreground hover:text-foreground shadow-md cursor-pointer z-30 transition-transform duration-200"
+          title={isSidebarCollapsed ? '사이드바 펼치기' : '사이드바 접기'}
         >
-          {isSidebarCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+          {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
 
         {/* Sidebar Brand Logo */}
-        <div className="h-16 flex items-center gap-3 px-6 border-b border-[var(--color-hts-border)] shrink-0">
+        <div className="h-16 flex items-center gap-3 px-5 border-b border-[var(--color-hts-border)] shrink-0">
           <SchoolLogo className="w-9 h-9 shrink-0 filter drop-shadow-sm" />
           {!isSidebarCollapsed && (
             <div className="min-w-0">
               <span className="text-lg font-black tracking-tight text-foreground block leading-none">
                 스탁스쿨
               </span>
-              <span className="text-[9px] font-bold text-muted-foreground block mt-0.5">
+              <span className="text-[11px] font-bold text-muted-foreground block mt-1">
                 가상 금융교육 시뮬레이터
               </span>
             </div>
@@ -129,12 +157,13 @@ export default function AppShell({
         {/* User profile card */}
         <div
           className={cn(
-            'p-4 border-b border-[var(--color-hts-border)] bg-black/[0.01] dark:bg-white/[0.01] flex flex-col shrink-0 transition-all',
+            'p-3.5 border-b border-[var(--color-hts-border)] bg-black/[0.01] dark:bg-white/[0.01] flex flex-col shrink-0 transition-all',
             isSidebarCollapsed ? 'items-center' : 'items-stretch'
           )}
         >
           {isSidebarCollapsed ? (
             <button
+              type="button"
               onClick={() => setSettingsOpen(true)}
               className="w-10 h-10 rounded-full bg-muted dark:bg-slate-800 flex items-center justify-center border border-[var(--color-hts-border)] cursor-pointer"
               title={`${displayName || '학습자'} (설정 열기)`}
@@ -145,26 +174,26 @@ export default function AppShell({
             <button
               type="button"
               onClick={() => setSettingsOpen(true)}
-              className="flex items-center gap-3 p-1.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] hover:bg-[var(--color-hts-hover)] border border-[var(--color-hts-border)]/50 text-left cursor-pointer transition-colors"
+              className="flex items-center gap-3 p-2 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] hover:bg-[var(--color-hts-hover)] border border-[var(--color-hts-border)]/60 text-left cursor-pointer transition-colors"
               title="난이도 전환 및 개인정보 설정"
             >
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center text-slate-700 dark:text-slate-300 font-extrabold text-sm border border-[var(--color-hts-border)] shrink-0">
                 {displayName ? displayName[0].toUpperCase() : 'S'}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-black truncate text-foreground">
+                <div className="text-[13px] font-black truncate text-foreground">
                   {displayName || '모의투자 학생'}
                 </div>
-                <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                   <span
                     className={cn(
-                      'inline-flex px-1.5 py-0.5 rounded-full text-[9px] font-black text-white bg-gradient-to-r shadow-sm shadow-black/10',
+                      'inline-flex px-2 py-0.5 rounded-full text-[11px] font-black text-white bg-gradient-to-r shadow-sm',
                       levelColor
                     )}
                   >
                     {levelLabel}
                   </span>
-                  <span className="inline-flex px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-black/[0.05] dark:bg-white/[0.06] text-muted-foreground">
+                  <span className="inline-flex px-2 py-0.5 rounded-full text-[11px] font-bold bg-black/[0.05] dark:bg-white/[0.08] text-muted-foreground">
                     {authMode === 'google' ? '클라우드' : '로컬'}
                   </span>
                 </div>
@@ -173,48 +202,88 @@ export default function AppShell({
           )}
         </div>
 
-        {/* Navigation Menu */}
+        {/* Navigation Menu (Ordered by Learning Journey: News → Trading → Portfolio → Glossary) */}
         <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
           {menuItems.map((item) => {
             const isActive = activeWorkspace === item.id;
+            const isNews = item.id === 'news';
+            const isTrading = item.id === 'trading';
+
             return (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => setActiveWorkspace(item.id)}
                 className={cn(
-                  'w-full flex items-center rounded-xl p-3 text-xs font-black cursor-pointer transition-all duration-200 group relative',
+                  'w-full flex items-center justify-between rounded-xl px-3 py-3 text-[13px] font-extrabold cursor-pointer transition-all duration-200 group relative',
                   isActive
-                    ? 'bg-[var(--color-accent-gold)]/10 text-[var(--color-accent-gold)] border border-[var(--color-accent-gold)]/15 shadow-sm'
+                    ? 'bg-[var(--color-accent-gold)]/10 text-[var(--color-accent-gold)] border border-[var(--color-accent-gold)]/20 shadow-sm'
                     : 'text-muted-foreground hover:text-foreground hover:bg-[var(--color-hts-hover)] border border-transparent'
                 )}
                 title={isSidebarCollapsed ? item.label : undefined}
               >
                 {isActive && (
-                  <span className="absolute left-0 top-3 bottom-3 w-1 bg-[var(--color-accent-gold)] rounded-r-md" />
+                  <span className="absolute left-0 top-2.5 bottom-2.5 w-1 bg-[var(--color-accent-gold)] rounded-r-md" />
                 )}
-                <item.icon
-                  className={cn(
-                    'w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105',
-                    isActive
-                      ? 'text-[var(--color-accent-gold)]'
-                      : 'text-muted-foreground group-hover:text-foreground',
-                    isSidebarCollapsed ? 'mr-0 mx-auto' : 'mr-3'
-                  )}
-                />
-                {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
+                <div className={cn('flex items-center min-w-0', isSidebarCollapsed && 'mx-auto')}>
+                  <item.icon
+                    className={cn(
+                      'w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105',
+                      isActive
+                        ? 'text-[var(--color-accent-gold)]'
+                        : 'text-muted-foreground group-hover:text-foreground',
+                      isSidebarCollapsed ? 'mr-0' : 'mr-3'
+                    )}
+                  />
+                  {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
+                </div>
+
+                {/* Status Badges */}
+                {!isSidebarCollapsed && isNews && (
+                  <span
+                    className={cn(
+                      'inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-black shrink-0',
+                      allTodayChecked
+                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                        : 'bg-amber-500 text-slate-950 animate-pulse'
+                    )}
+                  >
+                    {allTodayChecked ? (
+                      <>
+                        <CheckCircle2 className="w-3 h-3" /> 완료
+                      </>
+                    ) : (
+                      `${checkedCount}/${currentNews.length}`
+                    )}
+                  </span>
+                )}
+
+                {!isSidebarCollapsed && isTrading && !allTodayChecked && (
+                  <span
+                    className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-black/[0.06] dark:bg-white/[0.08] text-muted-foreground shrink-0"
+                    title="오늘의 뉴스를 읽으면 주문이 열립니다"
+                  >
+                    <Lock className="w-3 h-3" />
+                  </span>
+                )}
+
+                {isSidebarCollapsed && isNews && !allTodayChecked && (
+                  <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-amber-500" />
+                )}
               </button>
             );
           })}
 
           {onReplayTutorial && (
             <button
+              type="button"
               onClick={onReplayTutorial}
-              className="w-full flex items-center rounded-xl p-3 text-[11px] font-black cursor-pointer transition-all duration-200 group relative border border-dashed border-[var(--color-accent-gold)]/20 hover:border-[var(--color-accent-gold)]/50 text-muted-foreground hover:text-foreground hover:bg-[var(--color-hts-hover)] mt-4 shadow-sm"
+              className="w-full flex items-center rounded-xl px-3 py-2.5 text-xs font-extrabold cursor-pointer transition-all duration-200 group relative border border-dashed border-[var(--color-accent-gold)]/25 hover:border-[var(--color-accent-gold)]/55 text-muted-foreground hover:text-foreground hover:bg-[var(--color-hts-hover)] mt-4"
               title={isSidebarCollapsed ? '튜토리얼 다시 보기' : undefined}
             >
               <span
                 className={cn(
-                  'flex items-center justify-center shrink-0 w-4 h-4 text-xs font-bold',
+                  'flex items-center justify-center shrink-0 w-4 h-4 text-sm',
                   isSidebarCollapsed ? 'mr-0 mx-auto' : 'mr-3'
                 )}
               >
@@ -230,49 +299,76 @@ export default function AppShell({
           {!isSidebarCollapsed && (
             <div
               className={cn(
-                'mb-1 p-3 rounded-xl bg-black/[0.03] dark:bg-white/[0.02] border border-[var(--color-hts-border)]/60 text-center relative overflow-hidden transition-all duration-300',
+                'mb-1 p-3.5 rounded-xl bg-black/[0.03] dark:bg-white/[0.02] border border-[var(--color-hts-border)]/70 text-center relative overflow-hidden transition-all duration-300',
                 tutorialStep === 7 &&
                   'ring-4 ring-amber-500 shadow-[0_0_30px_rgba(245,158,11,0.55)] z-30'
               )}
             >
               {tutorialStep === 7 && (
-                <div className="absolute inset-x-0 top-0 bg-amber-500 text-slate-950 text-[9px] font-black py-1 px-2 border-b border-amber-600 animate-pulse text-center select-none z-10">
+                <div className="absolute inset-x-0 top-0 bg-amber-500 text-slate-950 text-[11px] font-black py-1 px-2 border-b border-amber-600 animate-pulse text-center select-none z-10">
                   🚀 7단계: 다음 날 진행
                 </div>
               )}
               <div
                 className={cn(
-                  'text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1.5 flex items-center justify-center gap-1',
-                  tutorialStep === 7 && 'mt-4'
+                  'text-[11px] font-black text-muted-foreground uppercase tracking-wider mb-1 flex items-center justify-center gap-1.5',
+                  tutorialStep === 7 && 'mt-5'
                 )}
               >
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--color-accent-gold)] animate-pulse" />
-                DAY PROGRESS
+                <span className="inline-block w-2 h-2 rounded-full bg-[var(--color-accent-gold)] animate-pulse" />
+                진행 일차
               </div>
-              <div className="text-lg font-black text-foreground font-mono tracking-wider">
+              <div className="text-xl font-black text-foreground font-mono tracking-wider">
                 DAY {dayCount}
               </div>
               <Button
-                onClick={nextDay}
-                className="w-full mt-2.5 bg-[var(--color-primary)] hover:opacity-90 text-[var(--color-primary-foreground)] font-extrabold text-xs py-2 rounded-lg shadow-sm active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer border-transparent"
+                type="button"
+                onClick={handleNextDayClick}
+                className={cn(
+                  'w-full mt-2.5 font-black text-[13px] h-10 rounded-xl shadow-sm active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer border-transparent',
+                  allTodayChecked
+                    ? 'bg-[var(--color-primary)] hover:opacity-90 text-[var(--color-primary-foreground)]'
+                    : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-200 border border-amber-500/40'
+                )}
               >
-                <SkipForward className="w-3.5 h-3.5" />
-                <span>다음 날 진행</span>
+                {allTodayChecked ? (
+                  <>
+                    <SkipForward className="w-4 h-4" />
+                    <span>다음 날 진행</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>뉴스 먼저 읽기 ({checkedCount}/{currentNews.length})</span>
+                  </>
+                )}
               </Button>
             </div>
           )}
 
           {isSidebarCollapsed && (
             <button
-              onClick={nextDay}
+              type="button"
+              onClick={handleNextDayClick}
               className={cn(
-                'w-10 h-10 rounded-xl bg-[var(--color-primary)] hover:opacity-90 text-[var(--color-primary-foreground)] flex items-center justify-center shadow-md cursor-pointer mx-auto mb-1 shrink-0 transition-all active:scale-95 border-transparent duration-300',
+                'w-10 h-10 rounded-xl flex items-center justify-center shadow-md cursor-pointer mx-auto mb-1 shrink-0 transition-all active:scale-95 border-transparent duration-300',
+                allTodayChecked
+                  ? 'bg-[var(--color-primary)] hover:opacity-90 text-[var(--color-primary-foreground)]'
+                  : 'bg-amber-500/25 text-amber-800 dark:text-amber-200 border border-amber-500/40',
                 tutorialStep === 7 &&
                   'ring-4 ring-amber-500 shadow-[0_0_30px_rgba(245,158,11,0.55)] z-30'
               )}
-              title={`다음 날로 진행 (DAY ${dayCount})`}
+              title={
+                allTodayChecked
+                  ? `다음 날로 진행 (DAY ${dayCount})`
+                  : `오늘의 뉴스를 먼저 읽어주세요 (${checkedCount}/${currentNews.length})`
+              }
             >
-              <SkipForward className="w-4 h-4" />
+              {allTodayChecked ? (
+                <SkipForward className="w-4 h-4" />
+              ) : (
+                <Lock className="w-4 h-4" />
+              )}
             </button>
           )}
 
@@ -283,6 +379,7 @@ export default function AppShell({
             )}
           >
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
@@ -297,6 +394,7 @@ export default function AppShell({
             </Button>
 
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               onClick={() => handleOpenLegal('disclaimer')}
@@ -307,6 +405,7 @@ export default function AppShell({
             </Button>
 
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               onClick={() => setSettingsOpen(true)}
@@ -317,6 +416,7 @@ export default function AppShell({
             </Button>
 
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               onClick={handleLogout}
@@ -329,67 +429,82 @@ export default function AppShell({
         </div>
       </aside>
 
-      {/* MOBILE TOP NAVIGATION BAR (under lg) */}
+      {/* MOBILE / TABLET LAYOUT (under lg) */}
       <div
         className="flex lg:hidden flex-col w-full h-screen overflow-hidden"
         style={{ height: '100dvh' }}
       >
-        <header className="h-14 shrink-0 bg-[var(--color-hts-panel)] border-b border-[var(--color-hts-border)] flex items-center justify-between px-3 z-20 shadow-md">
-          <div className="flex items-center gap-2">
+        <header className="h-14 shrink-0 bg-[var(--color-hts-panel)] border-b border-[var(--color-hts-border)] flex items-center justify-between px-3 z-20 shadow-sm gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             <SchoolLogo className="w-7 h-7 shrink-0 filter drop-shadow-sm" />
-            <div>
-              <span className="text-sm font-black tracking-tight text-foreground block leading-none">
+            <div className="min-w-0">
+              <span className="text-sm font-black tracking-tight text-foreground block leading-none truncate">
                 스탁스쿨
               </span>
-              <span className="text-[8px] font-bold text-muted-foreground block">가상 교육용</span>
+              <span className="text-[11px] font-bold text-muted-foreground block leading-tight">
+                DAY {dayCount} · {levelLabel}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <div className="text-[10px] font-black px-2 py-1 bg-black/[0.04] dark:bg-white/[0.04] border border-[var(--color-hts-border)] rounded-lg font-mono">
-              D{dayCount}
-            </div>
-
+          <div className="flex items-center gap-1.5 shrink-0">
             <Button
-              onClick={nextDay}
+              type="button"
+              onClick={handleNextDayClick}
               size="sm"
               className={cn(
-                'h-8 w-8 rounded-lg bg-[var(--color-primary)] hover:opacity-90 text-[var(--color-primary-foreground)] p-0 flex items-center justify-center cursor-pointer shadow-sm border-transparent transition-all duration-300',
+                'h-9 px-3 rounded-xl font-black text-xs flex items-center gap-1 cursor-pointer shadow-sm transition-all duration-300',
+                allTodayChecked
+                  ? 'bg-[var(--color-primary)] hover:opacity-90 text-[var(--color-primary-foreground)] border-transparent'
+                  : 'bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/40',
                 tutorialStep === 7 &&
                   'ring-4 ring-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.6)] z-30'
               )}
-              title="다음 날"
+              title={allTodayChecked ? '다음 날로 진행' : '오늘의 뉴스를 먼저 읽어주세요'}
             >
-              <SkipForward className="w-3.5 h-3.5" />
+              {allTodayChecked ? (
+                <>
+                  <SkipForward className="w-3.5 h-3.5" />
+                  <span>다음 날</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>뉴스 {checkedCount}/{currentNews.length}</span>
+                </>
+              )}
             </Button>
 
             {onReplayTutorial && (
               <Button
+                type="button"
                 variant="ghost"
                 size="icon"
                 onClick={onReplayTutorial}
-                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-[var(--color-accent-gold)] cursor-pointer"
+                className="h-9 w-9 rounded-xl text-muted-foreground hover:text-[var(--color-accent-gold)] cursor-pointer"
                 title="튜토리얼 다시 보기"
               >
-                <span className="text-xs">🏫</span>
+                <span className="text-sm">🏫</span>
               </Button>
             )}
 
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               onClick={() => setSettingsOpen(true)}
-              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+              className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
               title="설정 · 법적 고지 · 데이터 삭제"
             >
               <Settings className="w-4 h-4" />
             </Button>
 
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+              className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
               title="테마 변경"
             >
               {theme === 'dark' ? (
@@ -400,10 +515,11 @@ export default function AppShell({
             </Button>
 
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               onClick={handleLogout}
-              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-rose-500 cursor-pointer"
+              className="h-9 w-9 rounded-xl text-muted-foreground hover:text-rose-500 cursor-pointer"
               title="나가기"
             >
               <LogOut className="w-4 h-4" />
@@ -411,14 +527,18 @@ export default function AppShell({
           </div>
         </header>
 
-        <div className="flex-1 min-h-0 overflow-hidden relative">{children}</div>
+        <div className="flex-1 min-h-0 overflow-hidden relative flex flex-col">{children}</div>
 
         <nav className="h-16 shrink-0 bg-[var(--color-hts-panel)] border-t border-[var(--color-hts-border)] grid grid-cols-4 pb-safe z-20 shadow-lg">
           {menuItems.map((item) => {
             const isActive = activeWorkspace === item.id;
+            const isNews = item.id === 'news';
+            const isTrading = item.id === 'trading';
+
             return (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => setActiveWorkspace(item.id)}
                 className={cn(
                   'flex flex-col items-center justify-center gap-1 transition-all cursor-pointer relative',
@@ -430,8 +550,18 @@ export default function AppShell({
                 {isActive && (
                   <span className="absolute top-0 left-1/4 right-1/4 h-[3px] bg-[var(--color-accent-gold)] rounded-b-md" />
                 )}
-                <item.icon className={cn('w-4.5 h-4.5', isActive && 'scale-105')} />
-                <span className="text-[9px] tracking-tight">{item.label.split(' ')[0]}</span>
+                <div className="relative">
+                  <item.icon className={cn('w-5 h-5', isActive && 'scale-105')} />
+                  {isNews && !allTodayChecked && (
+                    <span className="absolute -top-1 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black flex items-center justify-center leading-none">
+                      {remainingCount}
+                    </span>
+                  )}
+                  {isTrading && !allTodayChecked && (
+                    <Lock className="w-3 h-3 text-muted-foreground absolute -top-1 -right-2" />
+                  )}
+                </div>
+                <span className="text-[11px] font-bold tracking-tight">{item.mobileLabel}</span>
               </button>
             );
           })}

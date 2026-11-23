@@ -214,9 +214,10 @@ export default function Login() {
       {/* Light/Dark theme switcher at top-right */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
         <button
+          type="button"
           onClick={toggleTheme}
           className={cn(
-            'p-2.5 rounded-xl border transition-all cursor-pointer flex items-center gap-2 shadow-sm font-black text-[11px]',
+            'px-3 py-2 rounded-xl border transition-all cursor-pointer flex items-center gap-2 shadow-sm font-extrabold text-xs',
             isDark
               ? 'bg-slate-900/60 border-slate-800 text-amber-400 hover:bg-slate-800'
               : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -252,7 +253,7 @@ export default function Login() {
         />
       </div>
 
-      <div className="w-full max-w-7xl mx-auto px-6 py-6 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center flex-1">
+      <div className="w-full max-w-7xl mx-auto px-5 sm:px-6 py-6 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center flex-1">
         {/* LEFT COLUMN: Educational Hero & Setup Form */}
         <div className="lg:col-span-6 space-y-5 flex flex-col justify-center">
           {/* Logo & Welcome */}
@@ -268,7 +269,7 @@ export default function Login() {
                 >
                   스탁스쿨
                 </h3>
-                <span className="text-[10px] text-slate-500 font-bold block mt-0.5 tracking-wider uppercase">
+                <span className="text-xs text-slate-500 font-bold block mt-1 tracking-wide">
                   StockSchool Financial Literacy Lab
                 </span>
               </div>
@@ -279,15 +280,15 @@ export default function Login() {
                 'inline-flex items-center gap-2 border rounded-full px-4 py-1.5 text-xs font-extrabold shadow-sm select-none w-fit',
                 isDark
                   ? 'bg-slate-800 border-slate-700 text-slate-300'
-                  : 'bg-slate-100 border-slate-200 text-slate-600'
+                  : 'bg-slate-100 border-slate-200 text-slate-700'
               )}
             >
-              <Activity className="w-4 h-4 text-slate-500" />
+              <Activity className="w-4 h-4 text-slate-500 shrink-0" />
               <span>100% 가상 기업 · 비영리 금융 문해력 교육 시뮬레이터</span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl xl:text-[52px] font-black tracking-tight leading-[1.12] select-none">
-              안전하게 배우는
+            <h1 className="text-4xl md:text-5xl xl:text-[52px] font-black tracking-tight leading-[1.15] select-none">
+              뉴스로 배우는
               <br />
               <span className={cn('font-extrabold', isDark ? 'text-white' : 'text-slate-900')}>
                 스탁스쿨 StockSchool
@@ -296,12 +297,12 @@ export default function Login() {
 
             <p
               className={cn(
-                'text-sm leading-relaxed font-medium max-w-lg',
-                isDark ? 'text-slate-400' : 'text-slate-600'
+                'text-[15px] leading-relaxed font-medium max-w-xl',
+                isDark ? 'text-slate-300' : 'text-slate-600'
               )}
             >
-              실제 돈이 오가지 않는 34개 가상 기업과 102건의 가상 경제 뉴스 속에서 뉴스 독해력, 분산투자,
-              합리적 경제 판단 능력을 자연스럽게 익혀보세요.
+              매일 도착하는 가상 경제 뉴스를 먼저 읽고 호재·악재를 판단한 뒤, 34개 가상 기업에 분산투자하며
+              합리적 경제 사고력을 길러보세요.
             </p>
           </div>
 
@@ -309,10 +310,10 @@ export default function Login() {
           {randomTerm && (
             <div
               className={cn(
-                'glass-panel border rounded-2xl p-4 shadow-md space-y-2.5 relative overflow-hidden transition-all duration-300',
+                'glass-panel border rounded-2xl p-4 shadow-md space-y-2 relative overflow-hidden transition-all duration-300',
                 isDark
                   ? 'border-slate-800 bg-slate-950/20 shadow-slate-950/20'
-                  : 'border-slate-200 bg-white/70 shadow-slate-500/5'
+                  : 'border-slate-200 bg-white/75 shadow-slate-500/5'
               )}
             >
               <div className="absolute top-0 right-0 p-3 text-slate-500/5 pointer-events-none">
@@ -321,11 +322,11 @@ export default function Login() {
 
               <div className="flex items-center gap-2">
                 <span className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-500/10">
-                  <Lightbulb className="w-3 h-3 text-slate-500" />
+                  <Lightbulb className="w-3.5 h-3.5 text-slate-500" />
                 </span>
                 <span
                   className={cn(
-                    'text-[10px] tracking-wider font-extrabold',
+                    'text-xs font-extrabold',
                     isDark ? 'text-slate-400' : 'text-slate-600'
                   )}
                 >
@@ -336,12 +337,12 @@ export default function Login() {
               <div className="space-y-1">
                 <h3
                   className={cn(
-                    'text-sm font-extrabold flex items-center gap-2',
-                    isDark ? 'text-white' : 'text-slate-800'
+                    'text-[15px] font-black flex items-center gap-2',
+                    isDark ? 'text-white' : 'text-slate-900'
                   )}
                 >
                   {randomTerm.term}
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-500/10 border border-slate-500/20 font-bold text-slate-500">
+                  <span className="text-[11px] px-2 py-0.5 rounded bg-slate-500/10 border border-slate-500/20 font-bold text-slate-500">
                     {randomTerm.category === 'basic'
                       ? '기초'
                       : randomTerm.category === 'analysis'
@@ -353,7 +354,7 @@ export default function Login() {
                 </h3>
                 <p
                   className={cn(
-                    'text-xs leading-relaxed font-medium transition-all duration-300',
+                    'text-[13px] leading-relaxed font-medium transition-all duration-300',
                     isDark ? 'text-slate-300' : 'text-slate-600'
                   )}
                 >
@@ -367,96 +368,83 @@ export default function Login() {
           <div
             className={cn(
               'glass-panel border rounded-2xl p-5 shadow-lg space-y-4 transition-all duration-300',
-              isDark ? 'border-slate-800 bg-slate-950/30' : 'border-slate-200 bg-white/80'
+              isDark ? 'border-slate-800 bg-slate-950/30' : 'border-slate-200 bg-white/85'
             )}
           >
             <div
               className={cn(
-                'flex items-center justify-between border-b pb-3',
+                'flex items-center justify-between border-b pb-3 gap-2 flex-wrap',
                 isDark ? 'border-slate-800/80' : 'border-slate-100'
               )}
             >
               <div>
                 <h2
                   className={cn(
-                    'font-extrabold text-sm flex items-center gap-1.5',
-                    isDark ? 'text-white' : 'text-slate-800'
+                    'font-black text-[15px] flex items-center gap-1.5',
+                    isDark ? 'text-white' : 'text-slate-900'
                   )}
                 >
                   <Coins className="w-4 h-4 text-amber-500" />
                   학습 등급 선택
                 </h2>
-                <p className={cn('text-[10px] mt-0.5 font-medium', isDark ? 'text-slate-400' : 'text-slate-500')}>
+                <p className={cn('text-xs mt-0.5 font-medium', isDark ? 'text-slate-400' : 'text-slate-500')}>
                   등급별 가상 자본금과 뉴스 난이도·시장 변동 폭이 맞춤 설정됩니다
                 </p>
               </div>
-              <span className="text-[10px] text-slate-500 font-extrabold bg-slate-500/10 px-2.5 py-1 rounded-full">
+              <span className="text-xs text-slate-600 dark:text-slate-300 font-bold bg-slate-500/10 px-2.5 py-1 rounded-full">
                 설정에서 전환 가능
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {levels.map((l) => (
                 <button
                   key={l.key}
+                  type="button"
                   onClick={() => {
                     setLevel(l.key);
                     setHasChangedLevel(true);
                   }}
                   className={cn(
-                    'rounded-xl p-3 sm:p-3.5 text-left transition-all border flex flex-row sm:flex-col justify-between cursor-pointer select-none group min-h-[82px] sm:min-h-[130px] items-center sm:items-stretch gap-3 sm:gap-0',
+                    'rounded-xl p-3.5 text-left transition-all border flex flex-col justify-between cursor-pointer select-none group gap-2.5',
                     level === l.key
                       ? isDark
-                        ? 'border-white bg-white/5 shadow-md'
+                        ? 'border-white bg-white/10 shadow-md'
                         : 'border-slate-900 bg-slate-900/5 shadow-md'
                       : isDark
                         ? 'border-slate-800 hover:border-slate-700 bg-slate-900/40'
                         : 'border-slate-200 hover:border-slate-300 bg-slate-50/50'
                   )}
                 >
-                  <div className="flex sm:flex-row items-center justify-between sm:w-full gap-2 sm:gap-0">
-                    <span className="text-xl sm:text-2xl filter drop-shadow">{l.emoji}</span>
+                  <div className="flex items-center justify-between w-full gap-2">
+                    <span className="text-2xl filter drop-shadow">{l.emoji}</span>
                     <span
                       className={cn(
-                        'hidden sm:inline text-[9px] px-1.5 py-0.5 rounded font-black',
+                        'text-[11px] px-2 py-0.5 rounded font-black',
                         level === l.key
                           ? 'bg-slate-900 text-white dark:bg-white dark:text-black'
                           : isDark
-                            ? 'bg-slate-800 text-slate-400'
-                            : 'bg-slate-100 text-slate-500'
+                            ? 'bg-slate-800 text-slate-300'
+                            : 'bg-slate-100 text-slate-600'
                       )}
                     >
                       {l.label}
                     </span>
                   </div>
 
-                  <div className="flex-1 sm:flex-initial space-y-0.5 mt-0 sm:mt-2">
-                    <div className="flex items-center gap-1.5">
-                      <div
-                        className={cn(
-                          'text-[11px] font-black group-hover:text-slate-900 dark:group-hover:text-white transition-colors',
-                          isDark ? 'text-white' : 'text-slate-800'
-                        )}
-                      >
-                        {l.title}
-                      </div>
-                      <span
-                        className={cn(
-                          'inline sm:hidden text-[8px] px-1 py-0.5 rounded font-black',
-                          level === l.key
-                            ? 'bg-slate-900 text-white dark:bg-white dark:text-black'
-                            : isDark
-                              ? 'bg-slate-800 text-slate-400'
-                              : 'bg-slate-100 text-slate-500'
-                        )}
-                      >
-                        {l.label}
-                      </span>
+                  <div className="space-y-1">
+                    <div
+                      className={cn(
+                        'text-sm font-black transition-colors',
+                        isDark ? 'text-white' : 'text-slate-900'
+                      )}
+                    >
+                      {l.title}
                     </div>
                     <p
                       className={cn(
-                        'text-[9px] line-clamp-1 sm:line-clamp-2 leading-snug font-medium',
-                        isDark ? 'text-slate-400' : 'text-slate-500'
+                        'text-xs leading-relaxed font-medium',
+                        isDark ? 'text-slate-300' : 'text-slate-600'
                       )}
                     >
                       {l.desc}
@@ -465,23 +453,23 @@ export default function Login() {
 
                   <div
                     className={cn(
-                      'text-[9px] sm:text-[10px] text-slate-500 font-extrabold mt-0 sm:mt-2 sm:pt-1 border-t-0 sm:border-t flex flex-col sm:flex-row items-end sm:items-center justify-center sm:justify-between shrink-0',
-                      isDark ? 'sm:border-slate-800/60' : 'sm:border-slate-100'
+                      'text-xs font-extrabold pt-2 border-t flex items-center justify-between',
+                      isDark ? 'border-slate-800/60 text-slate-300' : 'border-slate-100 text-slate-600'
                     )}
                   >
-                    <span className="hidden sm:inline">가상 자금</span>
-                    <span className="text-[10px] font-black text-amber-500 sm:text-slate-500">{l.cash}</span>
+                    <span>가상 자금</span>
+                    <span className="font-black text-amber-600 dark:text-amber-400">{l.cash}</span>
                   </div>
                 </button>
               ))}
             </div>
 
             {/* Entry Triggers: Privacy-First Guest Mode (Primary) + Optional Google Cloud Login */}
-            <div className="space-y-2.5 pt-1">
+            <div className="space-y-3 pt-1">
               {/* Nickname input + Instant Guest Entry */}
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1">
-                  <UserCircle2 className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <UserCircle2 className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     maxLength={20}
@@ -490,9 +478,9 @@ export default function Login() {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleGuestStart();
                     }}
-                    placeholder="별명 입력 (선택, 실명 입력 불필요)"
+                    placeholder="별명 입력 (선택, 실명 불필요)"
                     className={cn(
-                      'w-full h-11 pl-9 pr-3 rounded-xl border text-xs font-bold focus:outline-none focus:ring-2 focus:ring-slate-500/40',
+                      'w-full h-11 pl-10 pr-3 rounded-xl border text-sm font-bold focus:outline-none focus:ring-2 focus:ring-slate-500/40',
                       isDark
                         ? 'bg-slate-900/70 border-slate-700 text-white placeholder:text-slate-500'
                         : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400'
@@ -503,7 +491,7 @@ export default function Login() {
                   type="button"
                   onClick={handleGuestStart}
                   className={cn(
-                    'h-11 px-5 font-extrabold text-xs sm:text-sm gap-2 transition-all cursor-pointer shadow-sm rounded-xl border flex items-center justify-center shrink-0',
+                    'h-11 px-5 font-black text-sm gap-2 transition-all cursor-pointer shadow-sm rounded-xl border flex items-center justify-center shrink-0',
                     isDark
                       ? 'bg-white text-black hover:bg-slate-100 border-transparent'
                       : 'bg-slate-900 text-white hover:bg-slate-800 border-transparent'
@@ -515,11 +503,11 @@ export default function Login() {
               </div>
               <p
                 className={cn(
-                  'text-[10px] font-semibold flex items-center gap-1.5',
-                  isDark ? 'text-emerald-400/90' : 'text-emerald-700'
+                  'text-xs font-semibold flex items-start gap-1.5 leading-relaxed',
+                  isDark ? 'text-emerald-400/95' : 'text-emerald-700'
                 )}
               >
-                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                <ShieldCheck className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>
                   초·중등 수업 권장: 별명만 쓰고 브라우저에 안전 저장되며, 이름·이메일 등 개인정보를 서버로 전송하지 않습니다.
                 </span>
@@ -528,24 +516,24 @@ export default function Login() {
               {/* Divider */}
               <div className="flex items-center gap-2 py-0.5">
                 <div className={cn('h-px flex-1', isDark ? 'bg-slate-800' : 'bg-slate-200')} />
-                <span className="text-[10px] font-bold text-slate-400">또는 다른 기기와 이어하기 (선택)</span>
+                <span className="text-xs font-bold text-slate-400">또는 다른 기기와 이어하기 (선택)</span>
                 <div className={cn('h-px flex-1', isDark ? 'bg-slate-800' : 'bg-slate-200')} />
               </div>
 
               {isKakaoTalk && (
                 <div
                   className={cn(
-                    'p-3 border rounded-xl flex flex-col gap-1 text-xs text-left animate-fade-in shadow-sm select-none',
+                    'p-3.5 border rounded-xl flex flex-col gap-1 text-xs text-left animate-fade-in shadow-sm select-none',
                     isDark
                       ? 'bg-rose-500/10 border-rose-500/25 text-rose-300'
                       : 'bg-rose-50 border-rose-200 text-rose-800'
                   )}
                 >
-                  <div className="flex items-center gap-1.5 font-black text-rose-600 dark:text-rose-400">
+                  <div className="flex items-center gap-1.5 font-black text-rose-600 dark:text-rose-400 text-[13px]">
                     <span>⚠️</span>
                     <span>카카오톡 인앱 브라우저 안내</span>
                   </div>
-                  <p className="leading-relaxed font-semibold text-[11px] opacity-90">
+                  <p className="leading-relaxed font-semibold text-xs opacity-95">
                     카카오톡 내부에서도 위의 <strong>'개인정보 없이 바로 시작'</strong>은 즉시 이용 가능합니다. Google 로그인을 원하시면 우측 상단 메뉴(⋯/⋮)에서 '다른 브라우저로 열기'를 선택해 주세요.
                   </p>
                 </div>
@@ -555,7 +543,7 @@ export default function Login() {
                 type="button"
                 variant="outline"
                 className={cn(
-                  'w-full h-10 font-extrabold text-xs gap-2 transition-all cursor-pointer rounded-xl flex items-center justify-center',
+                  'w-full h-11 font-extrabold text-[13px] gap-2 transition-all cursor-pointer rounded-xl flex items-center justify-center',
                   isDark
                     ? 'bg-slate-900/60 text-slate-200 border-slate-700 hover:bg-slate-800'
                     : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
@@ -563,7 +551,7 @@ export default function Login() {
                 onClick={() => setConsentOpen(true)}
                 disabled={isLoading}
               >
-                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none">
+                <svg viewBox="0 0 24 24" className="w-4 h-4 shrink-0" fill="none">
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
                     fill="#4285F4"
@@ -581,7 +569,7 @@ export default function Login() {
                     fill="#EA4335"
                   />
                 </svg>
-                Google 계정으로 클라우드 저장 로그인 (만 14세 이상 또는 보호자 동의)
+                Google 계정으로 클라우드 로그인 (만 14세 이상 또는 보호자 동의)
               </Button>
             </div>
           </div>
@@ -615,43 +603,43 @@ export default function Login() {
                 <span className="w-2.5 h-2.5 rounded-full bg-slate-400/70" />
                 <span
                   className={cn(
-                    'text-[10px] font-black ml-2 tracking-widest flex items-center gap-1.5',
+                    'text-xs font-black ml-2 tracking-wider flex items-center gap-1.5',
                     isDark ? 'text-slate-400' : 'text-slate-500'
                   )}
                 >
                   <Activity className="w-3.5 h-3.5 text-slate-500 animate-pulse" />
-                  STOCKSCHOOL EDUCATIONAL PREVIEW
+                  STOCKSCHOOL PREVIEW
                 </span>
               </div>
-              <span className="text-[9px] px-2 py-0.5 rounded bg-slate-500/10 border border-slate-500/20 text-slate-500 font-extrabold uppercase">
+              <span className="text-[11px] px-2.5 py-0.5 rounded-md bg-slate-500/10 border border-slate-500/20 text-slate-600 dark:text-slate-300 font-extrabold">
                 {level === 'elementary' ? '초급: 심플 뷰' : level === 'middle' ? '중급: 산업 분석' : '고급: 심화 지표'}
               </span>
             </div>
 
             <div className="p-4 space-y-4 bg-slate-950/5">
               {/* Simulated Price Display Panel */}
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2.5">
                 <div
                   className={cn(
                     'col-span-2 p-3.5 rounded-2xl border flex flex-col justify-between relative overflow-hidden',
                     isDark ? 'bg-slate-900/40 border-slate-800/80' : 'bg-slate-50 border-slate-200'
                   )}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <span
                       className={cn(
-                        'text-[10px] font-black uppercase tracking-wider',
+                        'text-xs font-extrabold',
                         isDark ? 'text-slate-400' : 'text-slate-500'
                       )}
                     >
                       가상 종목 프리뷰
                     </span>
-                    <span className="text-[9px] text-slate-500 font-extrabold bg-slate-500/10 border border-slate-500/20 px-1.5 py-0.5 rounded">
-                      가상 기술 섹터
+                    <span className="text-[11px] text-slate-600 dark:text-slate-300 font-bold bg-slate-500/10 border border-slate-500/20 px-2 py-0.5 rounded">
+                      기술 섹터
                     </span>
                   </div>
                   <div className="mt-2.5">
-                    <div className={cn('text-base font-black', isDark ? 'text-white' : 'text-slate-800')}>
+                    <div className={cn('text-base font-black', isDark ? 'text-white' : 'text-slate-900')}>
                       누리전자 (가상 종목)
                     </div>
                     <div
@@ -663,7 +651,7 @@ export default function Login() {
                             ? 'bg-[var(--price-down)]/20 text-[var(--price-down)]'
                             : isDark
                               ? 'text-slate-100'
-                              : 'text-slate-700'
+                              : 'text-slate-800'
                       )}
                     >
                       {mockPrice.toLocaleString()} 원
@@ -680,19 +668,19 @@ export default function Login() {
                 >
                   <span
                     className={cn(
-                      'text-[10px] font-black uppercase tracking-wider',
+                      'text-xs font-extrabold',
                       isDark ? 'text-slate-400' : 'text-slate-500'
                     )}
                   >
                     가상 시장 구성
                   </span>
-                  <div className="mt-2.5 text-center">
+                  <div className="mt-2 text-center">
                     <div className="text-xl font-black text-foreground flex items-center justify-center gap-1">
                       <TrendingUp className="w-4.5 h-4.5 text-[var(--price-up)]" />
                       34개사
                     </div>
-                    <span className={cn('text-[9px] font-bold block mt-0.5', isDark ? 'text-slate-400' : 'text-slate-500')}>
-                      17개 산업 · 102건 뉴스
+                    <span className={cn('text-[11px] font-bold block mt-1', isDark ? 'text-slate-400' : 'text-slate-500')}>
+                      17개 산업 · 588건 뉴스
                     </span>
                   </div>
                 </div>
@@ -701,7 +689,7 @@ export default function Login() {
               {/* Dynamic Simulated Chart Board */}
               <div
                 className={cn(
-                  'p-4 rounded-2xl border h-[150px] flex flex-col justify-between relative',
+                  'p-4 rounded-2xl border h-[165px] flex flex-col justify-between relative',
                   isDark ? 'bg-slate-900/30 border-slate-800/80' : 'bg-slate-50/50 border-slate-200'
                 )}
               >
@@ -712,22 +700,22 @@ export default function Login() {
                 </div>
 
                 <div className="flex items-center justify-between z-10">
-                  <span className={cn('text-[9px] font-black flex items-center gap-1', isDark ? 'text-slate-400' : 'text-slate-500')}>
-                    <Sparkles className="w-3.5 h-3.5 text-slate-500" />
+                  <span className={cn('text-xs font-black flex items-center gap-1.5', isDark ? 'text-slate-300' : 'text-slate-600')}>
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                     시뮬레이션 차트 미리보기
                   </span>
 
-                  <div className="flex gap-2">
-                    <span className="text-[8px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 border border-rose-500/20 font-bold">
+                  <div className="flex gap-1.5">
+                    <span className="text-[11px] px-2 py-0.5 rounded bg-rose-500/10 text-rose-500 border border-rose-500/20 font-bold">
                       Price
                     </span>
                     {level !== 'elementary' && (
-                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 font-bold">
+                      <span className="text-[11px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 font-bold">
                         MA(3)
                       </span>
                     )}
                     {level === 'high' && (
-                      <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20 font-bold">
+                      <span className="text-[11px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20 font-bold">
                         Candle
                       </span>
                     )}
@@ -818,8 +806,8 @@ export default function Login() {
 
                 <div
                   className={cn(
-                    'flex items-center justify-between text-[7px] border-t pt-1 mt-1 z-10 font-bold',
-                    isDark ? 'text-slate-500 border-slate-800/40' : 'text-slate-400 border-slate-100'
+                    'flex items-center justify-between text-[11px] border-t pt-1.5 mt-1 z-10 font-bold',
+                    isDark ? 'text-slate-400 border-slate-800/40' : 'text-slate-500 border-slate-200/70'
                   )}
                 >
                   <span>DAY 1</span>
@@ -834,17 +822,17 @@ export default function Login() {
               {/* Dynamic Live News Ticker Card */}
               <div
                 className={cn(
-                  'p-3.5 rounded-2xl border space-y-2',
+                  'p-4 rounded-2xl border space-y-2',
                   isDark ? 'bg-slate-900/40 border-slate-800/80' : 'bg-slate-50 border-slate-200'
                 )}
               >
-                <div className={cn('flex items-center gap-1 text-[9px] font-black', isDark ? 'text-slate-400' : 'text-slate-500')}>
-                  <Newspaper className="w-3.5 h-3.5 text-slate-500" />
-                  난이도 맞춤 가상 경제 뉴스룸
+                <div className={cn('flex items-center gap-1.5 text-xs font-black', isDark ? 'text-slate-300' : 'text-slate-600')}>
+                  <Newspaper className="w-4 h-4 text-amber-500" />
+                  매일 시작하는 난이도 맞춤 가상 경제 뉴스룸
                 </div>
                 <div
                   className={cn(
-                    'text-[11px] font-bold p-2.5 rounded-xl transition-all duration-300 min-h-[42px] flex items-center leading-normal border',
+                    'text-[13px] font-bold p-3 rounded-xl transition-all duration-300 min-h-[48px] flex items-center leading-relaxed border',
                     isDark
                       ? 'text-white bg-slate-950/40 border-slate-900/60'
                       : 'text-slate-800 bg-white border-slate-100 shadow-sm'
@@ -858,14 +846,14 @@ export default function Login() {
             {/* Mock status footer */}
             <div
               className={cn(
-                'px-4 py-2 border-t flex items-center justify-between text-[8px] font-extrabold',
+                'px-4 py-2.5 border-t flex items-center justify-between text-[11px] font-bold',
                 isDark
-                  ? 'bg-slate-900/40 border-slate-800/80 text-slate-500'
-                  : 'bg-slate-50 border-slate-200 text-slate-400'
+                  ? 'bg-slate-900/40 border-slate-800/80 text-slate-400'
+                  : 'bg-slate-50 border-slate-200 text-slate-500'
               )}
             >
               <span>● 교육용 가상 시뮬레이션 (실제 투자 아님)</span>
-              <span>스탁스쿨 엔진 v2.0</span>
+              <span>스탁스쿨 엔진 v2.1</span>
             </div>
           </div>
         </div>
@@ -874,8 +862,8 @@ export default function Login() {
       {/* Bottom Legal & Disclaimer Footer */}
       <footer
         className={cn(
-          'w-full max-w-7xl mx-auto px-6 pt-4 mt-2 border-t relative z-10 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-semibold',
-          isDark ? 'border-slate-800/80 text-slate-400' : 'border-slate-200 text-slate-500'
+          'w-full max-w-7xl mx-auto px-6 pt-4 mt-2 border-t relative z-10 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-semibold',
+          isDark ? 'border-slate-800/80 text-slate-400' : 'border-slate-200 text-slate-600'
         )}
       >
         <p className="text-center sm:text-left">

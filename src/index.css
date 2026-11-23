@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: "Outfit", "Inter", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: "Outfit", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-sans: "Pretendard Variable", "Pretendard", "Inter", "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "Outfit", "Pretendard Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));

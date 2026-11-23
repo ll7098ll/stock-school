@@ -52,8 +52,8 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
       layout: {
         background: { type: ColorType.Solid, color: 'transparent' },
         textColor: textColor,
-        fontSize: 10,
-        fontFamily: 'Inter, sans-serif',
+        fontSize: 12,
+        fontFamily: 'Pretendard Variable, Inter, sans-serif',
       },
       grid: {
         vertLines: { color: gridColor },
@@ -94,7 +94,7 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
 
     // Create data
     const data = stock.priceHistory.map((price: number, i: number) => ({
-      time: getDateString(i) as any,
+      time: getDateString(i),
       value: price,
     }));
 
@@ -110,7 +110,7 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
         lastValueVisible: false,
         crosshairMarkerVisible: false,
       });
-      const ma5Data: any[] = [];
+      const ma5Data: { time: string; value: number }[] = [];
       for (let i = 4; i < stock.priceHistory.length; i++) {
         const sum = stock.priceHistory.slice(i - 4, i + 1).reduce((a: number, b: number) => a + b, 0);
         ma5Data.push({
@@ -133,7 +133,7 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
       const prev = i > 0 ? stock.priceHistory[i - 1] : price;
       const recordedVolume = stock.volumeHistory?.[i];
       return {
-        time: getDateString(i) as any,
+        time: getDateString(i),
         value: typeof recordedVolume === 'number' ? recordedVolume : 20000,
         color: price >= prev
           ? (isDark ? 'rgba(255, 55, 95, 0.35)' : 'rgba(225, 29, 72, 0.25)')
@@ -174,29 +174,39 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
     )}>
       {/* Tutorial Instruction Banner */}
       {tutorialStep === 3 && (
-        <div className="bg-amber-500 text-slate-950 px-4 py-2 text-xs font-black flex items-center justify-between border-b border-amber-600 shadow-md animate-fade-in shrink-0 relative z-30">
+        <div className="bg-amber-500 text-slate-950 px-4 py-2 text-xs font-black flex items-center justify-between border-b border-amber-600 shadow-md animate-fade-in shrink-0 relative z-30 gap-2">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block animate-bounce">📊</span> 3단계: 종목의 시세 차트와 실시간 호가창을 분석해 보세요!
+            <span className="inline-block animate-bounce">📊</span> 3단계: 시세 차트와 아래의 오늘의 뉴스 요약·호가창을 함께 분석해 보세요!
           </span>
-          <span className="text-[9px] bg-slate-950 text-white px-2 py-0.5 rounded font-black shrink-0">분석 단계</span>
+          <span className="text-[11px] bg-slate-950 text-white px-2.5 py-0.5 rounded font-black shrink-0">분석 단계</span>
         </div>
       )}
-      <div className="flex items-center justify-between p-4 border-b border-[var(--color-hts-border)] bg-black/[0.01] dark:bg-white/[0.01]">
-        <div className="flex items-center gap-6">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-hts-border)] bg-black/[0.01] dark:bg-white/[0.01] gap-3 flex-wrap shrink-0">
+        <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
           <div>
-            <h2 className="font-extrabold text-lg text-foreground tracking-tight">{stock.name}</h2>
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{stock.sector}</span>
+            <h2 className="font-black text-lg text-foreground tracking-tight leading-tight">{stock.name}</h2>
+            <span className="text-xs text-muted-foreground font-bold">{stock.sector}</span>
           </div>
-          <div className="border-l border-[var(--color-hts-border)] pl-6">
-            <div className={`text-2xl font-black tabular-nums tracking-tight ${
-              isUp ? 'text-[var(--color-price-up)]' : isDown ? 'text-[var(--color-price-down)]' : 'text-foreground'
-            }`}>
-              {stock.currentPrice.toLocaleString()}<span className="text-xs font-semibold ml-0.5 text-foreground/80">원</span>
+          <div className="border-l border-[var(--color-hts-border)] pl-4 sm:pl-6">
+            <div
+              className={`text-2xl font-black tabular-nums tracking-tight leading-tight ${
+                isUp ? 'text-[var(--color-price-up)]' : isDown ? 'text-[var(--color-price-down)]' : 'text-foreground'
+              }`}
+            >
+              {stock.currentPrice.toLocaleString()}
+              <span className="text-sm font-bold ml-0.5 text-foreground/80">원</span>
             </div>
-            <div className={`text-xs font-extrabold mt-0.5 tabular-nums ${
-              isUp ? 'text-[var(--color-price-up)]' : isDown ? 'text-[var(--color-price-down)]' : 'text-[var(--color-price-flat)]'
-            }`}>
-              {isUp ? '▲' : isDown ? '▼' : ''} {Math.abs(diff).toLocaleString()} ({pct > 0 ? '+' : ''}{pct.toFixed(2)}%)
+            <div
+              className={`text-[13px] font-extrabold mt-0.5 tabular-nums ${
+                isUp
+                  ? 'text-[var(--color-price-up)]'
+                  : isDown
+                    ? 'text-[var(--color-price-down)]'
+                    : 'text-[var(--color-price-flat)]'
+              }`}
+            >
+              {isUp ? '▲' : isDown ? '▼' : ''} {Math.abs(diff).toLocaleString()} ({pct > 0 ? '+' : ''}
+              {pct.toFixed(2)}%)
             </div>
           </div>
         </div>
@@ -204,6 +214,7 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
         <div className="flex items-center gap-2">
           {onAnalyzeClick && (
             <button
+              type="button"
               onClick={onAnalyzeClick}
               className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-black/[0.03] hover:bg-black/[0.06] dark:bg-white/[0.03] dark:hover:bg-white/[0.06] text-foreground border border-[var(--color-hts-border)] rounded-lg cursor-pointer transition-all active:scale-95"
             >
@@ -213,11 +224,12 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
           )}
           {onTradeClick && (
             <button
+              type="button"
               onClick={onTradeClick}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-black bg-[var(--color-primary)] hover:opacity-90 text-[var(--color-primary-foreground)] rounded-lg cursor-pointer shadow-sm shadow-slate-900/10 transition-all active:scale-95 border-transparent"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-black bg-[var(--color-primary)] hover:opacity-90 text-[var(--color-primary-foreground)] rounded-lg cursor-pointer shadow-sm transition-all active:scale-95 border-transparent"
             >
               <ShoppingCart className="w-3.5 h-3.5" />
-              <span>즉시 주문</span>
+              <span>주문하기</span>
             </button>
           )}
         </div>

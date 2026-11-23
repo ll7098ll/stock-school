@@ -168,6 +168,23 @@ export interface DayStockBreakdown {
   shockReason?: string;
 }
 
+export type NewsPrediction = 'bullish' | 'bearish' | 'mixed';
+
+export interface PredictionStats {
+  total: number;
+  correct: number;
+}
+
+export interface LastDayRecap {
+  dayNumber: number;
+  prevTotalAsset: number;
+  newTotalAsset: number;
+  assetDelta: number;
+  assetDeltaPct: number;
+  checkedCount: number;
+  correctCount: number;
+}
+
 export interface LevelGameSnapshot {
   level: Level;
   dayCount: number;
@@ -185,6 +202,10 @@ export interface LevelGameSnapshot {
   activeScenario?: ActiveScenarioState | null;
   completedScenarioIds?: string[];
   scenarioCooldown?: number;
+  todayNewsChecks?: Record<string, NewsPrediction>;
+  previousNewsChecks?: Record<string, NewsPrediction>;
+  predictionStats?: PredictionStats;
+  lastDayRecap?: LastDayRecap | null;
 }
 
 export const NEWS_CATEGORY_LABELS: Record<NewsCategory, string> = {

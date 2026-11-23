@@ -156,6 +156,31 @@ export interface Holding {
   avgPrice: number;
 }
 
+export type TradeType = 'buy' | 'sell';
+
+export interface TradeRecord {
+  id: string;
+  dayCount: number;
+  timestamp: string;
+  type: TradeType;
+  stockId: string;
+  stockName: string;
+  sector: SectorId;
+  quantity: number;
+  price: number;
+  totalAmount: number;
+  avgPriceBefore?: number;
+  realizedProfit?: number;
+  realizedProfitRate?: number;
+}
+
+export interface OrderIntent {
+  stockId: string;
+  side: TradeType;
+  presetQty?: number | 'all';
+  nonce: number;
+}
+
 export interface DayStockBreakdown {
   stockId: string;
   prevPrice: number;
@@ -206,6 +231,8 @@ export interface LevelGameSnapshot {
   previousNewsChecks?: Record<string, NewsPrediction>;
   predictionStats?: PredictionStats;
   lastDayRecap?: LastDayRecap | null;
+  tradeHistory: TradeRecord[];
+  realizedProfitTotal: number;
 }
 
 export const NEWS_CATEGORY_LABELS: Record<NewsCategory, string> = {

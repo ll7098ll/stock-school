@@ -8,10 +8,12 @@ import {
 import { Button } from '../ui/button';
 import { useGameStore, type NewsPrediction } from '../../stores/gameStore';
 import { getActualNewsDirection } from '../../lib/priceEngine';
+import { computeHoldingSummaries, formatSignedPct } from '../../lib/tradingMetrics';
 import { cn } from '../../lib/utils';
 import {
   ArrowRight,
   BookOpenCheck,
+  Briefcase,
   CheckCircle2,
   Sparkles,
   Target,
@@ -41,6 +43,9 @@ export default function MorningRecapModal({
     previousNews,
     previousNewsChecks,
     predictionStats,
+    holdings,
+    stocks,
+    cash,
     dismissRecap,
   } = useGameStore();
 
@@ -52,6 +57,10 @@ export default function MorningRecapModal({
     predictionStats.total > 0
       ? Math.round((predictionStats.correct / predictionStats.total) * 100)
       : 0;
+
+  const holdingMovers = computeHoldingSummaries(holdings, stocks, cash)
+    .sort((a, b) => Math.abs(b.dayChangePct) - Math.abs(a.dayChangePct))
+    .slice(0, 5);
 
   return (
     <Dialog open={showRecapModal} onOpenChange={(open) => { if (!open) dismissRecap(); }}>
@@ -124,6 +133,52 @@ export default function MorningRecapModal({
               </div>
             </div>
           </div>
+
+          {/* Held Stocks Overnight Movers */}
+          {holdingMovers.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-sm font-black text-foreground flex items-center gap-1.5">
+                <Briefcase className="w-4 h-4 text-[var(--color-accent-gold)]" />
+                <span>내 보유 종목 전일 등락 요약</span>
+              </div>
+              <div className="rounded-xl border border-[var(--color-hts-border)] divide-y divide-[var(--color-hts-border)]/50 bg-black/[0.015] dark:bg-black/20 overflow-hidden">
+                {holdingMovers.map((item) => {
+                  const dayUp = item.dayChange > 0;
+                  const dayDown = item.dayChange < 0;
+                  return (
+                    <div
+                      key={item.id}
+                      className="px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs"
+                    >
+                      <div className="min-w-0">
+                        <span className="font-black text-foreground">{item.name}</span>
+                        <span className="text-muted-foreground font-semibold ml-1.5 tabular-nums">
+                          {item.quantity}주 · 누적 {formatSignedPct(item.profitRate, 1)}
+                        </span>
+                      </div>
+                      <div className="text-right shrink-0 tabular-nums">
+                        <span className="font-bold text-foreground mr-2">
+                          {item.currentPrice.toLocaleString()}원
+                        </span>
+                        <span
+                          className={cn(
+                            'font-black px-1.5 py-0.5 rounded',
+                            dayUp
+                              ? 'bg-[var(--color-price-up)]/10 text-[var(--color-price-up)]'
+                              : dayDown
+                                ? 'bg-[var(--color-price-down)]/10 text-[var(--color-price-down)]'
+                                : 'bg-black/[0.04] dark:bg-white/[0.06] text-muted-foreground'
+                          )}
+                        >
+                          {formatSignedPct(item.dayChangePct, 1)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Yesterday News Predictions Breakdown */}
           {previousNews.length > 0 && (

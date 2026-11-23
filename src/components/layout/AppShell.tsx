@@ -57,6 +57,7 @@ export default function AppShell({
     exitSession,
     currentNews,
     todayNewsChecks,
+    holdings,
   } = useGameStore();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -67,6 +68,7 @@ export default function AppShell({
   const checkedCount = countCheckedTodayNews(currentNews, todayNewsChecks);
   const allTodayChecked = isTodayNewsComplete(currentNews, todayNewsChecks);
   const remainingCount = Math.max(0, currentNews.length - checkedCount);
+  const heldCount = Object.values(holdings).filter((h) => h.quantity > 0).length;
 
   const handleOpenLegal = (tab: LegalTab) => {
     if (onOpenLegal) {
@@ -208,6 +210,7 @@ export default function AppShell({
             const isActive = activeWorkspace === item.id;
             const isNews = item.id === 'news';
             const isTrading = item.id === 'trading';
+            const isPortfolio = item.id === 'portfolio';
 
             return (
               <button
@@ -264,6 +267,15 @@ export default function AppShell({
                     title="오늘의 뉴스를 읽으면 주문이 열립니다"
                   >
                     <Lock className="w-3 h-3" />
+                  </span>
+                )}
+
+                {!isSidebarCollapsed && isPortfolio && heldCount > 0 && (
+                  <span
+                    className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-black/[0.06] dark:bg-white/[0.08] text-foreground shrink-0 tabular-nums"
+                    title={`보유 종목 ${heldCount}개`}
+                  >
+                    {heldCount}종목
                   </span>
                 )}
 

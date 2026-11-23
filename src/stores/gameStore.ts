@@ -29,6 +29,8 @@ import type {
   NewsPrediction,
   PredictionStats,
   StockState,
+  TradeRecord,
+  TradeType,
 } from '../lib/types';
 import { deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore';
 import {
@@ -48,6 +50,8 @@ export type {
   NewsPrediction,
   PredictionStats,
   StockState,
+  TradeRecord,
+  TradeType,
 };
 
 export function countCheckedTodayNews(
@@ -68,6 +72,7 @@ export function isTodayNewsComplete(
 const GUEST_STORAGE_KEY = 'stockschool_guest_state_v2';
 const PENDING_LEVEL_KEY = 'stockschool_pending_level';
 const CONSENT_RECORD_KEY = 'stockschool_consent_v1';
+const MAX_TRADE_HISTORY = 200;
 
 interface CompactLevelSave {
   schemaVersion: number;
@@ -91,6 +96,8 @@ interface CompactLevelSave {
   previousNewsChecks?: Record<string, NewsPrediction>;
   predictionStats?: PredictionStats;
   lastDayRecap?: LastDayRecap | null;
+  tradeHistory?: TradeRecord[];
+  realizedProfitTotal?: number;
 }
 
 interface PersistedUserData {
@@ -135,9 +142,11 @@ interface GameState {
   lastDayRecap: LastDayRecap | null;
   showRecapModal: boolean;
 
-  // Portfolio
+  // Portfolio & Trade Ledger
   holdings: Record<string, Holding>;
   totalAssetHistory: number[];
+  tradeHistory: TradeRecord[];
+  realizedProfitTotal: number;
 
   // Theme
   theme: 'light' | 'dark';
@@ -203,6 +212,8 @@ function createFreshLevelSnapshot(level: Level): LevelGameSnapshot {
     previousNewsChecks: {},
     predictionStats: { total: 0, correct: 0 },
     lastDayRecap: null,
+    tradeHistory: [],
+    realizedProfitTotal: 0,
   };
 }
 
@@ -242,6 +253,8 @@ function serializeLevelSnapshot(snap: LevelGameSnapshot): CompactLevelSave {
     previousNewsChecks: snap.previousNewsChecks ?? {},
     predictionStats: snap.predictionStats ?? { total: 0, correct: 0 },
     lastDayRecap: snap.lastDayRecap ?? null,
+    tradeHistory: (snap.tradeHistory ?? []).slice(-MAX_TRADE_HISTORY),
+    realizedProfitTotal: snap.realizedProfitTotal ?? 0,
   };
 }
 
@@ -370,6 +383,72 @@ function hydrateLevelSnapshot(
       ? (raw.predictionStats as { total?: unknown; correct?: unknown })
       : null;
 
+  const sanitizeTradeHistory = (input: unknown): TradeRecord[] => {
+    if (!Array.isArray(input)) return [];
+    const cleaned: TradeRecord[] = [];
+    input.forEach((entry, idx) => {
+      if (!entry || typeof entry !== 'object') return;
+      const rec = entry as Record<string, unknown>;
+      const type: TradeType | null =
+        rec.type === 'buy' || rec.type === 'sell' ? rec.type : null;
+      const stockId = typeof rec.stockId === 'string' ? rec.stockId : null;
+      const quantity = typeof rec.quantity === 'number' ? Math.floor(rec.quantity) : 0;
+      const price = typeof rec.price === 'number' ? rec.price : -1;
+      const dayCount = typeof rec.dayCount === 'number' && rec.dayCount >= 1 ? rec.dayCount : 1;
+
+      if (!type || !stockId || quantity <= 0 || price < 0) return;
+
+      const stockDef = STOCK_BY_ID[stockId];
+      const stockName =
+        typeof rec.stockName === 'string' && rec.stockName.trim()
+          ? rec.stockName
+          : (stockDef?.name ?? stockId);
+      const sector = stockDef?.sector ?? (typeof rec.sector === 'string' ? rec.sector : '기술(Tech)');
+      const totalAmount =
+        typeof rec.totalAmount === 'number' && Number.isFinite(rec.totalAmount)
+          ? rec.totalAmount
+          : price * quantity;
+
+      const item: TradeRecord = {
+        id:
+          typeof rec.id === 'string' && rec.id
+            ? rec.id
+            : `tr-hydrated-${dayCount}-${idx}`,
+        dayCount,
+        timestamp:
+          typeof rec.timestamp === 'string' && rec.timestamp
+            ? rec.timestamp
+            : new Date().toISOString(),
+        type,
+        stockId,
+        stockName,
+        sector: sector as TradeRecord['sector'],
+        quantity,
+        price,
+        totalAmount,
+      };
+
+      if (typeof rec.avgPriceBefore === 'number' && Number.isFinite(rec.avgPriceBefore)) {
+        item.avgPriceBefore = rec.avgPriceBefore;
+      }
+      if (typeof rec.realizedProfit === 'number' && Number.isFinite(rec.realizedProfit)) {
+        item.realizedProfit = rec.realizedProfit;
+      }
+      if (typeof rec.realizedProfitRate === 'number' && Number.isFinite(rec.realizedProfitRate)) {
+        item.realizedProfitRate = rec.realizedProfitRate;
+      }
+
+      cleaned.push(item);
+    });
+    return cleaned.slice(-MAX_TRADE_HISTORY);
+  };
+
+  const tradeHistory = sanitizeTradeHistory(raw.tradeHistory);
+  const realizedProfitTotal =
+    typeof raw.realizedProfitTotal === 'number' && Number.isFinite(raw.realizedProfitTotal)
+      ? raw.realizedProfitTotal
+      : tradeHistory.reduce((sum, t) => sum + (t.realizedProfit ?? 0), 0);
+
   return {
     migrated: false,
     snapshot: {
@@ -414,6 +493,8 @@ function hydrateLevelSnapshot(
         raw.lastDayRecap && typeof raw.lastDayRecap === 'object'
           ? (raw.lastDayRecap as LastDayRecap)
           : null,
+      tradeHistory,
+      realizedProfitTotal,
     },
   };
 }
@@ -440,6 +521,8 @@ function captureActiveSnapshot(state: GameState): LevelGameSnapshot {
     previousNewsChecks: state.previousNewsChecks,
     predictionStats: state.predictionStats,
     lastDayRecap: state.lastDayRecap,
+    tradeHistory: state.tradeHistory,
+    realizedProfitTotal: state.realizedProfitTotal,
   };
 }
 
@@ -526,6 +609,8 @@ const EMPTY_LOGGED_OUT_STATE: Partial<GameState> = {
   showRecapModal: false,
   holdings: {},
   totalAssetHistory: [],
+  tradeHistory: [],
+  realizedProfitTotal: 0,
   tutorialStep: null,
   gameStates: {},
   isLoadingState: false,
@@ -563,6 +648,8 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   holdings: {},
   totalAssetHistory: [],
+  tradeHistory: [],
+  realizedProfitTotal: 0,
   gameStates: {},
 
   theme:
@@ -906,7 +993,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   buyStock: (stockId, quantity) => {
-    const { cash, stocks, holdings } = get();
+    const { cash, stocks, holdings, dayCount, tradeHistory } = get();
     const stock = stocks[stockId];
     if (!stock || !Number.isInteger(quantity) || quantity <= 0) return false;
 
@@ -918,12 +1005,26 @@ export const useGameStore = create<GameState>((set, get) => ({
     const newTotalCost = currentHolding.quantity * currentHolding.avgPrice + cost;
     const newAvgPrice = Math.round(newTotalCost / newQuantity);
 
+    const record: TradeRecord = {
+      id: `tr-${dayCount}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      dayCount,
+      timestamp: new Date().toISOString(),
+      type: 'buy',
+      stockId,
+      stockName: stock.name,
+      sector: stock.sector,
+      quantity,
+      price: stock.currentPrice,
+      totalAmount: cost,
+    };
+
     set({
       cash: cash - cost,
       holdings: {
         ...holdings,
         [stockId]: { quantity: newQuantity, avgPrice: newAvgPrice },
       },
+      tradeHistory: [...tradeHistory, record].slice(-MAX_TRADE_HISTORY),
     });
 
     syncLocalGameStates(set, get);
@@ -932,7 +1033,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   sellStock: (stockId, quantity) => {
-    const { stocks, holdings, cash } = get();
+    const { stocks, holdings, cash, dayCount, tradeHistory, realizedProfitTotal } = get();
     const stock = stocks[stockId];
     const currentHolding = holdings[stockId];
 
@@ -947,6 +1048,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
 
     const revenue = stock.currentPrice * quantity;
+    const costBasis = currentHolding.avgPrice * quantity;
+    const realizedProfit = revenue - costBasis;
+    const realizedProfitRate = costBasis > 0 ? (realizedProfit / costBasis) * 100 : 0;
     const newQuantity = currentHolding.quantity - quantity;
 
     const newHoldings = { ...holdings };
@@ -956,9 +1060,27 @@ export const useGameStore = create<GameState>((set, get) => ({
       newHoldings[stockId] = { ...currentHolding, quantity: newQuantity };
     }
 
+    const record: TradeRecord = {
+      id: `tr-${dayCount}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      dayCount,
+      timestamp: new Date().toISOString(),
+      type: 'sell',
+      stockId,
+      stockName: stock.name,
+      sector: stock.sector,
+      quantity,
+      price: stock.currentPrice,
+      totalAmount: revenue,
+      avgPriceBefore: currentHolding.avgPrice,
+      realizedProfit,
+      realizedProfitRate,
+    };
+
     set({
       cash: cash + revenue,
       holdings: newHoldings,
+      tradeHistory: [...tradeHistory, record].slice(-MAX_TRADE_HISTORY),
+      realizedProfitTotal: realizedProfitTotal + realizedProfit,
     });
 
     syncLocalGameStates(set, get);

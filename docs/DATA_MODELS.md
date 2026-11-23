@@ -131,53 +131,57 @@ export interface StockState extends StockDefinition {
 
 ## 4. 📰 NewsItem
 
-> **파일:** `src/lib/newsData.ts`
+> **파일:** `src/lib/types.ts`, `src/lib/newsData.ts`
 
 ```typescript
 export interface NewsItem {
   id: string;
   title: string;
   content: string;
-  category: 'macro' | 'sector' | 'company' | 'global';
+  category: 'macro' | 'sector' | 'company' | 'global' | 'social';
   sentiment: number;
-  relatedSectors: string[];
-  sectorImpact: Record<string, number>;
-  explanations: {
-    elementary: string;
-    middle: string;
-    high: string;
-  };
-  difficulty: string[];
+  relatedSectors: SectorId[];
+  sectorImpact: Partial<Record<SectorId, number>>;
+  stockImpactOverrides?: Record<string, number>;
+  explanations: { elementary: string; middle: string; high: string };
+  difficulty: Level[];
+  twistType?: NewsTwistType;
+  readingHint?: Record<Level, string>;
+  marketBias?: number;
+  articleFormat?: 'breaking' | 'earnings' | 'interview' | 'rival' | 'policy' | 'trend';
+  sourceDesk?: string;
+  keyMetrics?: { label: string; value: string; note?: string }[];
+  quote?: { text: string; speaker: string };
+  relatedGlossaryIds?: string[];
 }
 ```
 
 | 필드 | 타입 | 설명 | 범위/예시 |
 |:---|:---|:---|:---|
-| `id` | `string` | 고유 식별자 | `"news-el-1"` |
-| `title` | `string` | 헤드라인 | - |
-| `content` | `string` | 뉴스 본문 | - |
-| `category` | `enum` | 카테고리 | `macro` / `sector` / `company` / `global` |
-| `sentiment` | `number` | 감성 점수 | `-2` ~ `+2` |
-| `relatedSectors` | `string[]` | 관련 섹터 | `["기술(Tech)"]` |
+| `id` | `string` | 고유 식별자 | `"news-el-tech-pos"` |
+| `title` / `content` | `string` | 비스포일러 헤드라인 / 본문 | - |
+| `category` | `enum` | 카테고리 | `macro` / `sector` / `company` / `global` / `social` |
+| `sentiment` | `number` | 감성 점수 | `-3` ~ `+3` (`0`은 혼조·중립) |
+| `relatedSectors` | `SectorId[]` | 관련 섹터 (당일 UI 비공개, 다음 날 공개) | `["기술(Tech)"]` |
 | `sectorImpact` | `Record` | 섹터별 영향도 | `{ "기술(Tech)": 0.08 }` |
-| `explanations` | `object` | 3단계 AI 해설 | - |
-| `difficulty` | `string[]` | 표시 대상 레벨 | `["elementary"]` |
+| `stockImpactOverrides` | `Record` | 종목별 차별화 영향도 | `{ "flame-food": 0.06 }` |
+| `articleFormat` / `sourceDesk` | `enum` / `string` | 6종 기사 포맷 / 가상 데스크 | `'earnings'`, `'공시·실적 분석팀'` |
+| `keyMetrics` / `quote` | `array` / `object` | 핵심 수치 스냅샷 / 현장 인용구 | - |
+| `relatedGlossaryIds` | `string[]` | 본문 연동 금융 용어 ID | `["g-19", "g-20"]` |
 
 ### 감성 점수 (Sentiment)
 
 | 값 | 의미 | 레이블 |
 |:---:|:---:|:---|
-| +2 | 매우 호재 | 🟢 매우 호재 |
-| +1 | 호재 | 🟩 호재 |
-| 0 | 중립 | ⬜ 중립 |
-| -1 | 악재 | 🟧 악재 |
-| -2 | 매우 악재 | 🔴 매우 악재 |
+| +3 / +2 / +1 | 강한 호재 ~ 호재 | 🟢 호재 |
+| 0 | 섹터 혼조 · 중립 | ⚖️ 혼조 |
+| -1 / -2 / -3 | 악재 ~ 강한 악재 | 🔴 악재 |
 
 ---
 
 ## 5. 📚 GlossaryItem
 
-> **파일:** `src/lib/glossaryData.ts`
+> **파일:** `src/lib/glossaryData.ts` (총 32개 용어)
 
 ```typescript
 export interface GlossaryItem {
@@ -192,12 +196,12 @@ export interface GlossaryItem {
 }
 ```
 
-| 카테고리 | 레이블 | 포함 용어 |
+| 카테고리 | 레이블 | 주요 포함 용어 (총 32개) |
 |:---:|:---|:---|
-| `basic` | 주식 기초 | 주식, 시가총액, 배당금, 거래량, 유동성, 블루칩 |
-| `analysis` | 주식 분석 | PER, PBR, 이동평균선, ROE |
-| `macro` | 거시 경제 | 기준금리, 인플레이션, GDP, 양적완화 |
-| `advanced` | 심화 지식 | 변동성, 공매도 |
+| `basic` | 주식 기초 | 주식, 시가총액, 배당금, 거래량, 유동성, 블루칩, 분산투자, 자사주 매입·소각, 액면분할 등 |
+| `analysis` | 주식 분석 | PER, PBR, 이동평균선, ROE, 컨센서스, 어닝 서프라이즈/쇼크, NIM, CapEx, 수주잔고, 정제마진, CDMO 등 |
+| `macro` | 거시 경제 | 기준금리, 인플레이션, GDP, 양적완화, 환율, 밸류업·저PBR, 안전자산 선호(Risk-Off) |
+| `advanced` | 심화 지식 | 변동성, 공매도, 래깅 효과, 물적분할·중복상장, 전환사채(CB)·오버행 |
 
 ---
 

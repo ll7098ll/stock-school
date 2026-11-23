@@ -2,7 +2,6 @@ import { useGameStore } from '../../stores/gameStore';
 import {
   formatSignedPct,
   formatSignedWon,
-  getTodayNewsSets,
 } from '../../lib/tradingMetrics';
 import { cn } from '../../lib/utils';
 import {
@@ -10,7 +9,7 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronLeft,
-  Newspaper,
+  Star,
   Briefcase,
   ArrowUpDown,
 } from 'lucide-react';
@@ -24,7 +23,7 @@ interface Props {
   onSectorFilterChange?: (sector: string | null) => void;
 }
 
-type ListViewMode = 'all' | 'holdings' | 'news';
+type ListViewMode = 'all' | 'holdings' | 'watchlist';
 type SortMode = 'default' | 'changeDesc' | 'profitDesc' | 'profitAsc' | 'valueDesc';
 
 // Mini Sparkline component for stock trend
@@ -70,7 +69,8 @@ export default function StockList({
   sectorFilter: controlledSectorFilter,
   onSectorFilterChange,
 }: Props) {
-  const { stocks, tutorialStep, currentNews, holdings } = useGameStore();
+  const { stocks, tutorialStep, holdings, watchlistStockIds, toggleWatchlistStock } =
+    useGameStore();
   const [search, setSearch] = useState('');
   const [internalSectorFilter, setInternalSectorFilter] = useState<string | null>(null);
   const [collapsedSectors, setCollapsedSectors] = useState<Record<string, boolean>>({});
@@ -93,23 +93,16 @@ export default function StockList({
     onSectorFilterChange?.(next);
   };
 
-  // Identify sectors and stocks mentioned in today's news (without spoiling direction!)
-  const { newsSectorSet, newsStockSet } = useMemo(
-    () => getTodayNewsSets(currentNews),
-    [currentNews]
-  );
+  const watchlistSet = useMemo(() => new Set(watchlistStockIds), [watchlistStockIds]);
 
   const heldCount = useMemo(
     () => Object.values(holdings).filter((h) => h.quantity > 0).length,
     [holdings]
   );
 
-  const newsRelatedCount = useMemo(
-    () =>
-      Object.values(stocks).filter(
-        (s) => newsStockSet.has(s.id) || newsSectorSet.has(s.sector)
-      ).length,
-    [stocks, newsSectorSet, newsStockSet]
+  const watchlistCount = useMemo(
+    () => watchlistStockIds.filter((id) => Boolean(stocks[id])).length,
+    [watchlistStockIds, stocks]
   );
 
   const getHoldingStats = (stockId: string, currentPrice: number) => {
@@ -142,8 +135,8 @@ export default function StockList({
 
     if (viewMode === 'holdings') {
       list = list.filter((s) => Boolean(holdings[s.id]?.quantity));
-    } else if (viewMode === 'news') {
-      list = list.filter((s) => newsStockSet.has(s.id) || newsSectorSet.has(s.sector));
+    } else if (viewMode === 'watchlist') {
+      list = list.filter((s) => watchlistSet.has(s.id));
     }
 
     if (search) {
@@ -174,17 +167,12 @@ export default function StockList({
       if (a.sector !== b.sector) return a.sector.localeCompare(b.sector);
       return a.name.localeCompare(b.name);
     });
-  }, [stocks, holdings, viewMode, search, sectorFilter, sortMode, newsSectorSet, newsStockSet]);
+  }, [stocks, holdings, viewMode, search, sectorFilter, sortMode, watchlistSet]);
 
   const sectors = useMemo(() => {
     const s = new Set(Object.values(stocks).map((st) => st.sector));
-    return Array.from(s).sort((a, b) => {
-      const aNews = newsSectorSet.has(a) ? 0 : 1;
-      const bNews = newsSectorSet.has(b) ? 0 : 1;
-      if (aNews !== bNews) return aNews - bNews;
-      return a.localeCompare(b);
-    });
-  }, [stocks, newsSectorSet]);
+    return Array.from(s).sort((a, b) => a.localeCompare(b));
+  }, [stocks]);
 
   // Group stocks by sector when in default sort & non-holdings view
   const grouped = useMemo(() => {
@@ -193,13 +181,8 @@ export default function StockList({
       if (!map[s.sector]) map[s.sector] = [];
       map[s.sector].push(s);
     });
-    return Object.entries(map).sort(([secA], [secB]) => {
-      const aNews = newsSectorSet.has(secA) ? 0 : 1;
-      const bNews = newsSectorSet.has(secB) ? 0 : 1;
-      if (aNews !== bNews) return aNews - bNews;
-      return secA.localeCompare(secB);
-    });
-  }, [stockList, newsSectorSet]);
+    return Object.entries(map).sort(([secA], [secB]) => secA.localeCompare(secB));
+  }, [stockList]);
 
   const toggleSector = (sector: string) => {
     setCollapsedSectors((prev) => ({
@@ -220,7 +203,7 @@ export default function StockList({
     }
   };
 
-  const isFlatListMode = viewMode === 'holdings' || sortMode !== 'default';
+  const isFlatListMode = viewMode === 'holdings' || viewMode === 'watchlist' || sortMode !== 'default';
 
   const renderStockRow = (stock: (typeof stockList)[number], showHoldingDetails = false) => {
     const prev =
@@ -232,7 +215,7 @@ export default function StockList({
     const isUp = diff > 0;
     const isDown = diff < 0;
     const holdingStats = getHoldingStats(stock.id, stock.currentPrice);
-    const isDirectNewsStock = newsStockSet.has(stock.id);
+    const isWatched = watchlistSet.has(stock.id);
 
     return (
       <div
@@ -244,49 +227,62 @@ export default function StockList({
             : 'border-transparent hover:bg-[var(--color-hts-hover)]'
         )}
       >
-        <button
-          type="button"
-          onClick={() => onSelect(stock.id)}
-          className="flex items-center justify-between gap-2 w-full px-3 py-2.5 cursor-pointer text-left"
-        >
-          {/* Left: Name + Badges + Sparkline */}
-          <div className="min-w-0 space-y-1 flex-1">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-extrabold text-foreground text-sm truncate leading-snug">
-                {stock.name}
-              </span>
-              {holdingStats && (
-                <span
-                  className={cn(
-                    'text-[10px] px-1.5 py-0.2 rounded font-black shrink-0 tabular-nums',
-                    holdingStats.profit > 0
-                      ? 'bg-[var(--color-price-up)]/12 text-[var(--color-price-up)]'
-                      : holdingStats.profit < 0
-                        ? 'bg-[var(--color-price-down)]/12 text-[var(--color-price-down)]'
-                        : 'bg-slate-900 dark:bg-white text-white dark:text-slate-950'
-                  )}
-                >
-                  {holdingStats.quantity}주 · {formatSignedPct(holdingStats.profitRate, 1)}
-                </span>
+        <div className="flex items-center gap-1 pr-2">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleWatchlistStock(stock.id);
+            }}
+            aria-label={isWatched ? `${stock.name} 관심 종목 해제` : `${stock.name} 관심 종목 추가`}
+            title={isWatched ? '관심 종목 해제' : '오늘 뉴스로 주목한 관심 종목 찜하기'}
+            className="pl-2.5 pr-1 py-2.5 text-muted-foreground hover:text-amber-500 cursor-pointer shrink-0 transition-colors"
+          >
+            <Star
+              className={cn(
+                'w-3.5 h-3.5',
+                isWatched ? 'fill-amber-400 text-amber-500' : 'opacity-45 hover:opacity-100'
               )}
-              {isDirectNewsStock && (
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 font-black shrink-0">
-                  관련
+            />
+          </button>
+          <button
+            type="button"
+            onClick={() => onSelect(stock.id)}
+            className="flex items-center justify-between gap-2 flex-1 min-w-0 py-2.5 pr-1 cursor-pointer text-left"
+          >
+            {/* Left: Name + Badges + Sparkline */}
+            <div className="min-w-0 space-y-1 flex-1">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="font-extrabold text-foreground text-sm truncate leading-snug">
+                  {stock.name}
                 </span>
-              )}
+                {holdingStats && (
+                  <span
+                    className={cn(
+                      'text-[10px] px-1.5 py-0.2 rounded font-black shrink-0 tabular-nums',
+                      holdingStats.profit > 0
+                        ? 'bg-[var(--color-price-up)]/12 text-[var(--color-price-up)]'
+                        : holdingStats.profit < 0
+                          ? 'bg-[var(--color-price-down)]/12 text-[var(--color-price-down)]'
+                          : 'bg-slate-900 dark:bg-white text-white dark:text-slate-950'
+                    )}
+                  >
+                    {holdingStats.quantity}주 · {formatSignedPct(holdingStats.profitRate, 1)}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Sparkline
+                  history={stock.priceHistory}
+                  isUp={stock.currentPrice >= stock.priceHistory[0]}
+                />
+                {showHoldingDetails && holdingStats && (
+                  <span className="text-[11px] font-semibold text-muted-foreground tabular-nums truncate">
+                    평단 {holdingStats.avgPrice.toLocaleString()}원
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Sparkline
-                history={stock.priceHistory}
-                isUp={stock.currentPrice >= stock.priceHistory[0]}
-              />
-              {showHoldingDetails && holdingStats && (
-                <span className="text-[11px] font-semibold text-muted-foreground tabular-nums truncate">
-                  평단 {holdingStats.avgPrice.toLocaleString()}원
-                </span>
-              )}
-            </div>
-          </div>
 
           {/* Right: Price + Percent Change */}
           <div className="text-right shrink-0 space-y-0.5">
@@ -317,6 +313,7 @@ export default function StockList({
             </div>
           </div>
         </button>
+        </div>
 
         {/* Holdings View Extra Bar: Evaluation + Quick Sell CTA */}
         {showHoldingDetails && holdingStats && (
@@ -369,10 +366,10 @@ export default function StockList({
       {tutorialStep === 2 && (
         <div className="bg-amber-500 text-slate-950 px-3.5 py-2 text-xs font-black flex items-center justify-between border-b border-amber-600 shadow-md animate-fade-in shrink-0 relative z-30 gap-2">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block animate-bounce">👈</span> 2단계: 오늘 뉴스와 관련된 기업을 클릭해 살펴보세요!
+            <span className="inline-block animate-bounce">👈</span> 2단계: 기사를 읽고 추론한 산업의 기업을 직접 찾아 클릭해 보세요!
           </span>
           <span className="text-[11px] bg-slate-950 text-white px-2 py-0.5 rounded font-black shrink-0">
-            클릭
+            직접 탐색
           </span>
         </div>
       )}
@@ -390,7 +387,7 @@ export default function StockList({
           />
         </div>
 
-        {/* View Mode Segmented Filter: 전체 | 내 보유 | 오늘 뉴스 */}
+        {/* View Mode Segmented Filter: 전체 | 내 보유 | ★ 관심 */}
         <div className="grid grid-cols-3 gap-1 bg-black/[0.04] dark:bg-black/40 p-1 rounded-xl border border-[var(--color-hts-border)]/70">
           <button
             type="button"
@@ -429,7 +426,7 @@ export default function StockList({
           <button
             type="button"
             onClick={() => {
-              setViewMode('news');
+              setViewMode('watchlist');
               setSectorFilter(null);
               if (sortMode === 'profitDesc' || sortMode === 'profitAsc' || sortMode === 'valueDesc') {
                 setSortMode('default');
@@ -437,13 +434,13 @@ export default function StockList({
             }}
             className={cn(
               'py-1.5 rounded-lg text-[11px] font-black transition-all cursor-pointer inline-flex items-center justify-center gap-1',
-              viewMode === 'news'
+              viewMode === 'watchlist'
                 ? 'bg-amber-500 text-slate-950 shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            <Newspaper className="w-3 h-3" />
-            <span>뉴스 ({newsRelatedCount})</span>
+            <Star className="w-3 h-3 fill-current" />
+            <span>관심 ({watchlistCount})</span>
           </button>
         </div>
       </div>
@@ -475,27 +472,21 @@ export default function StockList({
             >
               전체
             </button>
-            {sectors.map((s) => {
-              const hasNews = newsSectorSet.has(s);
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setSectorFilter(sectorFilter === s ? null : s)}
-                  className={cn(
-                    'shrink-0 px-2.5 py-1 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap inline-flex items-center gap-1',
-                    sectorFilter === s
-                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-sm'
-                      : hasNews
-                        ? 'bg-amber-500/12 text-amber-800 dark:text-amber-300 border border-amber-500/30 hover:bg-amber-500/20'
-                        : 'bg-black/[0.04] dark:bg-white/[0.05] text-muted-foreground hover:bg-black/[0.08] dark:hover:bg-white/[0.1] hover:text-foreground'
-                  )}
-                >
-                  {hasNews && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />}
-                  {s.split('(')[0]}
-                </button>
-              );
-            })}
+            {sectors.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSectorFilter(sectorFilter === s ? null : s)}
+                className={cn(
+                  'shrink-0 px-2.5 py-1 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap inline-flex items-center gap-1',
+                  sectorFilter === s
+                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-sm'
+                    : 'bg-black/[0.04] dark:bg-white/[0.05] text-muted-foreground hover:bg-black/[0.08] dark:hover:bg-white/[0.1] hover:text-foreground'
+                )}
+              >
+                {s.split('(')[0]}
+              </button>
+            ))}
           </div>
 
           <button
@@ -528,7 +519,7 @@ export default function StockList({
               </>
             ) : (
               <>
-                <option value="default">섹터·뉴스순</option>
+                <option value="default">산업 기본순</option>
                 <option value="changeDesc">등락률 높은순</option>
               </>
             )}
@@ -541,13 +532,19 @@ export default function StockList({
         <div className="p-2 space-y-2">
           {stockList.length === 0 ? (
             <div className="py-10 px-4 text-center space-y-2 text-muted-foreground">
-              <Briefcase className="w-8 h-8 mx-auto opacity-30" />
+              {viewMode === 'watchlist' ? (
+                <Star className="w-8 h-8 mx-auto opacity-30 text-amber-500" />
+              ) : (
+                <Briefcase className="w-8 h-8 mx-auto opacity-30" />
+              )}
               <p className="text-xs font-bold text-foreground/80">
                 {viewMode === 'holdings'
                   ? '아직 보유 중인 주식이 없습니다.'
-                  : '조건에 맞는 종목이 없습니다.'}
+                  : viewMode === 'watchlist'
+                    ? '관심 종목이 아직 없어요. 오늘 뉴스를 읽고 주목할 기업에 ★ 별표를 눌러 모아 보세요!'
+                    : '조건에 맞는 종목이 없습니다.'}
               </p>
-              {viewMode === 'holdings' && (
+              {(viewMode === 'holdings' || viewMode === 'watchlist') && (
                 <button
                   type="button"
                   onClick={() => setViewMode('all')}
@@ -564,7 +561,6 @@ export default function StockList({
           ) : (
             grouped.map(([sector, sectorStocks]) => {
               const isCollapsed = collapsedSectors[sector];
-              const isNewsSector = newsSectorSet.has(sector);
 
               return (
                 <div key={sector} className="space-y-1">
@@ -572,23 +568,10 @@ export default function StockList({
                   <button
                     type="button"
                     onClick={() => toggleSector(sector)}
-                    className={cn(
-                      'w-full flex items-center justify-between px-3 py-2 text-xs font-black rounded-lg cursor-pointer transition-all duration-200',
-                      isNewsSector
-                        ? 'bg-amber-500/15 text-amber-900 dark:text-amber-200 border border-amber-500/30 hover:bg-amber-500/20'
-                        : 'text-white bg-slate-600 dark:bg-slate-800 hover:bg-slate-700 dark:hover:bg-slate-700'
-                    )}
+                    className="w-full flex items-center justify-between px-3 py-2 text-xs font-black rounded-lg cursor-pointer transition-all duration-200 text-white bg-slate-600 dark:bg-slate-800 hover:bg-slate-700 dark:hover:bg-slate-700"
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
-                      {isNewsSector && (
-                        <Newspaper className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                      )}
                       <span className="truncate">{sector}</span>
-                      {isNewsSector && (
-                        <span className="text-[11px] px-1.5 py-0.2 rounded bg-amber-500 text-slate-950 font-black shrink-0">
-                          오늘 뉴스
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center gap-1 shrink-0 opacity-85">
                       <span className="text-[11px] font-bold">({sectorStocks.length})</span>

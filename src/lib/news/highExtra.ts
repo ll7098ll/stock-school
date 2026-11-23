@@ -26,7 +26,19 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "공사비 지출이 줄고 새 AI 임대 사업이 늘어나면 회사에 남는 현금이 많아져요.",
       "middle": "설비투자(CapEx) 정점 통과에 따른 FCF 증가와 신사업(AIDC) 수익화 여부를 함께 확인하세요.",
       "high": "CapEx 피크아웃에 따른 FCF 확장과 B2B AIDC 매출 비중 상승이 통신주 TSR 및 멀티플 재평가의 핵심 동력입니다."
-    }
+    },
+    "articleFormat": "interview",
+    "sourceDesk": "현장 인터뷰·리서치팀",
+    "relatedGlossaryIds": [
+      "g-5",
+      "g-23"
+    ],
+    "keyMetrics": [
+      {
+        "label": "공장 가동률",
+        "value": "90%"
+      }
+    ]
   },
   {
     "id": "news-hi-22",
@@ -53,7 +65,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "아직 확정되지 않은 규제 소식이라도 요금 인하 우려가 크면 주가가 먼저 흔들릴 수 있어요.",
       "middle": "규제 산업에서는 정책 검토 단계의 보도만으로도 ARPU 하락과 마케팅비 증가 우려가 선반영됩니다.",
       "high": "확정 전 정책 루머가 과점 통신사의 가격 결정력과 비용 통제 가이던스를 훼손할 위험을 가늠해야 합니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-7"
+    ]
   },
   {
     "id": "news-hi-23",
@@ -80,7 +97,19 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "수출 지역이 여러 나라로 넓어지고 공장이 꽉 차게 돌아가면 이익이 크게 늘어나요.",
       "middle": "수출 통관 잠정치와 ODM 공장 가동률 상승이 분기 실적 서프라이즈로 연결되는 구조를 파악하세요.",
       "high": "비중국 수출 비중 확대와 ODM 풀가동에 따른 영업 레버리지가 화장품 섹터 리레이팅의 핵심 근거입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-19",
+      "g-20"
+    ],
+    "keyMetrics": [
+      {
+        "label": "공장 가동률",
+        "value": "95%"
+      }
+    ]
   },
   {
     "id": "news-hi-24",
@@ -107,7 +136,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "매출이 조금 올라도 기대보다 적고 할인 비용이 늘었다면 주가는 오히려 떨어질 수 있어요.",
       "middle": "숫자의 플러스 전환만 보지 말고 시장 컨센서스 충족 여부와 수수료·마진의 질을 따져봐야 합니다.",
       "high": "선반영된 기대치 대비 저마진 반등은 오히려 차익실현(셀온)을 촉발하는 기대치 반전 재료입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀",
+    "relatedGlossaryIds": [
+      "g-19"
+    ]
   },
   {
     "id": "news-hi-25",
@@ -134,7 +168,20 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "주주를 보호하는 법이 강화되면 그동안 저평가받던 지주 회사의 제값을 찾기 쉬워져요.",
       "middle": "지주사 투자에서는 보유 자산 대비 할인율(NAV 할인율)을 줄여주는 지배구조 개선이 가장 큰 호재입니다.",
       "high": "거버넌스 법제화는 지주사 만성 할인 요인을 제거해 NAV 할인율 축소와 저PBR 리레이팅을 견인합니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀",
+    "relatedGlossaryIds": [
+      "g-21",
+      "g-5",
+      "g-31"
+    ],
+    "keyMetrics": [
+      {
+        "label": "주요 변동 폭",
+        "value": "60% 이상"
+      }
+    ]
   },
   {
     "id": "news-hi-26",
@@ -161,7 +208,14 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "자회사를 따로 상장하면 모회사의 매력이 줄어들어 주주들에게는 불리할 수 있어요.",
       "middle": "성장 자금 조달이라는 표면적 명분 이면에 모회사 주주가치 희석(더블 카운팅) 위험을 읽어내야 합니다.",
       "high": "알짜 자회사 중복상장은 지주사의 NAV 할인율을 구조적으로 확대시키는 대표적 거버넌스 악재입니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 마켓데스크",
+    "relatedGlossaryIds": [
+      "g-23",
+      "g-27",
+      "g-31"
+    ]
   },
   {
     "id": "news-hi-27",
@@ -188,7 +242,13 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "유럽의 국방 예산이 크게 늘고 한국 공장의 빠른 생산 능력이 돋보이면 방산 업종에 큰 호재예요.",
       "middle": "단기 분쟁이 아닌 NATO 국방비 기준 상향이라는 구조적 예산 증액이 장기 수주잔고를 뒷받침합니다.",
       "high": "유럽 방산 공급 병목과 구조적 국방비 상향이 결합되어 K-방산의 장기 수주 가시성과 수출 마진을 지지합니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "산업밸류체인 분석팀",
+    "relatedGlossaryIds": [
+      "g-24",
+      "g-12"
+    ]
   },
   {
     "id": "news-hi-28",
@@ -215,7 +275,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "이미 주가가 많이 오른 상태에서 미래 수요가 줄어들 소식이 나오면 좋은 실적에도 주가가 내릴 수 있어요.",
       "middle": "과거의 최대 실적보다 미래 수주 정점(피크아웃) 우려가 주가 방향을 뒤집는 선반영 셀온 사례입니다.",
       "high": "고밸류에이션 주도주에서는 후행 실적 서프라이즈보다 선행 모멘텀(지정학 프리미엄) 약화가 멀티플 조정을 촉발합니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-2"
+    ]
   },
   {
     "id": "news-hi-29",
@@ -244,7 +309,19 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "바다에 배가 너무 많아지면 운임이 떨어져 해운사가 힘들어지고 새 배 주문도 줄어들어요.",
       "middle": "신조선 인도 폭증에 따른 선복 과잉이 SCFI 하락(해운)과 신규 발주 둔화(조선)로 연쇄 파급되는 구조를 보세요.",
       "high": "해운 업황의 선복 공급 과잉은 운임(P) 붕괴를 통해 해운사 이익을 직접 훼손하고 조선사의 컨테이너 신조 발주 수요까지 냉각시킵니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "keyMetrics": [
+      {
+        "label": "연속 추세 기간",
+        "value": "8주 연속"
+      },
+      {
+        "label": "주요 변동 폭",
+        "value": "10% 이상"
+      }
+    ]
   },
   {
     "id": "news-hi-30",
@@ -275,7 +352,20 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "유가가 크게 오르면 에너지를 파는 쪽은 웃고, 기름을 재료나 연료로 많이 쓰는 쪽은 울게 돼요.",
       "middle": "같은 유가 급등 뉴스라도 매출이 유가에 연동되는 업종과 원가가 유가에 연동되는 업종을 구분해야 합니다.",
       "high": "공급 측 유가 급등 시 업스트림 에너지의 판가·재고 수혜와 다운스트림 해운·화학의 마진 스퀴즈를 대조하세요."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 마켓데스크",
+    "relatedGlossaryIds": [
+      "g-18",
+      "g-25",
+      "g-26"
+    ],
+    "keyMetrics": [
+      {
+        "label": "국제 유가 수준",
+        "value": "95달러"
+      }
+    ]
   },
   {
     "id": "news-hi-31",
@@ -302,7 +392,9 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "수도권 재건축 규제가 풀리면 대형 건설사들이 안전하고 큰 공사를 따낼 기회가 늘어나요.",
       "middle": "단순 공사 물량 증가보다 미분양 위험이 적은 수도권 정비사업의 수익성과 수주잔고 질 개선에 주목하세요.",
       "high": "용적률 상향과 규제 완화는 건설사의 수도권 정비사업 수주 믹스 개선과 마진 회복을 이끄는 직접 정책 호재입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀"
   },
   {
     "id": "news-hi-32",
@@ -329,7 +421,19 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "매출이 잘 나와도 공사 원가가 너무 높으면 실제로 남는 이익은 크게 줄어들어요.",
       "middle": "건설사 실적 발표에서는 매출액보다 주택 원가율 추이와 해외 현장 추가 원가 반영 여부를 최우선으로 보세요.",
       "high": "매출 부합에도 도급 원가율 고착화와 해외 추가 원가가 겹치면 실적 턴어라운드 지연에 따른 멀티플 하향이 불가피합니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-19",
+      "g-20"
+    ],
+    "keyMetrics": [
+      {
+        "label": "예상치 대비 괴리",
+        "value": "30%"
+      }
+    ]
   },
   {
     "id": "news-hi-33",
@@ -356,7 +460,9 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "전기차가 덜 팔려도 대신 더 비싸고 잘 팔리는 하이브리드 차를 많이 만드는 회사는 이득을 봐요.",
       "middle": "전기차 캐즘이라는 표면적 악재 속에서 대체 수요(HEV)를 흡수해 마진을 높이는 반사이익 구조를 읽어야 합니다.",
       "high": "BEV 수요 둔화가 곧바로 완성차 악재로 직결되지 않으며, 고마진 HEV 믹스 확대에 따른 ASP·OPM 개선이 핵심 반전 포인트입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀"
   },
   {
     "id": "news-hi-34",
@@ -383,7 +489,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "가장 큰 수출 시장인 미국에서 높은 관세를 매기면 차를 팔아 남기는 이익이 크게 줄어들어요.",
       "middle": "관세 부과 시 판가 전가(물량 감소)와 원가 흡수(마진 훼손) 딜레마가 완성차 실적 추정치를 직격합니다.",
       "high": "북미 이익 비중이 높은 국내 완성차에 대한 25% 보편관세는 즉각적인 EPS 훼손과 CapEx 증가를 유발하는 대형 악재입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-23"
+    ]
   },
   {
     "id": "news-hi-35",
@@ -414,7 +525,14 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "금리가 크게 오르면 이자를 받는 금융은 유리해지고, 돈을 빌려 미래에 투자하는 바이오와 건설은 힘들어져요.",
       "middle": "국채 금리 급등 시 이자 마진 수혜(금융)와 할인율·차환 금리 피해(바이오·건설)가 동시에 나타나는 교차 효과를 파악하세요.",
       "high": "고금리 재점화는 금융의 NIM 방어와 바이오(할인율 상승)·건설(조달비용 확대)의 밸류에이션 압박을 동시에 유발합니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀",
+    "relatedGlossaryIds": [
+      "g-6",
+      "g-7",
+      "g-19"
+    ]
   },
   {
     "id": "news-hi-36",
@@ -443,7 +561,9 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "한쪽이 사용료를 더 받게 되면 돈을 내야 하는 다른 쪽 업종은 비용이 늘어나 불리해져요.",
       "middle": "디지털 가치사슬에서 인프라 공급자(통신)의 수익 확대가 수요자(인터넷)의 원가 상승으로 이어지는 교차 구조를 보세요.",
       "high": "망 사용료 분담 법안은 통신사의 투자 회수 모멘텀과 인터넷 플랫폼의 트래픽 원가 상승이 맞물리는 섹터 간 트레이드오프입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀"
   },
   {
     "id": "news-hi-37",
@@ -474,7 +594,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "새로운 건강 트렌드 하나가 어떤 업종에는 새로운 기회를, 다른 업종에는 판매 감소를 불러올 수 있어요.",
       "middle": "신약(바이오)의 확산이 파생 소비(안티에이징 화장품)와 대체 소비 감소(가공식품)로 퍼지는 연쇄 효과를 읽어내세요.",
       "high": "메가트렌드(GLP-1)의 1차 수혜(바이오), 2차 파생 수혜(화장품), 구조적 피해주(가공식품)를 입체적으로 구분해야 합니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀",
+    "relatedGlossaryIds": [
+      "g-30"
+    ]
   },
   {
     "id": "news-hi-38",
@@ -503,7 +628,9 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "핵심 재료 가격이 내리면 재료를 사서 쓰는 회사는 좋고, 재료를 파는 회사는 이익이 줄어들어요.",
       "middle": "전·후방 산업 간 원자재 가격 협상 타결이 어느 쪽의 원가 절감과 마진 축소로 이어지는지 대조해 보세요.",
       "high": "후판가 인하는 조선사의 원가 레버리지 확대와 철강 소재사의 롤마진 압착이 동시에 나타나는 전형적 밸류체인 교차 재료입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀"
   },
   {
     "id": "news-hi-39",
@@ -534,7 +661,13 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "광물 값이 급락하면 완성차를 만드는 회사는 비용이 줄지만, 재료를 미리 사 둔 배터리 회사는 손해를 봐요.",
       "middle": "판가 연동 구조와 원재료 재고 시차(역래깅) 때문에 광물가 하락이 배터리·화학에 악재가 되는 원리를 이해하세요.",
       "high": "광물가 급락 시 전방 OEM의 원가 절감 수혜와 중·후방 배터리·양극재의 ASP 하락 및 역래깅 손실 간 비대칭을 읽어내야 합니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "산업밸류체인 분석팀",
+    "relatedGlossaryIds": [
+      "g-7",
+      "g-26"
+    ]
   },
   {
     "id": "news-hi-40",
@@ -561,7 +694,19 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "지난 성적이 아무리 좋아도 다음 분기 전망이 어두우면 주식시장은 실망해서 하락할 수 있어요.",
       "middle": "실적 발표에서는 확정된 과거 이익보다 경영진이 제시하는 차기 분기 가이던스(ASP·CapEx)를 더 주의 깊게 읽어야 합니다.",
       "high": "반도체 실적 해석의 핵심은 확정 EPS가 아니라 차기 분기 ASP·재고·CapEx 가이던스가 시사하는 사이클 방향성입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-20",
+      "g-23"
+    ],
+    "keyMetrics": [
+      {
+        "label": "주요 변동 폭",
+        "value": "150% 이상"
+      }
+    ]
   },
   {
     "id": "news-hi-41",
@@ -588,7 +733,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "일시적인 장부 손실 때문에 적자처럼 보여도, 실제로 물건을 팔아 남기는 마진이 살아나면 좋은 신호예요.",
       "middle": "회계상 일회성 재고평가손실과 실제 현금 마진(에틸렌 스프레드)을 분리해서 읽는 시각이 필요합니다.",
       "high": "재고평가손실에 의한 적자 착시 이면에 공급 구조조정과 에틸렌 스프레드 반등이라는 실질 턴어라운드 단서를 포착하세요."
-    }
+    },
+    "articleFormat": "interview",
+    "sourceDesk": "현장 인터뷰·리서치팀",
+    "relatedGlossaryIds": [
+      "g-26"
+    ]
   },
   {
     "id": "news-hi-42",
@@ -619,7 +769,14 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "전 세계 시장이 불안해질 때는 비싼 성장주에서 돈이 빠지고, 싸고 배당이 든든한 업종으로 옮겨가요.",
       "middle": "글로벌 유동성 회수(엔 캐리 청산) 국면에서 고밸류 기술주와 저PBR 배당 방어주의 엇갈린 수급 흐름을 읽으세요.",
       "high": "유동성 긴축 쇼크는 고멀티플 기술주의 디레이팅과 저PBR·고배당 금융·지주사로의 스타일 로테이션을 동시에 유도합니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀",
+    "relatedGlossaryIds": [
+      "g-6",
+      "g-7",
+      "g-21"
+    ]
   },
   {
     "id": "news-hi-43",
@@ -646,7 +803,15 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "핵심 수출 지역에서 자기 나라 물건만 사자는 규칙이 논의되면 수출 기업에는 부담이 돼요.",
       "middle": "확정 전 규제 초안 유출이라도 주요 수출 시장의 진입 장벽 리스크는 주가에 먼저 반영됩니다.",
       "high": "유럽 방산 보호주의 검토설은 높은 멀티플을 받던 K-방산의 수출 성장 가이던스에 정책 불확실성을 더하는 변수입니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 속보데스크",
+    "keyMetrics": [
+      {
+        "label": "주요 변동 폭",
+        "value": "65% 이상"
+      }
+    ]
   },
   {
     "id": "news-hi-44",
@@ -673,7 +838,9 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "신약 시험 실패와 기술 수출 취소는 바이오 회사의 미래 가치를 크게 떨어뜨리는 직접 악재예요.",
       "middle": "바이오 섹터에서는 임상 3상 1차 평가지표 충족 여부와 빅파마 기술이전 유지 여부가 기업가치의 핵심입니다.",
       "high": "후기 임상 실패 및 권리 반환은 파이프라인 rNPV 삭제와 섹터 전반의 리스크 프리미엄 확대로 직결됩니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "글로벌 산업 취재팀"
   },
   {
     "id": "news-hi-45",
@@ -700,7 +867,18 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "AI 기술 덕분에 광고 클릭과 쇼핑 구매가 실제로 늘어나면 인터넷 회사의 수익성이 크게 좋아져요.",
       "middle": "AI 도입이 비용 부담을 넘어 광고 단가(eCPM)와 전환율 상승이라는 실질 매출로 이어지는지 확인하세요.",
       "high": "CTR 개선과 eCPM 상승 반전은 인터넷 플랫폼의 AI 수익화(Monetization) 안착을 입증하는 핵심 리레이팅 지표입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀",
+    "relatedGlossaryIds": [
+      "g-18"
+    ],
+    "keyMetrics": [
+      {
+        "label": "주요 변동 폭",
+        "value": "30% 이상"
+      }
+    ]
   },
   {
     "id": "news-hi-46",
@@ -731,7 +909,9 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "전기요금이 오르면 에너지를 공급하는 업종은 유리하고, 전기를 많이 쓰는 굴뚝 공장은 비용이 늘어나요.",
       "middle": "산업용 전기요금 인상 시 전력 공급·절감 섹터(에너지)와 전력 다소비 장치 산업(소재·화학)의 손익 방향을 구분하세요.",
       "high": "요금 현실화는 에너지 섹터의 수익 정상화 호재인 동시에, 판가 전가력이 약한 소재·화학의 제조원가(COGS) 압박 요인입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀"
   },
   {
     "id": "news-hi-47",
@@ -758,7 +938,20 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "은행이 이자 외의 수익을 키우고 자본이 튼튼해지면 주주에게 배당과 자사주 소각을 더 많이 해 줄 수 있어요.",
       "middle": "금융지주 실적에서는 비이자이익 성장과 주주환원의 기준선인 CET1 비율 초과 달성 여부를 핵심으로 봐야 합니다.",
       "high": "CET1 13.5% 돌파와 비이자이익 호조가 결합된 자사주 소각·TSR 상향은 금융주 PBR 리레이팅의 가장 강력한 촉매입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-6",
+      "g-19",
+      "g-20"
+    ],
+    "keyMetrics": [
+      {
+        "label": "보통주자본비율(CET1)",
+        "value": "13.5%"
+      }
+    ]
   },
   {
     "id": "news-hi-48",
@@ -785,7 +978,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "외식비가 비싸져 지갑이 얇아지면 오히려 집에서 먹는 간편식과 라면 판매가 늘어날 수 있어요.",
       "middle": "경기 침체 시 비싼 외식에서 저렴한 가공식품으로 이동하는 대체 소비(Trade-down) 효과를 읽어내세요.",
       "high": "고물가·내수 위축 국면에서 외식 대체 수요가 가공식품 출하량(Q)과 가동률 레버리지를 끌어올리는 역발상 구조입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-7"
+    ]
   },
   {
     "id": "news-hi-49",
@@ -814,7 +1012,9 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "아직 공식 발표가 아닌 소문이라도 과거에 피해를 겪은 중국 규제 소식에는 시장이 민감하게 반응해요.",
       "middle": "미확인 정책 루머일지라도 대중국 매출 비중이 남아 있는 소비재(화장품·자동차)에는 단기 할인 요인이 됩니다.",
       "high": "중국 비관세 통관 강화 관측은 확정 여부와 별개로 대중 익스포저 보유 섹터의 단기 리스크 회피 매도를 자극합니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 속보데스크"
   },
   {
     "id": "news-hi-50",
@@ -841,7 +1041,18 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "신사업 매출이 늘어도 예상치 못한 큰 비용과 사용료 부담이 생기면 통신주 투자자들은 실망할 수 있어요.",
       "middle": "신사업 성장 헤드라인 뒤에 숨은 일회성 비용과 주파수 재할당이라는 규제 비용 변수를 함께 점검해야 합니다.",
       "high": "배당 가치주 성격의 통신 섹터에서는 신사업 매출 성장보다 일회성 비용과 주파수 대가 불확실성에 따른 이익 미스가 더 크게 반영됩니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-19"
+    ],
+    "keyMetrics": [
+      {
+        "label": "주요 변동 폭",
+        "value": "25% 이상"
+      }
+    ]
   },
   {
     "id": "news-hi-51",
@@ -870,7 +1081,14 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "한국 증시가 선진국 시장으로 인정받으면 해외 큰돈이 들어와 저평가된 대형 지주·금융주가 유리해져요.",
       "middle": "MSCI 선진국 지수 편입 논의가 글로벌 패시브 수급 유입과 저PBR 대형주 리레이팅으로 이어지는 흐름을 보세요.",
       "high": "제도 선진화에 따른 MSCI DM 편입 경로 진입은 저PBR 지주·금융 섹터의 구조적 밸류에이션 피어 갭 축소 촉매입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀",
+    "relatedGlossaryIds": [
+      "g-31",
+      "g-13",
+      "g-3"
+    ]
   },
   {
     "id": "news-hi-52",
@@ -899,7 +1117,9 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "새로운 통신 기술이 등장하면 새 부품을 만드는 기술 회사는 수혜를 입고 기존 방식 회사는 도전을 받아요.",
       "middle": "기술 표준 전환기에 신규 부품·장비 공급자(기술)와 기존 인프라 독점자(통신)의 이해가 엇갈리는 구도를 파악하세요.",
       "high": "6G 위성 직결 통신은 기술 부품 섹터의 신규 TAM 확대와 전통 지상망 통신사의 해자 희석 우려가 교차하는 재료입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "글로벌 산업 취재팀"
   },
   {
     "id": "news-hi-53",
@@ -926,7 +1146,9 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "안전 규정이 까다로워지면 기준을 미리 통과한 탄탄한 회사들이 경쟁자가 줄어든 시장에서 더 잘 팔려요.",
       "middle": "규제 강화가 모든 기업에 악재인 것은 아니며, 선제 대응한 선도 기업에는 경쟁사 퇴출이라는 진입장벽 수혜가 됩니다.",
       "high": "MoCRA 시행은 저가 영세 경쟁사 퇴출을 통해 cGMP 인증 국내 ODM·프리미엄 화장품의 북미 해자와 점유율을 강화합니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀"
   },
   {
     "id": "news-hi-54",
@@ -953,7 +1175,15 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "물건이 많이 팔려도 손님을 끌어오는 광고비가 너무 비싸지면 실제로 남는 이익은 줄어들어요.",
       "middle": "이커머스 기반 소비재 분석에서는 매출 성장률뿐 아니라 고객획득비용(CAC)과 광고비 비중 변화를 반드시 점검하세요.",
       "high": "경쟁 격화에 따른 CAC 급등과 SG&A 비율 상승은 매출 성장의 질을 떨어뜨려 화장품 OPM 훼손으로 직결됩니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "keyMetrics": [
+      {
+        "label": "주요 변동 폭",
+        "value": "40% 이상"
+      }
+    ]
   },
   {
     "id": "news-hi-55",
@@ -982,7 +1212,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "세금 완화로 유리해진 지주사와 대출 규제로 집 팔기가 어려워진 건설사의 상반된 처지를 구분해 보세요.",
       "middle": "동시에 발표된 세제 개편(지주사 수혜)과 가계대출 규제 강화(건설사 부담)의 섹터별 영향을 따로 떼어 분석해야 합니다.",
       "high": "승계 세제 완화에 따른 지주사 거버넌스 개선 기대와 DSR 강화에 따른 건설 분양 위축이 교차하는 복합 정책 재료입니다."
-    }
+    },
+    "articleFormat": "rival",
+    "sourceDesk": "산업·기업 비교팀",
+    "relatedGlossaryIds": [
+      "g-5"
+    ]
   },
   {
     "id": "news-hi-56",
@@ -1015,7 +1250,13 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "배당을 늘리라는 요구는 현금이 넉넉한 회사엔 호재지만, 설비 투자를 크게 해야 하는 회사엔 부담이 될 수 있어요.",
       "middle": "주주환원 강화 기조가 성숙기 현금창출 업종(지주·통신)과 대규모 투자 진행 업종(에너지)에 미치는 차이를 비교하세요.",
       "high": "스튜어드십 코드 강화는 FCF가 풍부한 지주·통신의 리레이팅 촉매인 반면, 고CapEx 에너지 섹터에는 재무 유연성 제약 변수입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀",
+    "relatedGlossaryIds": [
+      "g-21",
+      "g-23"
+    ]
   },
   {
     "id": "news-hi-57",
@@ -1044,7 +1285,15 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "핵심 광물 수출이 막히면 대체 기술을 가진 소재 회사는 유리하고, 그 광물을 사서 쓰는 방산 회사는 단기 부담이 생겨요.",
       "middle": "자원 무기화 국면에서 대체 공급망을 보유한 상류 소재 섹터와 원재료 조달에 노출된 하류 방산 섹터의 엇갈린 영향을 보세요.",
       "high": "전략광물 통제는 탈중국 정련·국산화 소재 기업의 반사이익과 방산 제조사의 단기 조달·원가 부담을 동시에 유발합니다."
-    }
+    },
+    "articleFormat": "rival",
+    "sourceDesk": "산업·기업 비교팀",
+    "keyMetrics": [
+      {
+        "label": "주요 변동 폭",
+        "value": "70% 이상"
+      }
+    ]
   },
   {
     "id": "news-hi-58",
@@ -1071,7 +1320,24 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "이익률이 훨씬 높은 해외 수출 비중이 커지면 회사 전체의 영업이익이 폭발적으로 늘어나요.",
       "middle": "방산 실적에서는 단순 매출 규모보다 고마진 수출 인도 비중 확대에 따른 영업이익률(OPM) 점프에 주목하세요.",
       "high": "수출 인도 믹스 50% 돌파와 OPM 18%대 서프라이즈는 방산 섹터의 구조적 마진 레벨업을 입증하는 핵심 실적 지표입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-18",
+      "g-19",
+      "g-20"
+    ],
+    "keyMetrics": [
+      {
+        "label": "영업이익률",
+        "value": "18%"
+      },
+      {
+        "label": "예상치 대비 괴리",
+        "value": "25%"
+      }
+    ]
   },
   {
     "id": "news-hi-59",
@@ -1098,7 +1364,15 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "항구가 막혀 배가 묶이면 남는 배가 부족해져 운임이 오르므로 해운 회사엔 뜻밖의 호재가 될 수 있어요.",
       "middle": "해운업에서는 항만 적체나 우회 같은 물류 차질이 유효 선복 축소와 운임 상승으로 이어지는 역설적 구조를 이해해야 합니다.",
       "high": "물류 마비 보도 이면의 선박 회전율 저하 → 유효 공급 감소 → SCFI 급반등 경로를 포착하는 것이 해운 분석의 핵심입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "keyMetrics": [
+      {
+        "label": "주요 변동 폭",
+        "value": "5% 이상"
+      }
+    ]
   },
   {
     "id": "news-hi-60",
@@ -1129,7 +1403,9 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "바다 운송 요금이 크게 오르면 배를 굴리는 해운사는 웃고, 배에 짐을 실어 보내는 회사는 비용이 늘어나요.",
       "middle": "해상 운임 지표(BDI·PCTC) 급등이 운송 공급자(해운)와 주요 화주(완성차·식품)에 미치는 반대 효과를 구분하세요.",
       "high": "운임 급등은 해운사의 판가(P) 상승 호재이자, 수출입 물류 비중이 큰 자동차·식품 섹터의 비용(SG&A·COGS) 증가 악재입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀"
   },
   {
     "id": "news-hi-61",
@@ -1160,7 +1436,9 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "중국이 건설 투자를 늘리면 원자재와 운송 업종은 좋아지지만, 비싸진 자재를 사 써야 하는 국내 건설사는 힘들어져요.",
       "middle": "중국발 원자재 가격 급등이 소재·벌크 해운의 판가 호재와 국내 건설의 자재 원가 부담으로 갈리는 구조를 파악하세요.",
       "high": "중국의 대규모 인프라 재정 부양은 소재(판가)·해운(벌크 물동량) 강세와 국내 건설(자재 원가율 상승) 약세의 교차 재료입니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 속보데스크"
   },
   {
     "id": "news-hi-62",
@@ -1187,7 +1465,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "미리 위험한 손실을 투명하게 다 털어내면 오히려 불안감이 사라져 주가가 반등할 때가 있어요.",
       "middle": "적자 전환이라는 표면 숫자보다 잠재 부실(PF)의 완전한 노출과 불확실성 해소(빅 배스) 효과를 읽어내세요.",
       "high": "극심한 저평가 구간에서의 빅 배스 적자는 숨겨진 리스크 해소와 차기년도 정상화 가시성을 높이는 역발상 바닥 신호입니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 마켓데스크",
+    "relatedGlossaryIds": [
+      "g-3"
+    ]
   },
   {
     "id": "news-hi-63",
@@ -1216,7 +1499,9 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "자동차가 움직이는 컴퓨터로 진화하면 완성차 회사와 차량용 반도체 기술 회사가 함께 성장해요.",
       "middle": "SDV 전환에 따른 완성차의 구독 수익화(밸류에이션 확장)와 차량당 반도체 탑재량 증가(기술주 수혜)를 연결해 보세요.",
       "high": "SDV·자율주행 양산은 완성차의 소프트웨어 반복 매출 창출과 기술 섹터의 차량용 반도체 TAM 확대를 동시에 견인합니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "산업밸류체인 분석팀"
   },
   {
     "id": "news-hi-64",
@@ -1243,7 +1528,13 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "독점 규제와 개인정보 보호가 동시에 강화되면 플랫폼의 쇼핑·광고 수익 모델이 타격을 받아요.",
       "middle": "인터넷 기업을 분석할 때는 플랫폼 공정거래 규제와 개인정보(광고 데이터) 규제가 수익 모델에 미치는 직접 타격을 점검하세요.",
       "high": "자사 우대 금지와 광고 데이터 옵트인 의무화는 플랫폼의 생태계 록인과 광고 단가를 동시에 훼손하는 구조적 규제 악재입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀",
+    "relatedGlossaryIds": [
+      "g-18",
+      "g-2"
+    ]
   },
   {
     "id": "news-hi-65",
@@ -1270,7 +1561,24 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "매출이 늘어도 비싼 AI 장비 비용과 전기료가 더 크게 불어나면 회사의 영업이익은 기대보다 줄어들어요.",
       "middle": "AI 투자 국면의 인터넷 실적에서는 매출 증가율보다 GPU 감가상각비·전력비 증가에 따른 OPM 변화를 핵심으로 봐야 합니다.",
       "high": "AI 인프라 감가상각 및 전력비 폭증이 매출 성장을 잠식하는 비용 선행 국면은 인터넷주 어닝쇼크의 대표적 원인입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-19",
+      "g-20",
+      "g-23"
+    ],
+    "keyMetrics": [
+      {
+        "label": "예상치 대비 괴리",
+        "value": "15%"
+      },
+      {
+        "label": "주요 변동 폭",
+        "value": "15% 이상"
+      }
+    ]
   },
   {
     "id": "news-hi-66",
@@ -1297,7 +1605,14 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "경기 침체 걱정이 커질 때는 경기를 덜 타고 배당을 꾸준히 주는 통신 같은 방어주가 오히려 오를 수 있어요.",
       "middle": "거시 경기 지표 악화 국면에서는 시장 전체가 흔들릴 때 자금 피난처로 부각되는 고배당 방어주(통신)의 역행 특성을 기억하세요.",
       "high": "경기 침체 공포(ISM PMI 위축)는 저베타·고배당 통신 섹터로의 기관 방어 순환매를 유도하는 전형적 역발상 호재입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀",
+    "relatedGlossaryIds": [
+      "g-5",
+      "g-32",
+      "g-9"
+    ]
   },
   {
     "id": "news-hi-67",
@@ -1324,7 +1639,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "경쟁 나라에서 싼값에 대량 생산하는 초대형 공장이 열리면 기존 화학 회사들의 이익이 크게 무너져요.",
       "middle": "일시적 수요 부진이 아니라 중국의 대규모 증설(COTC)로 인한 구조적 공급과잉과 스프레드 붕괴에 주목하세요.",
       "high": "중국발 COTC 대규모 증설은 아시아 에틸렌 스프레드를 구조적으로 압착해 국내 범용 화학사의 실적과 자산가치를 직접 훼손합니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "산업밸류체인 분석팀",
+    "relatedGlossaryIds": [
+      "g-18"
+    ]
   },
   {
     "id": "news-hi-68",
@@ -1353,7 +1673,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "중국산 배에 미국이 벌금을 매기면 한국 조선소는 주문이 몰려 웃지만, 배를 굴리는 해운사는 운영비가 늘어나요.",
       "middle": "미국의 대중국 조선 제재가 경쟁국 대체 수혜(한국 조선)와 기존 선대 운항 원가 상승(해운)으로 갈리는 구도를 보세요.",
       "high": "중국산 선박 입항 수수료 확정은 한국 조선사의 구조적 발주 반사이익과 글로벌 해운사의 선대 운항 비용 가중을 동시에 초래합니다."
-    }
+    },
+    "articleFormat": "rival",
+    "sourceDesk": "산업·기업 비교팀",
+    "relatedGlossaryIds": [
+      "g-18"
+    ]
   },
   {
     "id": "news-hi-69",
@@ -1380,7 +1705,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "이미 모두가 알고 있던 큰 수주 호재 뒤에는 환율이나 인건비 부담 때문에 차익실현 매물이 나올 수 있어요.",
       "middle": "주가가 이미 호황을 선반영한 상태에서는 수주량 달성보다 환율과 인건비 같은 마진(수익성) 변수가 주가를 움직입니다.",
       "high": "수주 목표 초과 달성 공시에도 밸류에이션 부담과 원화 강세·노무비 상승이 겹치면 선반영 셀온 조정이 촉발됩니다."
-    }
+    },
+    "articleFormat": "interview",
+    "sourceDesk": "현장 인터뷰·리서치팀",
+    "relatedGlossaryIds": [
+      "g-18"
+    ]
   },
   {
     "id": "news-hi-70",
@@ -1407,7 +1737,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "유럽과 북미에서 낡은 전력망을 대거 교체하면 변압기와 에너지 저장 장치를 만드는 회사의 주문이 폭증해요.",
       "middle": "전력망 노후 교체와 AI·재생에너지 수요가 맞물린 공급 부족(쇼티지)이 판가 상승과 장기 수주로 이어지는 구조를 보세요.",
       "high": "글로벌 전력망 현대화 투자는 초고압 전력기기·ESS 공급 병목을 심화시켜 에너지 인프라 섹터의 장기 고마진 성장을 보장합니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 마켓데스크",
+    "relatedGlossaryIds": [
+      "g-24"
+    ]
   },
   {
     "id": "news-hi-71",
@@ -1434,7 +1769,14 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "은행 이익에 특별 세금을 매길 수 있다는 소문만 나와도 주주환원 기대가 흔들려 금융주가 약세를 보여요.",
       "middle": "금융 섹터에서는 횡재세·상생금융 같은 관치금융 루머가 CET1과 주주환원 신뢰도를 흔드는 핵심 할인 요인임을 기억하세요.",
       "high": "미확정 법안 검토설이라도 주주환원 재원을 침해하는 관치금융 리스크 재부각은 금융주 리레이팅 논리를 직접 훼손합니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 속보데스크",
+    "relatedGlossaryIds": [
+      "g-21",
+      "g-5",
+      "g-31"
+    ]
   },
   {
     "id": "news-hi-72",
@@ -1461,7 +1803,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "임상 시험을 통과했더라도 이미 나와 있는 경쟁 약보다 뛰어나지 않으면 시장에서는 실망할 수 있어요.",
       "middle": "바이오 임상 발표에서는 통과 여부라는 제목보다 기존 표준치료제 대비 효능 우위와 상업화 가능성을 따져봐야 합니다.",
       "high": "임상 1차 지표 달성에도 경쟁 약물 대비 데이터 열위가 드러나면 기술이전 기대가 꺾이며 전형적인 기대치 반전 급락이 발생합니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "글로벌 산업 취재팀",
+    "relatedGlossaryIds": [
+      "g-19"
+    ]
   },
   {
     "id": "news-hi-73",
@@ -1492,7 +1839,19 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "환율이 내려가면 외국 재료를 사 오는 업종은 유리하고, 외국에 물건을 팔아 달러를 버는 업종은 불리해져요.",
       "middle": "환율 급락(원화 강세) 국면에서 달러 순수입 업종(식품)의 원가 절감과 달러 순수출 업종(자동차·방산)의 환차손을 대비하세요.",
       "high": "원/달러 급락은 수입 원재료 비중이 큰 식품의 OPM 개선과 달러 수출 비중이 높은 자동차·방산의 이익 추정치 하향을 동시 촉발합니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-18",
+      "g-6"
+    ],
+    "keyMetrics": [
+      {
+        "label": "원/달러 환율",
+        "value": "1,280원"
+      }
+    ]
   },
   {
     "id": "news-hi-74",
@@ -1521,7 +1880,12 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "소비자들이 물건을 사는 장소가 바뀌면 새 채널에 납품하는 제조사는 웃고, 옛 매장을 가진 지주사는 힘들어져요.",
       "middle": "소비 채널 재편(가성비 H&B 부상 vs 백화점·면세점 위축)이 화장품 제조사와 전통 유통 지주사에 미치는 차이를 비교하세요.",
       "high": "뷰티 유통 채널의 저가·H&B 재편은 화장품 ODM의 볼륨(Q) 성장과 전통 유통 지주사의 자회사 수익성 둔화를 동시에 야기합니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀",
+    "relatedGlossaryIds": [
+      "g-7"
+    ]
   },
   {
     "id": "news-hi-75",
@@ -1548,7 +1912,9 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "세계 큰 제약사가 한국의 차세대 항암 플랫폼을 사려 한다는 소식은 바이오 업종에 강한 기대감을 불어넣어요.",
       "middle": "미확정 협상 보도라도 빅파마의 특허 만료 수요와 맞물린 원천 플랫폼(ADC) 기술이전 기대는 강한 상승 촉매가 됩니다.",
       "high": "단일 물질을 넘어선 ADC·이중항체 플랫폼의 빅파마 기술이전 임박설은 업프론트 현금 유입과 멀티플 확장 기대를 선반영시킵니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 속보데스크"
   },
   {
     "id": "news-hi-76",
@@ -1575,7 +1941,24 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "보조금을 뺀 실제 본업 이익이 적자이고 공장 가동률이 절반으로 떨어지면 심각한 실적 충격이에요.",
       "middle": "2차전지 실적 발표에서는 보조금(AMPC)을 제외한 실질 본업 영업이익과 유럽 공장 가동률 지표를 분리해서 읽어야 합니다.",
       "high": "Ex-AMPC 본업 적자 전환과 유럽 가동률 50%대 하락은 고정비 부담 심화를 입증하는 결정적 어닝쇼크 지표입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-7",
+      "g-19",
+      "g-23"
+    ],
+    "keyMetrics": [
+      {
+        "label": "공장 가동률",
+        "value": "50%"
+      },
+      {
+        "label": "예상치 대비 괴리",
+        "value": "40%"
+      }
+    ]
   },
   {
     "id": "news-hi-77",
@@ -1602,7 +1985,13 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "수출 기록을 세워도 해외 공장·마케팅 비용이 늘어 이익률이 꺾이고 주가가 이미 비싸면 매도가 나올 수 있어요.",
       "middle": "고평가 구간에 진입한 수출 소비재에서는 매출 신기록보다 판관비(SG&A) 증가와 영업이익률(OPM) 피크아웃 여부를 점검하세요.",
       "high": "높아진 멀티플 구간에서는 사상 최대 수출 호재가 해외 증설 고정비·SG&A 부담과 맞물려 OPM 피크아웃 셀온으로 반전될 수 있습니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-23",
+      "g-2"
+    ]
   },
   {
     "id": "news-hi-78",
@@ -1629,7 +2018,13 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "광물 값이 올라도 광산을 가진 회사가 아니라 광물을 사다 가공하는 제련 회사는 수수료가 줄어 손해를 볼 수 있어요.",
       "middle": "원자재 가격 상승 뉴스를 볼 때 해당 섹터가 광산 보유자인지, 원광석을 가공하는 제련·가공 기업(TC/RC 의존)인지 구분하세요.",
       "high": "광석 공급 부족발 LME 금속가 급등은 국내 제련·가공 소재사의 TC/RC 붕괴와 실수요 위축을 동반해 수익성 악화로 반전됩니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 마켓데스크",
+    "relatedGlossaryIds": [
+      "g-18",
+      "g-7"
+    ]
   },
   {
     "id": "news-hi-79",
@@ -1660,7 +2055,13 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "유휴 땅을 데이터센터로 바꿀 수 있게 되면 땅을 가진 통신·지주사는 유리하고, 기존 클라우드 회사는 경쟁이 늘어요.",
       "middle": "AI 데이터센터 규제 완화가 부동산 자산 보유자(통신·지주)의 자산 재평가와 클라우드 사업자(인터넷)의 경쟁 심화로 갈리는 구도를 보세요.",
       "high": "도심 유휴부지 AIDC 전환 완화는 통신·지주사의 자산 리레이팅 호재인 반면, 인터넷 플랫폼에는 클라우드 CapEx 중복 및 단가 압박 변수입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀",
+    "relatedGlossaryIds": [
+      "g-23",
+      "g-3"
+    ]
   },
   {
     "id": "news-hi-80",
@@ -1687,6 +2088,11 @@ export const HIGH_EXTRA_NEWS: NewsItem[] = [
       "elementary": "구형 제품 가격이 내려가도 훨씬 비싼 최신 AI 칩 비중이 커지면 회사 전체의 이익은 오히려 늘어날 수 있어요.",
       "middle": "범용 DDR4 현물가 같은 구형 지표의 착시에 속지 말고 HBM·eSSD 전환에 따른 전체 평균판매단가(Blended ASP) 추이를 확인하세요.",
       "high": "레거시 현물가 하락 이면의 감산 및 HBM·eSSD 고부가 믹스 전환에 따른 Blended ASP 상승은 기술주의 대표적 착시 해소 호재입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-7"
+    ]
   }
 ];

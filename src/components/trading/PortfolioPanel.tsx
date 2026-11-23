@@ -22,7 +22,6 @@ import {
   History,
   LineChart,
   ArrowUpDown,
-  Newspaper,
   Coins,
 } from 'lucide-react';
 import {
@@ -62,6 +61,7 @@ export default function PortfolioPanel({
     theme,
     tutorialStep,
     predictionStats,
+    sectorPredictionStats,
     tradeHistory,
     realizedProfitTotal,
     dayCount,
@@ -168,6 +168,10 @@ export default function PortfolioPanel({
     predictionStats.total > 0
       ? Math.round((predictionStats.correct / predictionStats.total) * 100)
       : null;
+  const sectorAccuracyPct =
+    sectorPredictionStats.total > 0
+      ? Math.round((sectorPredictionStats.correct / sectorPredictionStats.total) * 100)
+      : null;
 
   const formatYAxis = (tick: number) => {
     if (tick >= 10000) return `${(tick / 10000).toFixed(0)}만`;
@@ -206,10 +210,12 @@ export default function PortfolioPanel({
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/12 border border-amber-500/25 text-xs font-extrabold text-amber-800 dark:text-amber-300">
             <Target className="w-3.5 h-3.5" />
             <span>
-              뉴스 적중률:{' '}
+              방향 적중:{' '}
               {accuracyPct !== null
                 ? `${accuracyPct}% (${predictionStats.correct}/${predictionStats.total})`
                 : '기록 없음'}
+              {sectorAccuracyPct !== null &&
+                ` · 산업 추론 ${sectorAccuracyPct}% (${sectorPredictionStats.correct}/${sectorPredictionStats.total})`}
             </span>
           </div>
           {onGoToTrading && (
@@ -447,11 +453,6 @@ export default function PortfolioPanel({
                                 <span className="font-black text-foreground text-[15px] truncate">
                                   {item.name}
                                 </span>
-                                {item.hasTodayNews && (
-                                  <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 shrink-0">
-                                    오늘 뉴스
-                                  </span>
-                                )}
                               </div>
                               <div className="text-xs text-muted-foreground font-semibold mt-0.5 tabular-nums">
                                 {item.sector.split('(')[0]} · 비중 {item.weightPct.toFixed(1)}%
@@ -578,15 +579,6 @@ export default function PortfolioPanel({
                                   >
                                     {item.name}
                                   </button>
-                                  {item.hasTodayNews && (
-                                    <span
-                                      className="inline-flex items-center gap-0.5 text-[10px] font-black px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300"
-                                      title="오늘 뉴스 관련 종목"
-                                    >
-                                      <Newspaper className="w-2.5 h-2.5" />
-                                      뉴스
-                                    </span>
-                                  )}
                                 </div>
                                 <div className="flex items-center gap-2 mt-1">
                                   <span className="text-[11px] text-muted-foreground font-semibold">

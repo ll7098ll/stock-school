@@ -133,6 +133,26 @@ export function getActualNewsDirection(item: NewsItem): 'bullish' | 'bearish' | 
 }
 
 /**
+ * 학생의 관련 산업 추론 채점
+ * - 학생이 고른 산업(최대 3개) 중 실제 영향 산업이 1개 이상 포함되고,
+ *   절반 이상이 실제 영향 산업에 해당하거나 실제 산업을 모두 맞혔을 때 적중으로 판정
+ */
+export function evaluateSectorGuesses(
+  item: NewsItem,
+  guesses: SectorId[] | undefined
+): { checked: boolean; hit: boolean; matched: SectorId[]; missed: SectorId[] } {
+  const actualSet = new Set<SectorId>(item.relatedSectors);
+  const picked = (guesses ?? []).filter((s, idx, arr) => arr.indexOf(s) === idx);
+  if (picked.length === 0) {
+    return { checked: false, hit: false, matched: [], missed: [...actualSet] };
+  }
+  const matched = picked.filter((s) => actualSet.has(s));
+  const missed = item.relatedSectors.filter((s) => !picked.includes(s));
+  const hit = matched.length > 0 && (matched.length === actualSet.size || matched.length >= Math.ceil(picked.length / 2));
+  return { checked: true, hit, matched, missed };
+}
+
+/**
  * 일일 변동률과 뉴스 영향 유무에 비례하는 현실적 거래량 계산
  */
 export function calculateDailyVolume(
@@ -305,8 +325,15 @@ export function simulateNextDay(
   const breakdownByStock: Record<string, DayStockBreakdown> = {};
   const nextCarryoverImpacts: Record<string, number> = {};
 
-  // 시장 공통 거시 노이즈
-  const marketFactor = (Math.random() * 2 - 1) * cfg.marketHalfRange + cfg.marketBias;
+  // 시장 공통 거시 노이즈 + 시나리오/거시 뉴스의 시장 전체 편향(marketBias) 반영
+  const newsMarketBias = Math.max(
+    -0.02,
+    Math.min(
+      0.02,
+      currentNews.reduce((sum, n) => sum + (typeof n.marketBias === 'number' ? n.marketBias : 0), 0)
+    )
+  );
+  const marketFactor = (Math.random() * 2 - 1) * cfg.marketHalfRange + cfg.marketBias + newsMarketBias;
 
   for (const id of Object.keys(stocks)) {
     const stock = stocks[id];

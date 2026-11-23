@@ -35,7 +35,7 @@ export default function TodayNewsCompact({
   onOpenNewsRoom,
   onSelectSector,
 }: TodayNewsCompactProps) {
-  const { currentNews, todayNewsChecks, dayCount } = useGameStore();
+  const { currentNews, todayNewsChecks, todayNewsSectorGuesses, dayCount } = useGameStore();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const checkedCount = countCheckedTodayNews(currentNews, todayNewsChecks);
@@ -74,6 +74,7 @@ export default function TodayNewsCompact({
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 space-y-2">
         {currentNews.map((item) => {
           const pred = todayNewsChecks[item.id];
+          const myGuesses = todayNewsSectorGuesses[item.id] ?? [];
           const isExpanded = expandedId === item.id;
 
           return (
@@ -109,7 +110,7 @@ export default function TodayNewsCompact({
                         미확인
                       </span>
                     )}
-                    {item.relatedSectors.slice(0, 2).map((sec) => (
+                    {myGuesses.map((sec) => (
                       <span
                         key={sec}
                         onClick={(e) => {
@@ -117,12 +118,13 @@ export default function TodayNewsCompact({
                           e.stopPropagation();
                           onSelectSector(sec);
                         }}
+                        title="내가 추론한 산업 (클릭해 종목 탐색)"
                         className={cn(
                           'text-[11px] font-bold px-2 py-0.5 rounded-md bg-black/[0.04] dark:bg-white/[0.06] text-muted-foreground',
                           onSelectSector && 'hover:text-foreground hover:bg-black/[0.08] dark:hover:bg-white/[0.12]'
                         )}
                       >
-                        #{sec.split('(')[0]}
+                        내 예상 #{sec.split('(')[0]}
                       </span>
                     ))}
                   </div>

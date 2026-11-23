@@ -8,7 +8,7 @@ import {
 } from '../../lib/tradingMetrics';
 import type { TradeType } from '../../lib/types';
 import { cn } from '../../lib/utils';
-import { ArrowUpRight, Briefcase, Newspaper } from 'lucide-react';
+import { ArrowUpRight, Briefcase } from 'lucide-react';
 
 interface HoldingsCompactPanelProps {
   selectedStockId: string | null;
@@ -142,14 +142,6 @@ export default function HoldingsCompactPanel({
                         <span className="font-black text-foreground truncate max-w-[120px]">
                           {item.name}
                         </span>
-                        {item.hasTodayNews && (
-                          <span
-                            className="inline-flex items-center text-[10px] px-1 py-0 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 font-black shrink-0"
-                            title="오늘 뉴스 관련 종목"
-                          >
-                            <Newspaper className="w-2.5 h-2.5" />
-                          </span>
-                        )}
                       </div>
                       <div className="text-[10px] text-muted-foreground font-semibold tabular-nums">
                         비중 {item.weightPct.toFixed(1)}% · 평가 {item.currentValue.toLocaleString()}원

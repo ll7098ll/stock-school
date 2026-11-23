@@ -11,6 +11,7 @@ import type {
 } from './types.ts';
 import {
   NEWS_CATEGORY_LABELS,
+  NEWS_FORMAT_LABELS,
   NEWS_TWIST_LABELS,
   SCENARIO_THEME_LABELS,
 } from './types.ts';
@@ -20,12 +21,19 @@ import { HIGH_NEWS } from './news/highNews.ts';
 import { ELEMENTARY_EXTRA_NEWS } from './news/elementaryExtra.ts';
 import { MIDDLE_EXTRA_NEWS } from './news/middleExtra.ts';
 import { HIGH_EXTRA_NEWS } from './news/highExtra.ts';
+import {
+  ELEMENTARY_DIVERSE_NEWS,
+  MIDDLE_DIVERSE_NEWS,
+  HIGH_DIVERSE_NEWS,
+} from './news/diverseThemesNews.ts';
 import { COMPANY_NEWS_TECH_AUTO } from './news/companyNewsTechAuto.ts';
 import { COMPANY_NEWS_ENERGY_BIO } from './news/companyNewsEnergyBio.ts';
 import { COMPANY_NEWS_IND_FIN } from './news/companyNewsIndFin.ts';
+import { COMPANY_NEWS_BALANCED } from './news/companyNewsBalanced.ts';
 import { MACRO_GEO_SCENARIOS } from './scenarios/macroGeoScenarios.ts';
 import { TECH_MOB_SCENARIOS } from './scenarios/techMobScenarios.ts';
 import { CORP_BIO_TREND_SCENARIOS } from './scenarios/corpBioTrendScenarios.ts';
+import { DIVERSE_NEW_SCENARIOS } from './scenarios/diverseNewScenarios.ts';
 import { shuffleArray } from './priceEngine.ts';
 
 export type {
@@ -48,27 +56,33 @@ export {
   ELEMENTARY_EXTRA_NEWS,
   MIDDLE_EXTRA_NEWS,
   HIGH_EXTRA_NEWS,
+  ELEMENTARY_DIVERSE_NEWS,
+  MIDDLE_DIVERSE_NEWS,
+  HIGH_DIVERSE_NEWS,
   NEWS_CATEGORY_LABELS,
+  NEWS_FORMAT_LABELS,
   NEWS_TWIST_LABELS,
   SCENARIO_THEME_LABELS,
 };
 
 /**
- * 34개 가상 상장 기업 개별 특화 뉴스 템플릿 102건 (3단계 수준별 기사 분기)
+ * 34개 가상 상장 기업 개별 특화 뉴스 템플릿 136건 (3단계 수준별 기사 분기 = 408편)
  */
 export const COMPANY_NEWS_TEMPLATES: CompanyNewsTemplate[] = [
   ...COMPANY_NEWS_TECH_AUTO,
   ...COMPANY_NEWS_ENERGY_BIO,
   ...COMPANY_NEWS_IND_FIN,
+  ...COMPANY_NEWS_BALANCED,
 ];
 
 /**
- * 3~4일 연속 스토리 시나리오 아크 24종 (총 85개 에피소드, 3단계 수준별 기사 분기)
+ * 3~4일 연속 스토리 시나리오 아크 30종 (총 106개 에피소드, 3단계 수준별 기사 분기 = 318편)
  */
 export const SCENARIO_ARCS: ScenarioArc[] = [
   ...MACRO_GEO_SCENARIOS,
   ...TECH_MOB_SCENARIOS,
   ...CORP_BIO_TREND_SCENARIOS,
+  ...DIVERSE_NEW_SCENARIOS,
 ];
 
 export function getScenarioById(id: string): ScenarioArc | undefined {
@@ -97,6 +111,11 @@ export function materializeCompanyNews(
     difficulty: [level],
     twistType: template.twistType,
     readingHint: template.readingHint,
+    articleFormat: template.articleFormat,
+    sourceDesk: template.sourceDesk,
+    keyMetrics: template.keyMetrics,
+    quote: template.quote,
+    relatedGlossaryIds: template.relatedGlossaryIds,
   };
 }
 
@@ -131,6 +150,11 @@ export function materializeScenarioNews(
     twistType: episode.twistType,
     readingHint: episode.readingHint,
     marketBias: episode.marketBias,
+    articleFormat: episode.articleFormat,
+    sourceDesk: episode.sourceDesk,
+    keyMetrics: episode.keyMetrics,
+    quote: episode.quote,
+    relatedGlossaryIds: episode.relatedGlossaryIds,
   };
 }
 
@@ -150,16 +174,19 @@ const MATERIALIZED_SCENARIO_NEWS: NewsItem[] = LEVELS.flatMap((lvl) =>
 
 /**
  * 전체 교육용 가상 뉴스 풀
- * - 난이도별 기본 34건 + 추가 단독 60건 + 개별 기업 특화 102건 = 레벨당 196건 (총 588건)
- * - 여기에 24종 멀티데이 시나리오(레벨당 85화 = 255건)가 별도 아크로 전개되어 레벨당 총 281건(843편) 제공
+ * - 난이도별 기본 34건 + 추가 단독 60건 + 다양화 테마 30건 + 개별 기업 특화 136건 = 레벨당 260건 (총 780건)
+ * - 여기에 30종 멀티데이 시나리오(레벨당 106화 = 318건)가 별도 아크로 전개되어 레벨당 총 366건(1,098편) 제공
  */
 export const PREDEFINED_NEWS: NewsItem[] = [
   ...ELEMENTARY_NEWS,
   ...ELEMENTARY_EXTRA_NEWS,
+  ...ELEMENTARY_DIVERSE_NEWS,
   ...MIDDLE_NEWS,
   ...MIDDLE_EXTRA_NEWS,
+  ...MIDDLE_DIVERSE_NEWS,
   ...HIGH_NEWS,
   ...HIGH_EXTRA_NEWS,
+  ...HIGH_DIVERSE_NEWS,
   ...MATERIALIZED_COMPANY_NEWS,
 ];
 

@@ -26,7 +26,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "사람들이 더 비싸고 똑똑한 프리미엄 요금제로 갈아타고 있다는 문장을 눈여겨보세요!",
       "middle": "AI 부가서비스와 프리미엄 요금제 가입 확대가 통신사 수익 구조에 미치는 영향을 파악하세요.",
       "high": "네트워크 고도화에 따른 ARPU 상승과 신규 AI 구독 수익원 확보 여부가 핵심 단서입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀"
   },
   {
     "id": "news-el-22",
@@ -53,7 +55,12 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "소비자에게는 좋은 소식이지만, 요금을 받는 회사 입장에서는 수입이 줄어든다는 점에 주목하세요!",
       "middle": "고정 관리비는 그대로인데 요금 단가가 낮아질 때 통신사 마진이 어떻게 변하는지 확인하세요.",
       "high": "정부 규제에 따른 요금 단가 하방 압력과 높은 고정비 구조의 충돌이 핵심 포인트입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀",
+    "relatedGlossaryIds": [
+      "g-7"
+    ]
   },
   {
     "id": "news-el-23",
@@ -80,7 +87,13 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "배당금을 늘리고 주식 수를 줄여 주주들에게 보답하겠다는 약속을 찾아보세요!",
       "middle": "자사주 소각과 배당 확대가 기존 저평가(지주사 할인) 해소에 어떤 역할을 하는지 살펴보세요.",
       "high": "주주환원 강화가 NAV 할인율 축소와 주당 가치 상승으로 이어지는 메커니즘이 핵심입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "산업밸류체인 분석팀",
+    "relatedGlossaryIds": [
+      "g-21",
+      "g-5"
+    ]
   },
   {
     "id": "news-el-24",
@@ -109,7 +122,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "가장 돈을 잘 버는 알짜 자회사를 따로 떼어 갈 때 기존 주주들이 왜 실망하는지 읽어 보세요!",
       "middle": "자회사 중복 상장이 모회사 지주사의 가치 희석으로 이어지는 원리를 파악하세요.",
       "high": "핵심 자회사 분리 상장에 따른 지주사 NAV 할인 확대와 지배구조 리스크를 포착하세요."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀"
   },
   {
     "id": "news-el-25",
@@ -136,7 +151,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "면세점 손님이 줄고 창고에 팔리지 않은 화장품 재고가 쌓인다는 단서를 찾으세요!",
       "middle": "주요 매출 통로인 면세점의 부진과 고정비 부담이 화장품 수익성에 주는 타격을 읽어 내세요.",
       "high": "면세 채널 매출 역성장과 재고 누적에 따른 영업 레버리지 악화가 핵심 신호입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀"
   },
   {
     "id": "news-el-26",
@@ -163,7 +180,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "어른뿐만 아니라 10대 어린이와 청소년까지 새로운 단골손님이 되었다는 점에 주목하세요!",
       "middle": "신규 소비 연령층 유입과 편집숍 판매 확대가 화장품 시장 규모를 어떻게 키우는지 확인하세요.",
       "high": "저자극 스킨케어 중심의 타깃 고객층 확장이 내수 매출 성장으로 이어지는 구조입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀"
   },
   {
     "id": "news-el-27",
@@ -190,7 +209,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "외국에서 사 오던 핵심 엔진과 위성을 우리 손으로 만들어 수출 길까지 열렸다는 점이 핵심이에요!",
       "middle": "핵심 부품의 기술 자립이 원가 절감과 해외 수주 확대로 이어지는 연결고리를 찾으세요.",
       "high": "지상 무기에서 항공우주·위성으로의 고부가가치 영역 확장이 장기 성장 모멘텀입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "산업밸류체인 분석팀"
   },
   {
     "id": "news-el-28",
@@ -217,7 +238,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "세상에는 기쁜 소식이지만, 무기를 만드는 회사 입장에서는 새 주문이 미뤄진다는 점을 구분해 보세요!",
       "middle": "지정학적 긴장 완화가 신규 무기 발주 일정과 방산 섹터 기대감에 미치는 영향을 확인하세요.",
       "high": "평화 협정에 따른 긴급 발주 지연과 지정학 프리미엄 축소가 주가 조정의 배경입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "글로벌 산업 취재팀"
   },
   {
     "id": "news-el-29",
@@ -244,7 +267,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "짐보다 배가 많아져서 요금을 서로 깎아 주는 할인 경쟁이 벌어졌다는 문장을 확인하세요!",
       "middle": "선박 공급 과잉과 수요 둔화가 해상 운임 및 해운사 수익성에 미치는 영향을 파악하세요.",
       "high": "신조선 인도 집중에 따른 선복 과잉과 운임 하락 사이클 진입이 핵심 단서입니다."
-    }
+    },
+    "articleFormat": "interview",
+    "sourceDesk": "현장 인터뷰·리서치팀"
   },
   {
     "id": "news-el-30",
@@ -273,7 +298,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "아파트가 안 팔릴 때 집을 지은 건설사뿐 아니라 돈을 빌려준 금융회사까지 같이 흔들린다는 점을 보세요!",
       "middle": "미분양 누적이 건설사의 대금 회수와 금융권 대출 부실 우려로 연결되는 고리를 찾으세요.",
       "high": "미분양 확대에 따른 건설사 유동성 압박과 금융권 부동산 PF 충당금 리스크가 핵심입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀"
   },
   {
     "id": "news-el-31",
@@ -302,7 +329,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "비싸게 사서 창고에 두었던 재료를 싸게 팔아야 해서 손해가 난다는 설명에 주목하세요!",
       "middle": "원재료 가격 급락이 재고 평가손실과 제품 판매 단가 하락으로 이어지는 과정을 파악하세요.",
       "high": "광물 가격 하락에 따른 판가 연동 축소와 부정적 래깅 효과가 핵심 단서입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "산업밸류체인 분석팀"
   },
   {
     "id": "news-el-32",
@@ -331,7 +360,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "서비스가 멈춘 뒤 생기는 보상금, 수리 비용, 그리고 이용자 이탈 걱정을 함께 찾아보세요!",
       "middle": "단기 보상 비용뿐만 아니라 장기적인 신뢰 하락과 인프라 보강 투자 부담을 읽어 내세요.",
       "high": "서비스 중단 사태가 일회성 비용, 규제 리스크, 플랫폼 이탈 우려로 번지는 구조가 핵심입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀"
   },
   {
     "id": "news-el-33",
@@ -360,7 +391,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "기름을 파는 회사와 기름 원료를 재료로 사 쓰는 회사의 입장이 정반대라는 점을 찾아보세요!",
       "middle": "유가 하락이 정유 업종과 석유화학 업종의 원가 구조에 각각 반대 방향으로 미치는 영향을 비교하세요.",
       "high": "원유 가격 변동에 따른 에너지(재고손실)와 화학(나프타 원가 절감)의 비대칭적 수혜 구조를 구분하세요."
-    }
+    },
+    "articleFormat": "rival",
+    "sourceDesk": "산업·기업 비교팀"
   },
   {
     "id": "news-el-34",
@@ -389,7 +422,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "운송 요금이 올랐을 때 요금을 받는 쪽과 요금을 내야 하는 쪽이 누구인지 찾아보세요!",
       "middle": "해상 운임 급등이 운송 공급자인 해운사와 화주인 완성차 수출 기업에 미치는 정반대 효과를 파악하세요.",
       "high": "운하 병목에 따른 운임 상승이 해운(매출 증대)과 자동차(물류비 부담)로 교차 전이되는 구조입니다."
-    }
+    },
+    "articleFormat": "rival",
+    "sourceDesk": "산업·기업 비교팀"
   },
   {
     "id": "news-el-35",
@@ -418,7 +453,13 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "이자가 비싸지면 돈을 빌려주는 은행과 돈을 빌려 집을 짓는 건설사 중 누가 웃을지 생각해 보세요!",
       "middle": "기준금리 상승이 금융업의 이자 수익과 건설업의 조달 비용·분양 수요에 미치는 상반된 영향을 비교하세요.",
       "high": "금리 상승에 따른 금융(NIM 개선)과 건설(조달 비용 상승 및 수요 위축)의 대표적인 교차 반응입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀",
+    "relatedGlossaryIds": [
+      "g-6",
+      "g-7"
+    ]
   },
   {
     "id": "news-el-36",
@@ -447,7 +488,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "철을 만들어 파는 회사와 철을 사서 배를 만드는 회사가 서로 반대 영향을 받는다는 점에 주목하세요!",
       "middle": "원자재 가격 상승이 공급자(소재)와 수요자(조선)의 수익성에 교차 작용하는 구조를 확인하세요.",
       "high": "철강 가격 반등에 따른 소재(판가 개선)와 조선(후판 원가 부담) 간 마진 이전을 포착하세요."
-    }
+    },
+    "articleFormat": "rival",
+    "sourceDesk": "산업·기업 비교팀"
   },
   {
     "id": "news-el-37",
@@ -476,7 +519,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "수수료를 받는 배달 플랫폼과 음식값이 올라 손님이 줄까 걱정하는 식품 업계를 비교해 보세요!",
       "middle": "플랫폼의 수수료 인상이 자체 수익성과 전방 외식·식자재 수요에 주는 상반된 효과를 읽어 내세요.",
       "high": "플랫폼 테이크레이트 상향(인터넷 호재)과 외식 수요 둔화(식품 내수 부담)의 교차 구도입니다."
-    }
+    },
+    "articleFormat": "rival",
+    "sourceDesk": "산업·기업 비교팀"
   },
   {
     "id": "news-el-38",
@@ -505,7 +550,12 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "달러를 벌어오는 수출 회사와 달러를 내고 재료를 사 오는 회사의 차이를 찾아보세요!",
       "middle": "고환율 환경에서 수출 매출 수혜 업종과 수입 원가 부담 업종이 어떻게 나뉘는지 파악하세요.",
       "high": "달러 매출 비중(자동차 수혜)과 외화 원재료 조달 비중(화장품 부담)의 환율 민감도 차이가 핵심입니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 마켓데스크",
+    "relatedGlossaryIds": [
+      "g-18"
+    ]
   },
   {
     "id": "news-el-39",
@@ -534,7 +584,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "스마트폰이 잘 팔릴 때 부품을 파는 기술 회사와 할인 돈을 대주는 통신사의 입장을 비교해 보세요!",
       "middle": "신제품 흥행에 따른 부품 출하 증가(기술)와 가입자 유치 마케팅비 급증(통신)의 대비를 파악하세요.",
       "high": "온디바이스 AI 교체 사이클이 반도체 수혜와 통신사 마케팅비 부담으로 갈리는 교차 구조입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀"
   },
   {
     "id": "news-el-40",
@@ -565,7 +617,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "기름값이 올랐을 때 기름을 파는 에너지 회사와 배에 기름을 넣어야 하는 해운사를 구분해 보세요!",
       "middle": "유가 상승이 에너지 기업의 수익성과 해운사의 연료 원가에 미치는 상반된 방향을 확인하세요.",
       "high": "유가 급등에 따른 에너지(재고이익·대체수요)와 해운(선박 연료비 급증)의 전형적인 교차 재료입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "글로벌 산업 취재팀"
   },
   {
     "id": "news-el-41",
@@ -592,7 +646,12 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "앞부분의 \"역대 최고 판매\"에만 속지 말고, 뒷부분의 \"기대치보다 못 미쳤다\"는 반전을 읽어 보세요!",
       "middle": "과거 실적보다 시장의 높은 기대치와 다음 분기 성장 둔화 예고가 주가 방향을 바꾼 이유를 찾으세요.",
       "high": "컨센서스 대비 미스 및 향후 가이던스 보수화가 선반영된 주가에 미친 하방 압력이 핵심입니다."
-    }
+    },
+    "articleFormat": "interview",
+    "sourceDesk": "현장 인터뷰·리서치팀",
+    "relatedGlossaryIds": [
+      "g-19"
+    ]
   },
   {
     "id": "news-el-42",
@@ -621,7 +680,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "외국 회사의 나쁜 소식이 왜 한국 화장품과 식품 회사에는 좋은 기회(반사이익)가 되었는지 찾아보세요!",
       "middle": "경쟁사의 리콜 사태가 국내 대체 브랜드의 해외 유통망 점유율 확대로 이어지는 반전 구조를 파악하세요.",
       "high": "경쟁사 품질 리스크에 따른 글로벌 선반 점유율 대체와 반사이익 수혜가 핵심 포인트입니다."
-    }
+    },
+    "articleFormat": "rival",
+    "sourceDesk": "산업·기업 비교팀"
   },
   {
     "id": "news-el-43",
@@ -648,7 +709,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "\"파업\"이라는 단어만 보고 나쁜 뉴스라 생각하지 마세요! 파업한 곳이 외국 경쟁사라는 점이 핵심이에요.",
       "middle": "해외 경쟁사의 생산 중단이 국내 조선사의 수주 확대와 단가 협상력 상승으로 이어지는 반사이익을 포착하세요.",
       "high": "경쟁국 공급 차질에 따른 발주처 이동과 국내 조선 섹터의 가격 결정력 강화가 핵심 단서입니다."
-    }
+    },
+    "articleFormat": "rival",
+    "sourceDesk": "산업·기업 비교팀"
   },
   {
     "id": "news-el-44",
@@ -675,7 +738,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "좋은 소식이 \"이미 몇 달 전부터 알려져 주가가 미리 올라 있었다\"는 문장이 반전의 열쇠예요!",
       "middle": "기대감이 주가에 선반영된 뒤 공식 발표와 함께 재료가 소멸하는 투자 심리를 읽어 내세요.",
       "high": "주가 선반영과 재료 소멸에 따른 차익 실현(셀온) 메커니즘을 파악하세요."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "글로벌 산업 취재팀"
   },
   {
     "id": "news-el-45",
@@ -704,7 +769,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "아쉬운 과거 성적보다 앞으로 벌어들일 초대형 미래 계약에 시장이 주목했다는 반전을 찾아보세요!",
       "middle": "지나간 분기 실적보다 향후 수년 치 신규 수주 잔고가 주가에 미치는 선행적 영향력을 파악하세요.",
       "high": "후행 실적 부진 대비 선행 지표(신규 수주·백로그) 서프라이즈가 투자 심리를 반전시킨 사례입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀"
   },
   {
     "id": "news-el-46",
@@ -731,7 +798,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "계약만 했던 물건이 실제로 배달되어 예상보다 훨씬 큰 이익이 찍혔다는 성적표 내용을 확인하세요!",
       "middle": "수주에서 실제 인도·매출 인식으로 전환되며 고마진 수출 효과가 실현된 실적 포인트에 주목하세요.",
       "high": "수출 인도 본격화에 따른 어닝 서프라이즈와 고마진 믹스 개선이 핵심 근거입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀"
   },
   {
     "id": "news-el-47",
@@ -758,7 +827,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "값싼 외국 물건이 넘쳐 제값을 못 받고 성적표 이익이 줄었다는 점을 찾아보세요!",
       "middle": "해외 저가 물량 공세로 인한 제품 마진 악화가 분기 실적 부진으로 연결된 구조를 파악하세요.",
       "high": "범용 제품 공급 과잉에 따른 스프레드 축소와 가동률 하락이 어닝 쇼크의 핵심 원인입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀"
   },
   {
     "id": "news-el-48",
@@ -787,7 +858,12 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "자회사들의 고른 실적과 꾸준히 나오는 배당금 약속이 투자자들에게 믿음을 주었다는 점을 보세요!",
       "middle": "다각화된 자회사 수익성과 안정적 현금흐름이 배당 신뢰로 연결되는 실적 포인트를 확인하세요.",
       "high": "견조한 FCF 기반의 실적 서프라이즈와 배당 정책 가시성 확보가 핵심 매수 근거입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-5"
+    ]
   },
   {
     "id": "news-el-49",
@@ -814,7 +890,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "\"아직 도장을 찍거나 확정된 내용은 없다\"는 문장을 꼭 기억하며 기대감의 크기를 가늠해 보세요!",
       "middle": "대형 기술이전 기대감과 미확정 루머라는 불확실성이 공존하고 있음을 파악하세요.",
       "high": "빅파마 라이선스 아웃 루머에 따른 단기 기대감 유입과 미확정 리스크의 균형이 핵심입니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 속보데스크"
   },
   {
     "id": "news-el-50",
@@ -843,7 +921,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "아직 확정된 정책은 아니지만, 보조금이 줄어들 수 있다는 소문만으로도 구매자들이 망설인다는 점에 주목하세요!",
       "middle": "정부 보조금 축소 검토라는 정책 변수가 완성차와 배터리 수요 심리에 주는 영향을 확인하세요.",
       "high": "미확정 정책 루머가 전기차·이차전지 밸류체인의 단기 투자 심리를 위축시키는 구조입니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 속보데스크"
   },
   {
     "id": "news-el-51",
@@ -872,7 +952,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "학교마다 빠른 회선을 깔아 주는 회사와 AI 학습 프로그램을 만드는 회사가 함께 바빠졌다는 점에 주목하세요!",
       "middle": "교육 현장의 디지털 인프라 구축이 통신 전용망과 클라우드 플랫폼 매출로 이어지는 연결고리를 찾으세요.",
       "high": "B2G 전용 회선 수주(통신)와 클라우드 학습 플랫폼 확장(인터넷)의 동반 수혜가 핵심입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀"
   },
   {
     "id": "news-el-52",
@@ -901,7 +983,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "국내 집 짓기가 주춤할 때 해외에서 수조 원짜리 큰 공사를 따냈다는 점이 가장 큰 단서예요!",
       "middle": "해외 대형 신도시 수주가 건설사와 자재·기획을 맡는 지주사의 매출 안정성에 주는 효과를 파악하세요.",
       "high": "중동 대규모 EPC 수주를 통한 수주 잔고 확충과 건설·지주 섹터의 해외 실적 레버리지가 핵심입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "글로벌 산업 취재팀"
   },
   {
     "id": "news-el-53",
@@ -930,7 +1014,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "항구가 멈추자 바다에 묶인 화물선(해운)과 매장에 못 가는 수출 차량(자동차)이 함께 피해를 입는 흐름을 보세요!",
       "middle": "항만 마비가 운송 주체인 해운사와 대규모 수출 화주인 완성차 업계에 동시에 미치는 타격을 파악하세요.",
       "high": "글로벌 핵심 항만 셧다운에 따른 물류 마비(해운)와 해외 인도 지연(자동차)의 동반 악재 구조입니다."
-    }
+    },
+    "articleFormat": "interview",
+    "sourceDesk": "현장 인터뷰·리서치팀"
   },
   {
     "id": "news-el-54",
@@ -957,11 +1043,13 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "공사가 멈춰 있는 동안에도 장비 빌리는 돈과 추가 비용이 계속 나간다는 문장에 주목하세요!",
       "middle": "공사 기간 연장과 안전 점검 강화가 건설 현장의 원가율과 마진에 미치는 부담을 확인하세요.",
       "high": "공기 지연에 따른 간접비 상승 및 지체상금 우려가 건설 섹터 실적 악화의 핵심 원인입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀"
   },
   {
     "id": "news-el-55",
-    "title": "이상 기후로 초콜릿 재료 다모아플랫폼와 설탕 값 폭등! 과자 회사들 원가 비상",
+    "title": "이상 기후로 초콜릿 재료 다모아플랫폼과 설탕 값 폭등! 과자 회사들 원가 비상",
     "content": "초콜릿의 주재료인 다모아플랫폼 열매가 자라는 아프리카 농장에 극심한 가뭄과 병충해가 겹치고, 설탕의 원료인 사탕수수 산지에는 폭우가 쏟아지면서 국제 원재료 가격이 역대 최고 수준으로 치솟았습니다. 맛있는 초콜릿과 쿠키, 달콤한 아이스크림을 만드는 국내 식품 회사들은 재료를 사 오는 비용이 순식간에 크게 불어나 깊은 고민에 빠졌습니다. 그렇다고 마트에서 파는 과자 가격을 마음대로 확 올리면 소비자들과 어린이들이 비싸다며 지갑을 닫을 수 있어 가격 인상도 쉽지 않은 형편입니다. 결국 회사들은 당분간 비싼 원재료 비용을 스스로 떠안으며 버텨야 하므로, 과자를 팔아도 예전만큼 이익이 남지 않게 되었습니다. 지구촌 이상 기후가 식탁 위 달콤한 간식을 만드는 식품 업계에 매서운 원가 폭탄을 안겼습니다.",
     "category": "social",
     "sentiment": -2,
@@ -972,7 +1060,7 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "식품(Food)": -0.06
     },
     "explanations": {
-      "elementary": "초콜릿과 과자를 만드는 다모아플랫폼와 설탕 가격이 엄청 올랐는데, 과자 값은 쉽게 못 올려서 식품 회사들이 남기는 이익이 줄어들고 있어요.",
+      "elementary": "초콜릿과 과자를 만드는 다모아플랫폼과 설탕 가격이 엄청 올랐는데, 과자 값은 쉽게 못 올려서 식품 회사들이 남기는 이익이 줄어들고 있어요.",
       "middle": "기후 이상으로 인한 농산물 원재료(다모아플랫폼·원당) 가격 급등은 제과 및 가공식품 기업의 제조 원가를 크게 높입니다. 소비자 저항 때문에 판가 전가가 지연되면 식품 섹터의 영업이익률이 하락합니다.",
       "high": "글로벌 애그플레이션(다모아플랫폼·원당 등 소프트 원자재 급등)은 식품 제조사의 매출원가율을 직접 끌어올립니다. 내수 물가 안정 기조 속에서 판가 전가력이 제약되며 식품 섹터의 마진 압착이 심화됩니다."
     },
@@ -984,7 +1072,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "재료값은 크게 올랐는데 과자 가격은 마음대로 올리기 어렵다는 문장이 핵심 단서예요!",
       "middle": "원재료 단가 급등과 소비 저항에 따른 판가 전가 지연이 마진을 깎는 원리를 파악하세요.",
       "high": "원재료 비용 상승 대비 판가 전가 한계로 인한 스프레드 축소가 식품 섹터 약세의 핵심입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀"
   },
   {
     "id": "news-el-56",
@@ -1011,7 +1101,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "마지막 시험에서 효과를 증명하지 못해 개발이 멈췄다는 결과가 왜 큰 충격인지 살펴보세요!",
       "middle": "임상 최종 단계 탈락이 미래 수익 기대 소멸과 업종 전반의 투자 심리 위축으로 번지는 과정을 확인하세요.",
       "high": "임상 3상 실패에 따른 파이프라인 가치 소멸과 바이오 섹터 전반의 리스크 회피 심리가 핵심입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "글로벌 산업 취재팀"
   },
   {
     "id": "news-el-57",
@@ -1038,7 +1130,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "돈을 못 돌려받을 때를 대비해 은행이 이익을 떼어 비상 저금통에 넣어야 한다는 설명에 주목하세요!",
       "middle": "대출 연체율 상승이 대손충당금 적립 비용 증가와 은행 순이익 감소로 이어지는 원리를 파악하세요.",
       "high": "여신 연체율 상승에 따른 대손충당금 적립 확대와 수익성·건전성 동반 압박이 핵심입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀"
   },
   {
     "id": "news-el-58",
@@ -1067,7 +1161,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "새로운 특수 합금을 만드는 회사와 그 합금으로 더 튼튼한 장갑차를 만드는 회사가 함께 웃는 점을 찾아보세요!",
       "middle": "핵심 특수 소재 국산화가 소재 기업의 고부가가치화와 방산 기업의 제품 경쟁력으로 이어지는 시너지를 파악하세요.",
       "high": "고부가 특수 합금 국산화에 따른 소재(마진 개선)와 방산(성능·조달 경쟁력)의 밸류체인 동반 수혜가 핵심입니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 마켓데스크"
   },
   {
     "id": "news-el-59",
@@ -1096,7 +1192,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "사람들이 전기차 사기를 망설일 때 자동차 회사와 배터리(에너지) 회사가 함께 영향을 받는 연결고리를 보세요!",
       "middle": "충전 불편에 따른 전기차 수요 정체가 완성차 생산과 배터리 주문 감소로 전이되는 흐름을 파악하세요.",
       "high": "EV 캐즘에 따른 전방 판매 둔화(자동차)와 셀 가동률 하락(에너지)의 동반 약세 구도입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀"
   },
   {
     "id": "news-el-60",
@@ -1125,7 +1223,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "바이오 연구소의 좋은 성분과 화장품 회사의 제품이 만나 두 업계가 함께 돈을 버는 구조를 찾아보세요!",
       "middle": "바이오 기능성 원료 공급과 고마진 화장품 판매가 만들어 내는 산업 간 시너지를 확인하세요.",
       "high": "코스메슈티컬 트렌드 확산에 따른 바이오(원료 다각화)와 화장품(ASP·마진 개선)의 동반 수혜가 핵심입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀"
   },
   {
     "id": "news-el-61",
@@ -1152,7 +1252,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "주문이 많다는 앞부분만 보지 말고, 일할 기술자가 모자라 인건비와 벌금 걱정이 커졌다는 핵심을 읽으세요!",
       "middle": "풍부한 일감 이면의 인력난, 인건비 상승, 공정 지연 리스크가 마진을 압박하는 구조를 파악하세요.",
       "high": "숙련공 부족에 따른 노무비 상승과 지체상금 리스크가 조선 섹터 원가 부담으로 작용하는 지점이 핵심입니다."
-    }
+    },
+    "articleFormat": "interview",
+    "sourceDesk": "현장 인터뷰·리서치팀"
   },
   {
     "id": "news-el-62",
@@ -1181,7 +1283,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "외국에 물건을 팔 때 붙는 세금(관세)이 높아지면 수출을 많이 하는 업종이 불리해진다는 점에 주목하세요!",
       "middle": "보호무역 관세 인상이 철강 소재 수출과 종합상사·지주사의 글로벌 교역 매출에 주는 타격을 확인하세요.",
       "high": "관세 장벽 확대에 따른 수출 경쟁력 저하(소재)와 글로벌 교역 물량 축소(지주·상사)가 핵심입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀"
   },
   {
     "id": "news-el-63",
@@ -1210,7 +1314,12 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "은행 통장에서 빠져나간 돈이 어디로 흘러가고 있는지, 두 업종의 표정 차이를 비교해 보세요!",
       "middle": "금리 하락이 은행의 이자 마진과 인터넷 플랫폼의 핀테크 거래량·성장주 가치에 미치는 정반대 효과를 파악하세요.",
       "high": "금리 인하에 따른 금융(NIM 축소)과 인터넷(유동성 유입·할인율 하락)의 대표적인 교차 반응입니다."
-    }
+    },
+    "articleFormat": "rival",
+    "sourceDesk": "산업·기업 비교팀",
+    "relatedGlossaryIds": [
+      "g-6"
+    ]
   },
   {
     "id": "news-el-64",
@@ -1239,7 +1348,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "배 운송 요금이 비싸졌을 때 돈을 받는 해운사와 돈을 내야 하는 식품사의 입장을 비교해 보세요!",
       "middle": "해상 운임 상승이 해운사의 수익성과 수입 원재료 비중이 큰 식품사의 원가에 미치는 반대 효과를 찾으세요.",
       "high": "운임 급등에 따른 해운(매출 레버리지)과 식품(수입 물류 원가 상승)의 교차 수혜 구도입니다."
-    }
+    },
+    "articleFormat": "rival",
+    "sourceDesk": "산업·기업 비교팀"
   },
   {
     "id": "news-el-65",
@@ -1268,7 +1379,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "한정된 나라 예산에서 늘어난 분야(국방)와 줄어든 분야(도로·토목 공사)를 정확히 구분해 보세요!",
       "middle": "재정 예산의 우선순위 변화가 방산(방위력 개선비)과 건설(SOC 예산)에 미치는 상반된 영향을 파악하세요.",
       "high": "국방비 증액(방산 수혜)과 SOC 예산 축소(건설 부담)로 나뉘는 재정 정책 교차 재료입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀"
   },
   {
     "id": "news-el-66",
@@ -1297,7 +1410,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "일회용 플라스틱을 줄일 때 칭찬받으며 잘 팔리는 회사와 주문이 줄어드는 공장이 누구인지 살펴보세요!",
       "middle": "친환경 리필 소비가 화장품 브랜드와 범용 플라스틱 원료 화학 기업에 주는 엇갈린 영향을 파악하세요.",
       "high": "탈플라스틱 트렌드가 화장품(브랜드·원가 수혜)과 범용 화학(수요 감소)으로 교차 작용하는 구조입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀"
   },
   {
     "id": "news-el-67",
@@ -1326,7 +1441,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "새 배를 돈 주고 사야 하는 해운사와 그 새 배를 만들어 파는 조선소의 입장이 정반대라는 점을 찾아보세요!",
       "middle": "해양 환경 규제 강화가 선대 교체 비용 부담(해운)과 친환경 신조 발주 폭증(조선)으로 갈리는 구조를 파악하세요.",
       "high": "IMO 환경 규제 조기화가 해운(비용·CAPEX 부담)과 조선(친환경 교체 수요 폭증)에 미치는 교차 영향이 핵심입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "산업밸류체인 분석팀"
   },
   {
     "id": "news-el-68",
@@ -1355,7 +1472,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "직접 차를 타고 이동하는 대신 온라인으로 만날 때 늘어나는 소비(통신)와 줄어드는 소비(자동차 기름)를 비교하세요!",
       "middle": "디지털 원격 문화 확산이 통신 트래픽 수요와 수송용 석유 연료 수요에 미치는 반대 방향을 확인하세요.",
       "high": "데이터·전용망 수요 증가(통신 호재)와 수송용 연료 소비 둔화(정유 에너지 부담)의 교차 구도입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "글로벌 산업 취재팀"
   },
   {
     "id": "news-el-69",
@@ -1384,7 +1503,12 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "경제가 불안할 때 사람들이 어디서 돈을 빼고 어디로 옮겼는지 자금의 이동 방향을 따라가 보세요!",
       "middle": "위험 회피 국면에서 성장주(기술)와 방어적 배당주(지주) 간 자금 순환매(로테이션)를 파악하세요.",
       "high": "매크로 불확실성 속 성장주 차익 실현과 저평가 고배당 지주사로의 방어적 로테이션이 핵심입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀",
+    "relatedGlossaryIds": [
+      "g-5"
+    ]
   },
   {
     "id": "news-el-70",
@@ -1413,7 +1537,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "건강한 체중 관리 약이 유행할 때 신나는 바이오 회사와 간식 판매를 걱정하는 식품 회사를 함께 보세요!",
       "middle": "비만 치료제 열풍이 바이오 산업의 신시장 창출과 가공식품 소비 패턴 변화로 교차 작용하는 구조를 파악하세요.",
       "high": "GLP-1 비만 치료제 확산에 따른 바이오(수요 폭증)와 식품(스낵·음료 소비 위축 우려)의 교차 재료입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀"
   },
   {
     "id": "news-el-71",
@@ -1444,7 +1570,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "전기차 걱정에만 머무르지 말고, AI 데이터센터용 초대형 배터리라는 새로운 구원투수를 찾아내세요!",
       "middle": "전기차 수요 둔화 우려를 돌파하는 ESS 신수요 급증이라는 반전 포인트를 읽어 내세요.",
       "high": "EV 캐즘 우려를 상쇄하는 AI 인프라향 ESS 수주 서프라이즈가 에너지·화학 반등의 핵심입니다."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "산업밸류체인 분석팀"
   },
   {
     "id": "news-el-72",
@@ -1471,7 +1599,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "처음엔 걱정이 많았지만, 해외여행 로밍과 AI 구독이 빈자리를 채워 주었다는 반전에 주목하세요!",
       "middle": "요금 인하 우려를 뒤집은 고마진 로밍 매출과 신규 AI 구독 수익의 기여도를 확인하세요.",
       "high": "선반영된 규제 우려를 상쇄하는 로밍·AI 부가서비스 믹스 개선이 긍정적 반전의 핵심입니다."
-    }
+    },
+    "articleFormat": "trend",
+    "sourceDesk": "생활경제 르포팀"
   },
   {
     "id": "news-el-73",
@@ -1498,7 +1628,12 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "\"매출 신기록\"이라는 말에만 속지 마세요! 광고비와 물류비 때문에 정작 남은 이익이 적었다는 점이 핵심이에요.",
       "middle": "외형 매출 성장과 달리 판관비 급증으로 영업이익이 기대에 못 미친 수익성 괴리를 파악하세요.",
       "high": "탑라인 서프라이즈 대비 판관비 급증에 따른 영업이익 미스(마진 훼손)가 주가 약세의 원인입니다."
-    }
+    },
+    "articleFormat": "interview",
+    "sourceDesk": "현장 인터뷰·리서치팀",
+    "relatedGlossaryIds": [
+      "g-19"
+    ]
   },
   {
     "id": "news-el-74",
@@ -1527,7 +1662,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "\"지진\"과 \"공장 멈춤\"이라는 말만 보고 헷갈리지 마세요! 멈춘 곳이 외국 경쟁 공장이라 한국에 주문이 몰린 반전이에요.",
       "middle": "해외 경쟁 거점의 공급 차질이 국내 기술·소재 기업의 대체 수주와 단가 상승으로 이어지는 반사이익을 확인하세요.",
       "high": "경쟁국 생산 중단으로 인한 글로벌 공급 축소와 국내 기술·소재 섹터의 반사이익 수혜가 핵심입니다."
-    }
+    },
+    "articleFormat": "rival",
+    "sourceDesk": "산업·기업 비교팀"
   },
   {
     "id": "news-el-75",
@@ -1554,7 +1691,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "\"이미 몇 달 전부터 널리 알려져 주가가 잔뜩 올라 있었다\"는 문장이 왜 반전이 생겼는지 알려 주는 열쇠예요!",
       "middle": "대형 계약의 공식 서명 자체가 새로운 깜짝 재료가 아니라 선반영된 재료의 소멸임을 파악하세요.",
       "high": "예비 계약 단계의 선반영과 본계약 체결 시점의 재료 소멸(차익 실현) 구조를 읽어 내세요."
-    }
+    },
+    "articleFormat": "policy",
+    "sourceDesk": "정책·거시경제팀"
   },
   {
     "id": "news-el-76",
@@ -1581,7 +1720,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "싸게 계약한 배는 끝나고 비싼 친환경 배가 본격적으로 완성되어 이익이 폭발했다는 성적표 내용을 보세요!",
       "middle": "저가 물량 소진과 고선가 친환경 선박 믹스 전환이 어닝 서프라이즈를 만든 구조를 확인하세요.",
       "high": "고선가 수주분의 본격 매출 인식과 공정 효율화에 따른 강력한 영업 레버리지가 핵심입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀"
   },
   {
     "id": "news-el-77",
@@ -1608,7 +1749,12 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "이용자 수는 그대로인데 AI 서버 구입비와 연구비가 크게 늘어 이익이 줄었다는 점을 찾아보세요!",
       "middle": "매출 유지에도 AI 인프라·개발비 급증과 수익화 지연이 분기 영업이익을 깎은 원인을 파악하세요.",
       "high": "AI CAPEX·연구비 급증에 따른 마진 훼손과 투자 회수(ROI) 지연 우려가 어닝 쇼크의 핵심입니다."
-    }
+    },
+    "articleFormat": "earnings",
+    "sourceDesk": "공시·실적 분석팀",
+    "relatedGlossaryIds": [
+      "g-19"
+    ]
   },
   {
     "id": "news-el-78",
@@ -1637,7 +1783,12 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "아직 국회 통과 전 소문 단계이지만, 배당을 많이 주는 지주회사와 금융사가 가장 먼저 주목받는 이유를 보세요!",
       "middle": "미확정 세제 혜택 검토 소식이 대표적인 배당 우등생 업종(지주·금융)의 기대감을 자극하는 구조를 파악하세요.",
       "high": "밸류업 세제 인센티브 정책 루머가 저PBR·고배당 지주·금융 섹터에 미치는 단기 모멘텀이 핵심입니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 속보데스크",
+    "relatedGlossaryIds": [
+      "g-5"
+    ]
   },
   {
     "id": "news-el-79",
@@ -1666,7 +1817,9 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "\"아직 공식 발표가 나온 것은 아니다\"라는 단서를 기억하면서, 교류가 열리면 어떤 업종이 기대를 받는지 확인하세요!",
       "middle": "미확정 외교·관광 규제 완화 루머가 소비재 수출 업종(화장품·기술)에 주는 단기 기대감과 리스크를 함께 보세요.",
       "high": "문화·관광 규제 완화설이라는 미확정 대외 변수가 화장품·기술 섹터의 단기 투심에 작용하는 구조입니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 속보데스크"
   },
   {
     "id": "news-el-80",
@@ -1695,6 +1848,8 @@ export const ELEMENTARY_EXTRA_NEWS: NewsItem[] = [
       "elementary": "아직 확정된 법안은 아니지만, 탄소 부담금이 오를 수 있다는 소문에 민감한 굴뚝 산업(화학·소재)을 확인하세요!",
       "middle": "미확정 탄소 규제 강화 초안이 에너지 다소비 업종인 화학과 소재의 미래 원가 우려로 연결되는 흐름을 파악하세요.",
       "high": "탄소 배출 규제 강화 루머에 따른 배출권 비용 및 친환경 CAPEX 부담 우려가 화학·소재 약세의 핵심입니다."
-    }
+    },
+    "articleFormat": "breaking",
+    "sourceDesk": "스탁스쿨 속보데스크"
   }
 ];

@@ -11,26 +11,29 @@ import {
 import {
   calculateDailyVolume,
   createInitialStocks,
+  evaluateSectorGuesses,
   getActualNewsDirection,
   hasOppositeSectorConflict,
   selectDailyNews,
   simulateNextDay,
 } from '../lib/priceEngine';
-import type {
-  ActiveScenarioState,
-  AuthMode,
-  CompactStockSave,
-  DayStockBreakdown,
-  Holding,
-  LastDayRecap,
-  Level,
-  LevelGameSnapshot,
-  NewsItem,
-  NewsPrediction,
-  PredictionStats,
-  StockState,
-  TradeRecord,
-  TradeType,
+import {
+  ALL_SECTORS,
+  type ActiveScenarioState,
+  type AuthMode,
+  type CompactStockSave,
+  type DayStockBreakdown,
+  type Holding,
+  type LastDayRecap,
+  type Level,
+  type LevelGameSnapshot,
+  type NewsItem,
+  type NewsPrediction,
+  type PredictionStats,
+  type SectorId,
+  type StockState,
+  type TradeRecord,
+  type TradeType,
 } from '../lib/types';
 import { deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore';
 import {
@@ -94,7 +97,11 @@ interface CompactLevelSave {
   scenarioCooldown?: number;
   todayNewsChecks?: Record<string, NewsPrediction>;
   previousNewsChecks?: Record<string, NewsPrediction>;
+  todayNewsSectorGuesses?: Record<string, SectorId[]>;
+  previousNewsSectorGuesses?: Record<string, SectorId[]>;
   predictionStats?: PredictionStats;
+  sectorPredictionStats?: PredictionStats;
+  watchlistStockIds?: string[];
   lastDayRecap?: LastDayRecap | null;
   tradeHistory?: TradeRecord[];
   realizedProfitTotal?: number;
@@ -138,7 +145,11 @@ interface GameState {
   // News-First Learning Journey State
   todayNewsChecks: Record<string, NewsPrediction>;
   previousNewsChecks: Record<string, NewsPrediction>;
+  todayNewsSectorGuesses: Record<string, SectorId[]>;
+  previousNewsSectorGuesses: Record<string, SectorId[]>;
   predictionStats: PredictionStats;
+  sectorPredictionStats: PredictionStats;
+  watchlistStockIds: string[];
   lastDayRecap: LastDayRecap | null;
   showRecapModal: boolean;
 
@@ -168,6 +179,8 @@ interface GameState {
   resetCurrentLevel: () => void;
   startScenario: (scenarioId: string) => boolean;
   markNewsChecked: (newsId: string, prediction: NewsPrediction) => void;
+  toggleNewsSectorGuess: (newsId: string, sector: SectorId) => void;
+  toggleWatchlistStock: (stockId: string) => void;
   dismissRecap: () => void;
   deleteAccountAndData: () => Promise<{ ok: boolean; message: string }>;
   clearMigrationNotice: () => void;
@@ -210,7 +223,11 @@ function createFreshLevelSnapshot(level: Level): LevelGameSnapshot {
     scenarioCooldown: 0,
     todayNewsChecks: {},
     previousNewsChecks: {},
+    todayNewsSectorGuesses: {},
+    previousNewsSectorGuesses: {},
     predictionStats: { total: 0, correct: 0 },
+    sectorPredictionStats: { total: 0, correct: 0 },
+    watchlistStockIds: [],
     lastDayRecap: null,
     tradeHistory: [],
     realizedProfitTotal: 0,
@@ -251,7 +268,11 @@ function serializeLevelSnapshot(snap: LevelGameSnapshot): CompactLevelSave {
     scenarioCooldown: snap.scenarioCooldown ?? 0,
     todayNewsChecks: snap.todayNewsChecks ?? {},
     previousNewsChecks: snap.previousNewsChecks ?? {},
+    todayNewsSectorGuesses: snap.todayNewsSectorGuesses ?? {},
+    previousNewsSectorGuesses: snap.previousNewsSectorGuesses ?? {},
     predictionStats: snap.predictionStats ?? { total: 0, correct: 0 },
+    sectorPredictionStats: snap.sectorPredictionStats ?? { total: 0, correct: 0 },
+    watchlistStockIds: snap.watchlistStockIds ?? [],
     lastDayRecap: snap.lastDayRecap ?? null,
     tradeHistory: (snap.tradeHistory ?? []).slice(-MAX_TRADE_HISTORY),
     realizedProfitTotal: snap.realizedProfitTotal ?? 0,
@@ -485,10 +506,55 @@ function hydrateLevelSnapshot(
         typeof raw.scenarioCooldown === 'number' ? raw.scenarioCooldown : 0,
       todayNewsChecks: sanitizeChecks(raw.todayNewsChecks),
       previousNewsChecks: sanitizeChecks(raw.previousNewsChecks),
+      todayNewsSectorGuesses: (() => {
+        const out: Record<string, SectorId[]> = {};
+        if (raw.todayNewsSectorGuesses && typeof raw.todayNewsSectorGuesses === 'object') {
+          Object.entries(raw.todayNewsSectorGuesses as Record<string, unknown>).forEach(([k, v]) => {
+            if (Array.isArray(v)) {
+              const clean = v.filter(
+                (s): s is SectorId =>
+                  typeof s === 'string' && (ALL_SECTORS as readonly string[]).includes(s)
+              );
+              if (clean.length > 0) out[k] = clean.slice(0, 3);
+            }
+          });
+        }
+        return out;
+      })(),
+      previousNewsSectorGuesses: (() => {
+        const out: Record<string, SectorId[]> = {};
+        if (raw.previousNewsSectorGuesses && typeof raw.previousNewsSectorGuesses === 'object') {
+          Object.entries(raw.previousNewsSectorGuesses as Record<string, unknown>).forEach(([k, v]) => {
+            if (Array.isArray(v)) {
+              const clean = v.filter(
+                (s): s is SectorId =>
+                  typeof s === 'string' && (ALL_SECTORS as readonly string[]).includes(s)
+              );
+              if (clean.length > 0) out[k] = clean.slice(0, 3);
+            }
+          });
+        }
+        return out;
+      })(),
       predictionStats: {
         total: typeof rawStats?.total === 'number' ? rawStats.total : 0,
         correct: typeof rawStats?.correct === 'number' ? rawStats.correct : 0,
       },
+      sectorPredictionStats: (() => {
+        const rawSecStats =
+          raw.sectorPredictionStats && typeof raw.sectorPredictionStats === 'object'
+            ? (raw.sectorPredictionStats as { total?: unknown; correct?: unknown })
+            : null;
+        return {
+          total: typeof rawSecStats?.total === 'number' ? rawSecStats.total : 0,
+          correct: typeof rawSecStats?.correct === 'number' ? rawSecStats.correct : 0,
+        };
+      })(),
+      watchlistStockIds: Array.isArray(raw.watchlistStockIds)
+        ? raw.watchlistStockIds.filter(
+            (id): id is string => typeof id === 'string' && Boolean(STOCK_BY_ID[id])
+          )
+        : [],
       lastDayRecap:
         raw.lastDayRecap && typeof raw.lastDayRecap === 'object'
           ? (raw.lastDayRecap as LastDayRecap)
@@ -519,7 +585,11 @@ function captureActiveSnapshot(state: GameState): LevelGameSnapshot {
     scenarioCooldown: state.scenarioCooldown,
     todayNewsChecks: state.todayNewsChecks,
     previousNewsChecks: state.previousNewsChecks,
+    todayNewsSectorGuesses: state.todayNewsSectorGuesses,
+    previousNewsSectorGuesses: state.previousNewsSectorGuesses,
     predictionStats: state.predictionStats,
+    sectorPredictionStats: state.sectorPredictionStats,
+    watchlistStockIds: state.watchlistStockIds,
     lastDayRecap: state.lastDayRecap,
     tradeHistory: state.tradeHistory,
     realizedProfitTotal: state.realizedProfitTotal,
@@ -604,7 +674,11 @@ const EMPTY_LOGGED_OUT_STATE: Partial<GameState> = {
   scenarioCooldown: 0,
   todayNewsChecks: {},
   previousNewsChecks: {},
+  todayNewsSectorGuesses: {},
+  previousNewsSectorGuesses: {},
   predictionStats: { total: 0, correct: 0 },
+  sectorPredictionStats: { total: 0, correct: 0 },
+  watchlistStockIds: [],
   lastDayRecap: null,
   showRecapModal: false,
   holdings: {},
@@ -642,7 +716,11 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   todayNewsChecks: {},
   previousNewsChecks: {},
+  todayNewsSectorGuesses: {},
+  previousNewsSectorGuesses: {},
   predictionStats: { total: 0, correct: 0 },
+  sectorPredictionStats: { total: 0, correct: 0 },
+  watchlistStockIds: [],
   lastDayRecap: null,
   showRecapModal: false,
 
@@ -900,12 +978,18 @@ export const useGameStore = create<GameState>((set, get) => ({
       nextUsedIds = picked.nextUsedNewsIds;
     }
 
-    // Keep checks only for surviving news items so the new scenario episode must be read
+    // Keep checks & sector guesses only for surviving news items so the new scenario episode must be read
     const survivingIds = new Set(updatedCurrentNews.map((n) => n.id));
     const filteredChecks: Record<string, NewsPrediction> = {};
     Object.entries(state.todayNewsChecks).forEach(([id, pred]) => {
       if (survivingIds.has(id)) {
         filteredChecks[id] = pred;
+      }
+    });
+    const filteredSectorGuesses: Record<string, SectorId[]> = {};
+    Object.entries(state.todayNewsSectorGuesses).forEach(([id, sectors]) => {
+      if (survivingIds.has(id)) {
+        filteredSectorGuesses[id] = sectors;
       }
     });
 
@@ -919,6 +1003,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       currentNews: updatedCurrentNews,
       usedNewsIds: nextUsedIds,
       todayNewsChecks: filteredChecks,
+      todayNewsSectorGuesses: filteredSectorGuesses,
     });
 
     syncLocalGameStates(set, get);
@@ -935,6 +1020,42 @@ export const useGameStore = create<GameState>((set, get) => ({
         [newsId]: prediction,
       },
     });
+    syncLocalGameStates(set, get);
+    void persistState(get());
+  },
+
+  toggleNewsSectorGuess: (newsId, sector) => {
+    const state = get();
+    if (!state.currentNews.some((n) => n.id === newsId)) return;
+    const prevList = state.todayNewsSectorGuesses[newsId] ?? [];
+    let nextList: SectorId[];
+    if (prevList.includes(sector)) {
+      nextList = prevList.filter((s) => s !== sector);
+    } else {
+      if (prevList.length >= 3) {
+        nextList = [...prevList.slice(1), sector];
+      } else {
+        nextList = [...prevList, sector];
+      }
+    }
+    set({
+      todayNewsSectorGuesses: {
+        ...state.todayNewsSectorGuesses,
+        [newsId]: nextList,
+      },
+    });
+    syncLocalGameStates(set, get);
+    void persistState(get());
+  },
+
+  toggleWatchlistStock: (stockId) => {
+    const state = get();
+    if (!STOCK_BY_ID[stockId]) return;
+    const exists = state.watchlistStockIds.includes(stockId);
+    const nextList = exists
+      ? state.watchlistStockIds.filter((id) => id !== stockId)
+      : [...state.watchlistStockIds, stockId];
+    set({ watchlistStockIds: nextList });
     syncLocalGameStates(set, get);
     void persistState(get());
   },
@@ -1103,7 +1224,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       completedScenarioIds,
       scenarioCooldown,
       todayNewsChecks,
+      todayNewsSectorGuesses,
       predictionStats,
+      sectorPredictionStats,
     } = get();
 
     // 0. 전일(오늘 마감 시점) 평가총액 계산
@@ -1136,15 +1259,24 @@ export const useGameStore = create<GameState>((set, get) => ({
     const assetDelta = newTotalAsset - prevTotalAsset;
     const assetDeltaPct = prevTotalAsset > 0 ? (assetDelta / prevTotalAsset) * 100 : 0;
 
-    // 2-1. 학생의 오늘 뉴스 예측 채점
+    // 2-1. 학생의 오늘 뉴스 방향 예측 + 관련 산업 추론 이중 채점
     let checkedCount = 0;
     let correctCount = 0;
+    let sectorCheckedCount = 0;
+    let sectorCorrectCount = 0;
     currentNews.forEach((item) => {
       const userPred = todayNewsChecks[item.id];
       if (userPred) {
         checkedCount += 1;
         if (getActualNewsDirection(item) === userPred) {
           correctCount += 1;
+        }
+      }
+      const secEval = evaluateSectorGuesses(item, todayNewsSectorGuesses[item.id]);
+      if (secEval.checked) {
+        sectorCheckedCount += 1;
+        if (secEval.hit) {
+          sectorCorrectCount += 1;
         }
       }
     });
@@ -1222,9 +1354,15 @@ export const useGameStore = create<GameState>((set, get) => ({
       scenarioCooldown: nextCooldown,
       previousNewsChecks: { ...todayNewsChecks },
       todayNewsChecks: {},
+      previousNewsSectorGuesses: { ...todayNewsSectorGuesses },
+      todayNewsSectorGuesses: {},
       predictionStats: {
         total: predictionStats.total + checkedCount,
         correct: predictionStats.correct + correctCount,
+      },
+      sectorPredictionStats: {
+        total: sectorPredictionStats.total + sectorCheckedCount,
+        correct: sectorPredictionStats.correct + sectorCorrectCount,
       },
       lastDayRecap: {
         dayNumber: nextDayNum,
@@ -1234,6 +1372,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         assetDeltaPct,
         checkedCount,
         correctCount,
+        sectorCheckedCount,
+        sectorCorrectCount,
       },
       showRecapModal: true,
       totalAssetHistory: [...totalAssetHistory, newTotalAsset],

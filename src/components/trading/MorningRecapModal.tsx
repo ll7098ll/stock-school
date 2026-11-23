@@ -7,7 +7,7 @@ import {
 } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { useGameStore, type NewsPrediction } from '../../stores/gameStore';
-import { getActualNewsDirection } from '../../lib/priceEngine';
+import { evaluateSectorGuesses, getActualNewsDirection } from '../../lib/priceEngine';
 import { computeHoldingSummaries, formatSignedPct } from '../../lib/tradingMetrics';
 import { cn } from '../../lib/utils';
 import {
@@ -42,7 +42,9 @@ export default function MorningRecapModal({
     lastDayRecap,
     previousNews,
     previousNewsChecks,
+    previousNewsSectorGuesses,
     predictionStats,
+    sectorPredictionStats,
     holdings,
     stocks,
     cash,
@@ -56,6 +58,10 @@ export default function MorningRecapModal({
   const accuracyPct =
     predictionStats.total > 0
       ? Math.round((predictionStats.correct / predictionStats.total) * 100)
+      : 0;
+  const sectorAccuracyPct =
+    sectorPredictionStats.total > 0
+      ? Math.round((sectorPredictionStats.correct / sectorPredictionStats.total) * 100)
       : 0;
 
   const holdingMovers = computeHoldingSummaries(holdings, stocks, cash)
@@ -74,7 +80,7 @@ export default function MorningRecapModal({
             어제 뉴스 결과가 시장에 반영되었어요!
           </DialogTitle>
           <DialogDescription className="text-[13px] font-medium text-muted-foreground mt-1">
-            어제 세운 뉴스 예측과 실제 시장 반응을 비교해 보고, 오늘의 새 뉴스를 분석해 보세요.
+            어제 스스로 추론한 관련 산업·방향 예측과 실제 시장 반응을 비교해 보고, 오늘의 새 뉴스를 분석해 보세요.
           </DialogDescription>
         </DialogHeader>
 
@@ -117,19 +123,24 @@ export default function MorningRecapModal({
             <div className="p-4 rounded-xl border border-[var(--color-hts-border)] bg-black/[0.02] dark:bg-black/25 space-y-1">
               <div className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
                 <Target className="w-4 h-4 text-amber-500" />
-                어제 뉴스 독해 적중률
+                어제 경제 문해력 적중률
               </div>
-              <div className="text-xl font-black text-foreground tabular-nums">
-                {lastDayRecap.checkedCount > 0 ? (
-                  <>
-                    {lastDayRecap.correctCount} / {lastDayRecap.checkedCount}건 적중
-                  </>
-                ) : (
-                  '예측 기록 없음'
+              <div className="text-base font-black text-foreground tabular-nums flex items-center gap-2 flex-wrap">
+                <span>
+                  방향{' '}
+                  {lastDayRecap.checkedCount > 0
+                    ? `${lastDayRecap.correctCount}/${lastDayRecap.checkedCount}`
+                    : '-'}
+                </span>
+                {(lastDayRecap.sectorCheckedCount ?? 0) > 0 && (
+                  <span className="text-emerald-700 dark:text-emerald-300">
+                    · 산업 {lastDayRecap.sectorCorrectCount ?? 0}/{lastDayRecap.sectorCheckedCount}
+                  </span>
                 )}
               </div>
               <div className="text-xs font-semibold text-muted-foreground tabular-nums">
-                누적 적중률: {accuracyPct}% ({predictionStats.correct}/{predictionStats.total})
+                누적 방향 {accuracyPct}%
+                {sectorPredictionStats.total > 0 && ` · 누적 산업 ${sectorAccuracyPct}%`}
               </div>
             </div>
           </div>
@@ -183,10 +194,12 @@ export default function MorningRecapModal({
           {/* Yesterday News Predictions Breakdown */}
           {previousNews.length > 0 && (
             <div className="space-y-2.5">
-              <div className="text-sm font-black text-foreground">어제 뉴스별 내 예측 결과</div>
+              <div className="text-sm font-black text-foreground">어제 뉴스별 내 추론 결과</div>
               <div className="space-y-2">
                 {previousNews.map((item) => {
                   const userPred = previousNewsChecks[item.id];
+                  const userSectors = previousNewsSectorGuesses[item.id] ?? [];
+                  const secEval = evaluateSectorGuesses(item, userSectors);
                   const actual = getActualNewsDirection(item);
                   const isCorrect = userPred === actual;
 
@@ -199,38 +212,69 @@ export default function MorningRecapModal({
                         <div className="text-[13px] font-bold text-foreground leading-snug">
                           {item.title}
                         </div>
-                        {userPred && (
-                          <span
-                            className={cn(
-                              'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black shrink-0',
-                              isCorrect
-                                ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
-                                : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
-                            )}
-                          >
-                            {isCorrect ? (
-                              <>
-                                <CheckCircle2 className="w-3.5 h-3.5" /> 적중
-                              </>
-                            ) : (
-                              <>
-                                <XCircle className="w-3.5 h-3.5" /> 복기
-                              </>
-                            )}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-1 shrink-0">
+                          {secEval.checked && (
+                            <span
+                              className={cn(
+                                'inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-black',
+                                secEval.hit
+                                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                                  : 'bg-sky-500/15 text-sky-700 dark:text-sky-300'
+                              )}
+                            >
+                              {secEval.hit ? '산업 적중' : '산업 복기'}
+                            </span>
+                          )}
+                          {userPred && (
+                            <span
+                              className={cn(
+                                'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black',
+                                isCorrect
+                                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                                  : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                              )}
+                            >
+                              {isCorrect ? (
+                                <>
+                                  <CheckCircle2 className="w-3.5 h-3.5" /> 적중
+                                </>
+                              ) : (
+                                <>
+                                  <XCircle className="w-3.5 h-3.5" /> 복기
+                                </>
+                              )}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2 flex-wrap text-xs font-semibold text-muted-foreground">
                         <span>
-                          내 판단:{' '}
+                          방향:{' '}
                           <strong className="text-foreground">
                             {userPred ? PREDICTION_LABEL[userPred] : '미체크'}
                           </strong>
                         </span>
                         <span>→</span>
                         <span>
-                          실제 영향:{' '}
+                          실제:{' '}
                           <strong className="text-foreground">{PREDICTION_LABEL[actual]}</strong>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-wrap text-[11px] font-semibold text-muted-foreground">
+                        <span>
+                          내 산업 추론:{' '}
+                          <strong className="text-foreground">
+                            {userSectors.length > 0
+                              ? userSectors.map((s) => `#${s.split('(')[0]}`).join(' ')
+                              : '미선택'}
+                          </strong>
+                        </span>
+                        <span>→</span>
+                        <span>
+                          실제 산업:{' '}
+                          <strong className="text-foreground">
+                            {item.relatedSectors.map((s) => `#${s.split('(')[0]}`).join(' ')}
+                          </strong>
                         </span>
                       </div>
                     </div>

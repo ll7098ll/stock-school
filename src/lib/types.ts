@@ -36,6 +36,25 @@ export type NewsTwistType =
   | 'earnings'
   | 'competition';
 
+export type NewsArticleFormat =
+  | 'breaking'
+  | 'earnings'
+  | 'interview'
+  | 'rival'
+  | 'policy'
+  | 'trend';
+
+export interface NewsMetric {
+  label: string;
+  value: string;
+  note?: string;
+}
+
+export interface NewsQuote {
+  text: string;
+  speaker: string;
+}
+
 export type ScenarioTheme =
   | 'macro'
   | 'geopolitics'
@@ -98,6 +117,16 @@ export interface NewsItem {
   twistType?: NewsTwistType;
   readingHint?: Record<Level, string>;
   marketBias?: number;
+  /** 기사 포맷/장르 다양화 */
+  articleFormat?: NewsArticleFormat;
+  /** 가상 언론 데스크/취재팀 표기 */
+  sourceDesk?: string;
+  /** 기사 핵심 수치 스냅샷 (정답 방향·섹터 비노출, 순수 팩트 수치) */
+  keyMetrics?: NewsMetric[];
+  /** 현장 관계자·연구원·소비자 한 줄 인용구 */
+  quote?: NewsQuote;
+  /** 기사 속 핵심 금융 용어사전 ID 목록 (정답 비노출 순수 개념 학습용) */
+  relatedGlossaryIds?: string[];
 }
 
 export interface CompanyNewsTemplate {
@@ -114,6 +143,11 @@ export interface CompanyNewsTemplate {
   contents: Record<Level, string>;
   explanations: Record<Level, string>;
   readingHint: Record<Level, string>;
+  articleFormat?: NewsArticleFormat;
+  sourceDesk?: string;
+  keyMetrics?: NewsMetric[];
+  quote?: NewsQuote;
+  relatedGlossaryIds?: string[];
 }
 
 export interface ScenarioEpisode {
@@ -131,6 +165,11 @@ export interface ScenarioEpisode {
   explanations: Record<Level, string>;
   readingHint: Record<Level, string>;
   marketBias?: number;
+  articleFormat?: NewsArticleFormat;
+  sourceDesk?: string;
+  keyMetrics?: NewsMetric[];
+  quote?: NewsQuote;
+  relatedGlossaryIds?: string[];
 }
 
 export interface ScenarioArc {
@@ -208,6 +247,8 @@ export interface LastDayRecap {
   assetDeltaPct: number;
   checkedCount: number;
   correctCount: number;
+  sectorCheckedCount?: number;
+  sectorCorrectCount?: number;
 }
 
 export interface LevelGameSnapshot {
@@ -229,7 +270,11 @@ export interface LevelGameSnapshot {
   scenarioCooldown?: number;
   todayNewsChecks?: Record<string, NewsPrediction>;
   previousNewsChecks?: Record<string, NewsPrediction>;
+  todayNewsSectorGuesses?: Record<string, SectorId[]>;
+  previousNewsSectorGuesses?: Record<string, SectorId[]>;
   predictionStats?: PredictionStats;
+  sectorPredictionStats?: PredictionStats;
+  watchlistStockIds?: string[];
   lastDayRecap?: LastDayRecap | null;
   tradeHistory: TradeRecord[];
   realizedProfitTotal: number;
@@ -250,6 +295,15 @@ export const NEWS_TWIST_LABELS: Record<NewsTwistType, string> = {
   rumor: '루머·변수',
   earnings: '실적 해석',
   competition: '경쟁사 희비',
+};
+
+export const NEWS_FORMAT_LABELS: Record<NewsArticleFormat, string> = {
+  breaking: '속보·단독',
+  earnings: '실적·공시',
+  interview: '현장 인터뷰',
+  rival: '라이벌 대조',
+  policy: '정책 브리핑',
+  trend: '생활경제 르포',
 };
 
 export const SCENARIO_THEME_LABELS: Record<ScenarioTheme, string> = {

@@ -58,10 +58,11 @@ export default function ScenarioModal({
         arc.title.toLowerCase().includes(q) ||
         arc.subtitle[level].toLowerCase().includes(q) ||
         arc.summary[level].toLowerCase().includes(q) ||
-        arc.featuredSectors.some((s) => s.toLowerCase().includes(q))
+        (completedScenarioIds.includes(arc.id) &&
+          arc.featuredSectors.some((s) => s.toLowerCase().includes(q)))
       );
     });
-  }, [selectedTheme, search, level]);
+  }, [selectedTheme, search, level, completedScenarioIds]);
 
   const completedCount = completedScenarioIds.filter((id) =>
     SCENARIO_ARCS.some((arc) => arc.id === id)
@@ -211,17 +212,23 @@ export default function ScenarioModal({
                     </p>
                   </div>
 
-                  {/* Footer: featured sectors + action */}
+                  {/* Footer: review sectors (only after completion to prevent spoilers) + action */}
                   <div className="pt-3 border-t border-[var(--color-hts-border)]/60 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                      {arc.featuredSectors.slice(0, 3).map((sec) => (
-                        <span
-                          key={sec}
-                          className="text-[11px] font-bold px-2 py-0.5 rounded bg-black/[0.04] dark:bg-white/[0.05] text-muted-foreground"
-                        >
-                          {sec.split('(')[0]}
+                      {isCompleted ? (
+                        arc.featuredSectors.slice(0, 3).map((sec) => (
+                          <span
+                            key={sec}
+                            className="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                          >
+                            {sec.split('(')[0]}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-[11px] font-semibold text-muted-foreground">
+                          🔍 기사를 읽고 영향 산업을 직접 추론해 보세요
                         </span>
-                      ))}
+                      )}
                     </div>
 
                     <button

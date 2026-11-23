@@ -492,11 +492,6 @@ export default function OrderPanel({
                               <span className="font-black text-[13px] text-foreground truncate">
                                 {item.name}
                               </span>
-                              {item.hasTodayNews && (
-                                <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 shrink-0">
-                                  뉴스
-                                </span>
-                              )}
                             </div>
                             <span
                               className={cn(

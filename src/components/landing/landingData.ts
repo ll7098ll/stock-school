@@ -140,8 +140,8 @@ export const LEARNING_STEPS: LearningStep[] = [
     title: '가상 경제 뉴스 읽기',
     subtitle: '매일 배달되는 3건의 맞춤 경제 기사',
     description:
-      '거시경제·산업·기업·글로벌 4개 카테고리의 588건 가상 뉴스 중 난이도에 맞는 3건이 매일 도착합니다. 헤드라인 뒤에 숨은 수혜 산업과 위험 산업을 먼저 추론해 보세요.',
-    highlights: ['난이도별 34건 균형 풀', '초·중급 동일 섹터 충돌 방지', '100% 창작 교육용 기사'],
+      '거시경제·산업·기업·글로벌·사회 5개 카테고리의 1,098편 가상 뉴스와 30종 멀티데이 시나리오 중 난이도에 맞는 3건이 매일 도착합니다. 헤드라인 뒤에 숨은 수혜 산업과 위험 산업을 먼저 추론해 보세요.',
+    highlights: ['난이도별 366편 맞춤 기사', '초·중급 동일 섹터 충돌 방지', '80개 금융 용어 칩 연동'],
   },
   {
     step: '02',
@@ -195,7 +195,7 @@ export const MARKET_SCENARIO_DEMOS: ScenarioDemo[] = [
     outcomes: [
       {
         stockId: 'flame-food',
-        name: '불꽃푸드',
+        name: '스파이스랩',
         sector: '식품(Food)',
         exposureLabel: '수출형',
         direction: 'up',
@@ -204,7 +204,7 @@ export const MARKET_SCENARIO_DEMOS: ScenarioDemo[] = [
       },
       {
         stockId: 'family-food',
-        name: '온가족식품',
+        name: '하베스트푸드',
         sector: '식품(Food)',
         exposureLabel: '내수형',
         direction: 'down',
@@ -222,7 +222,7 @@ export const MARKET_SCENARIO_DEMOS: ScenarioDemo[] = [
     outcomes: [
       {
         stockId: 'neo-memory',
-        name: '네오메모리',
+        name: '뉴로세미',
         sector: '기술(Tech)',
         exposureLabel: '고변동 전문형',
         direction: 'up',
@@ -231,7 +231,7 @@ export const MARKET_SCENARIO_DEMOS: ScenarioDemo[] = [
       },
       {
         stockId: 'nuri-elec',
-        name: '누리전자',
+        name: '노바전자',
         sector: '기술(Tech)',
         exposureLabel: '안정 종합형',
         direction: 'up',

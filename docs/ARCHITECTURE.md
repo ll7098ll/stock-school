@@ -57,7 +57,7 @@ graph TB
         direction TB
         StockData["📈 stockData.ts<br/>34개 가상 종목 (17섹터)"]
         NewsData["📰 newsData.ts<br/>1,098편 뉴스 · 30종 시나리오"]
-        GlossaryData["📚 glossaryData.ts<br/>32개 금융 용어"]
+        GlossaryData["📚 glossaryData.ts<br/>80개 금융 용어 (6개 카테고리)"]
     end
 
     React <-->|"로그인/로그아웃"| Auth

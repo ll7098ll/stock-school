@@ -212,6 +212,14 @@ const dataFilesToScan = [
   'src/lib/scenarios/corpBioTrendScenarios.ts',
   'src/lib/scenarios/diverseNewScenarios.ts',
   'src/lib/glossaryData.ts',
+  'src/lib/glossary/types.ts',
+  'src/lib/glossary/matcher.ts',
+  'src/lib/glossary/basicTerms.ts',
+  'src/lib/glossary/financialTerms.ts',
+  'src/lib/glossary/marketTerms.ts',
+  'src/lib/glossary/macroTerms.ts',
+  'src/lib/glossary/sectorTerms.ts',
+  'src/lib/glossary/advancedTerms.ts',
   'src/components/trading/NewsPanel.tsx',
   'src/components/trading/ScenarioModal.tsx',
   'src/components/trading/CompanyInfoPanel.tsx',
@@ -249,8 +257,22 @@ for (const file of dataFilesToScan) {
 const loginContent = fs.readFileSync('src/pages/Login.tsx', 'utf8').replace(/카카오톡/g, '');
 const loginMatch = loginContent.match(forbiddenPattern);
 assert.equal(loginMatch, null, `Login.tsx에 금지된 실기업명/상표/문구 발견: ${loginMatch?.[0]}`);
-assert.ok(GLOSSARY_TERMS.length >= 32, `용어사전 항목 수 확인 (기대>=32, 실제=${GLOSSARY_TERMS.length})`);
-console.log('   ✅ 실기업명·상표·파손어 0건 · 중복명 0건 · 조사 오류 0건 · 용어사전 32개 통과');
+assert.ok(GLOSSARY_TERMS.length >= 80, `용어사전 항목 수 확인 (기대>=80, 실제=${GLOSSARY_TERMS.length})`);
+const glossaryIdSet = new Set();
+for (const g of GLOSSARY_TERMS) {
+  assert.ok(!glossaryIdSet.has(g.id), `중복 용어 ID: ${g.id}`);
+  glossaryIdSet.add(g.id);
+  for (const lvl of ['elementary', 'middle', 'high']) {
+    assert.ok(g.shortSummary?.[lvl]?.length >= 8, `한 줄 요약 부족: ${g.id} (${lvl})`);
+    assert.ok(g.definitions?.[lvl]?.length >= 30, `상세 해설 부족: ${g.id} (${lvl})`);
+    assert.ok(g.examples?.[lvl]?.length >= 15, `실전 예시 부족: ${g.id} (${lvl})`);
+  }
+  for (const rid of g.relatedIds ?? []) {
+    assert.ok(rid in GLOSSARY_BY_ID, `존재하지 않는 연관 용어 ID: ${g.id} -> ${rid}`);
+    assert.notEqual(rid, g.id, `자기 참조 연관 용어 ID 금지: ${g.id}`);
+  }
+}
+console.log(`   ✅ 실기업명·상표·파손어 0건 · 중복명 0건 · 조사 오류 0건 · 용어사전 ${GLOSSARY_TERMS.length}개(예시·연관링크 완비) 통과`);
 
 console.log('🔍 4. 호가 단위 · 환율 차별화 · marketBias · 산업 추론 채점 단위 테스트...');
 assert.equal(getTickSize(3500), 5);
@@ -262,18 +284,18 @@ assert.equal(getTickSize(640000), 1000);
 assert.equal(roundToTickSize(82147), 82100);
 assert.equal(roundToTickSize(310320), 310500);
 
-// 고환율 뉴스 시 불꽃푸드(+) vs 온가족식품(-) 분리 확인
+// 고환율 뉴스 시 스파이스랩(+) vs 하베스트푸드(-) 분리 확인
 const fxNews = PREDEFINED_NEWS.find((n) => n.id === 'news-hi-fx-mixed');
 assert.ok(fxNews, 'news-hi-fx-mixed 존재 확인');
 const testStocks = createInitialStocks(INITIAL_STOCKS);
 const fxResult = simulateNextDay(testStocks, [fxNews], 'high', {});
 assert.ok(
   fxResult.breakdownByStock['flame-food'].newsContribution > 0,
-  '고환율 시 수출형 불꽃푸드는 양(+)의 뉴스 기여도를 받아야 함'
+  '고환율 시 수출형 스파이스랩은 양(+)의 뉴스 기여도를 받아야 함'
 );
 assert.ok(
   fxResult.breakdownByStock['family-food'].newsContribution < 0,
-  '고환율 시 내수 수입형 온가족식품은 음(-)의 뉴스 기여도를 받아야 함'
+  '고환율 시 내수 수입형 하베스트푸드는 음(-)의 뉴스 기여도를 받아야 함'
 );
 
 // evaluateSectorGuesses 단위 테스트

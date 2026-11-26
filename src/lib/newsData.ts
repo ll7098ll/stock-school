@@ -35,6 +35,7 @@ import { TECH_MOB_SCENARIOS } from './scenarios/techMobScenarios.ts';
 import { CORP_BIO_TREND_SCENARIOS } from './scenarios/corpBioTrendScenarios.ts';
 import { DIVERSE_NEW_SCENARIOS } from './scenarios/diverseNewScenarios.ts';
 import { shuffleArray } from './priceEngine.ts';
+import { enrichRelatedGlossaryIds } from './glossary/matcher.ts';
 
 export type {
   ActiveScenarioState,
@@ -96,10 +97,12 @@ export function materializeCompanyNews(
   template: CompanyNewsTemplate,
   level: Level
 ): NewsItem {
+  const title = template.headlines[level];
+  const content = template.contents[level];
   return {
     id: `${template.id}-${level}`,
-    title: template.headlines[level],
-    content: template.contents[level],
+    title,
+    content,
     category: template.category,
     sentiment: template.sentiment,
     relatedSectors: template.relatedSectors,
@@ -115,7 +118,7 @@ export function materializeCompanyNews(
     sourceDesk: template.sourceDesk,
     keyMetrics: template.keyMetrics,
     quote: template.quote,
-    relatedGlossaryIds: template.relatedGlossaryIds,
+    relatedGlossaryIds: enrichRelatedGlossaryIds(title, content, template.relatedGlossaryIds),
   };
 }
 
@@ -130,10 +133,13 @@ export function materializeScenarioNews(
   const episode = arc.episodes.find((ep) => ep.step === step);
   if (!episode) return null;
 
+  const title = episode.headlines[level];
+  const content = episode.contents[level];
+
   return {
     id: `${arc.id}-day-${episode.step}-${level}`,
-    title: episode.headlines[level],
-    content: episode.contents[level],
+    title,
+    content,
     category: episode.category,
     sentiment: episode.sentiment,
     relatedSectors: episode.relatedSectors,
@@ -154,7 +160,7 @@ export function materializeScenarioNews(
     sourceDesk: episode.sourceDesk,
     keyMetrics: episode.keyMetrics,
     quote: episode.quote,
-    relatedGlossaryIds: episode.relatedGlossaryIds,
+    relatedGlossaryIds: enrichRelatedGlossaryIds(title, content, episode.relatedGlossaryIds),
   };
 }
 
@@ -172,21 +178,31 @@ const MATERIALIZED_SCENARIO_NEWS: NewsItem[] = LEVELS.flatMap((lvl) =>
   )
 );
 
+const withEnrichedGlossary = (items: NewsItem[]): NewsItem[] =>
+  items.map((item) => ({
+    ...item,
+    relatedGlossaryIds: enrichRelatedGlossaryIds(
+      item.title,
+      item.content,
+      item.relatedGlossaryIds
+    ),
+  }));
+
 /**
  * 전체 교육용 가상 뉴스 풀
  * - 난이도별 기본 34건 + 추가 단독 60건 + 다양화 테마 30건 + 개별 기업 특화 136건 = 레벨당 260건 (총 780건)
  * - 여기에 30종 멀티데이 시나리오(레벨당 106화 = 318건)가 별도 아크로 전개되어 레벨당 총 366건(1,098편) 제공
  */
 export const PREDEFINED_NEWS: NewsItem[] = [
-  ...ELEMENTARY_NEWS,
-  ...ELEMENTARY_EXTRA_NEWS,
-  ...ELEMENTARY_DIVERSE_NEWS,
-  ...MIDDLE_NEWS,
-  ...MIDDLE_EXTRA_NEWS,
-  ...MIDDLE_DIVERSE_NEWS,
-  ...HIGH_NEWS,
-  ...HIGH_EXTRA_NEWS,
-  ...HIGH_DIVERSE_NEWS,
+  ...withEnrichedGlossary(ELEMENTARY_NEWS),
+  ...withEnrichedGlossary(ELEMENTARY_EXTRA_NEWS),
+  ...withEnrichedGlossary(ELEMENTARY_DIVERSE_NEWS),
+  ...withEnrichedGlossary(MIDDLE_NEWS),
+  ...withEnrichedGlossary(MIDDLE_EXTRA_NEWS),
+  ...withEnrichedGlossary(MIDDLE_DIVERSE_NEWS),
+  ...withEnrichedGlossary(HIGH_NEWS),
+  ...withEnrichedGlossary(HIGH_EXTRA_NEWS),
+  ...withEnrichedGlossary(HIGH_DIVERSE_NEWS),
   ...MATERIALIZED_COMPANY_NEWS,
 ];
 

@@ -499,7 +499,7 @@ export default function HeroSlide({
 
                   <div className="mt-3">
                     <div className={cn('text-base font-black', isDark ? 'text-white' : 'text-slate-900')}>
-                      누리전자
+                      노바전자
                     </div>
                     <div className="flex items-baseline gap-2.5 mt-1">
                       <span

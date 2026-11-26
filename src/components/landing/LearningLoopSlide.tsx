@@ -296,7 +296,7 @@ export default function LearningLoopSlide({ isDark, isVisible }: LearningLoopSli
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className={cn('text-sm font-black', isDark ? 'text-white' : 'text-slate-900')}>
-                        누리전자
+                        노바전자
                       </span>
                       <span className="text-xs font-mono font-extrabold text-[var(--price-up)] tabular-nums">
                         82,000원 (+2.4%)
@@ -428,7 +428,7 @@ export default function LearningLoopSlide({ isDark, isVisible }: LearningLoopSli
                     >
                       <div className="flex items-center justify-between">
                         <span className={cn('text-xs font-black', isDark ? 'text-white' : 'text-slate-900')}>
-                          네오메모리
+                          뉴로세미
                         </span>
                         <span className="text-xs font-mono font-black text-[var(--price-up)] tabular-nums">
                           +5.6%
@@ -446,7 +446,7 @@ export default function LearningLoopSlide({ isDark, isVisible }: LearningLoopSli
                     >
                       <div className="flex items-center justify-between">
                         <span className={cn('text-xs font-black', isDark ? 'text-white' : 'text-slate-900')}>
-                          온가족식품
+                          하베스트푸드
                         </span>
                         <span className="text-xs font-mono font-black text-[var(--price-down)] tabular-nums">
                           -2.8%

@@ -421,9 +421,8 @@ function hydrateLevelSnapshot(
 
       const stockDef = STOCK_BY_ID[stockId];
       const stockName =
-        typeof rec.stockName === 'string' && rec.stockName.trim()
-          ? rec.stockName
-          : (stockDef?.name ?? stockId);
+        stockDef?.name ??
+        (typeof rec.stockName === 'string' && rec.stockName.trim() ? rec.stockName : stockId);
       const sector = stockDef?.sector ?? (typeof rec.sector === 'string' ? rec.sector : '기술(Tech)');
       const totalAmount =
         typeof rec.totalAmount === 'number' && Number.isFinite(rec.totalAmount)

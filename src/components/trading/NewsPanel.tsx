@@ -1292,9 +1292,9 @@ export default function NewsPanel({
           if (!open) setActiveGlossaryTerm(null);
         }}
       >
-        <DialogContent className="max-w-md w-[92vw] bg-[var(--color-hts-panel)] border-[var(--color-hts-border)] rounded-2xl">
+        <DialogContent className="max-w-lg w-[92vw] max-h-[85vh] overflow-y-auto bg-[var(--color-hts-panel)] border-[var(--color-hts-border)] rounded-2xl">
           {activeGlossaryTerm && (
-            <>
+            <div className="space-y-4">
               <DialogHeader className="text-left space-y-1.5">
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[var(--color-accent-gold)]/15 text-[var(--color-accent-gold)] text-[11px] font-black w-fit">
                   <BookOpen className="w-3.5 h-3.5" />
@@ -1303,14 +1303,49 @@ export default function NewsPanel({
                 <DialogTitle className="text-lg font-black text-foreground">
                   {activeGlossaryTerm.term}
                 </DialogTitle>
-                <DialogDescription className="text-xs font-semibold text-muted-foreground">
-                  개념을 이해한 뒤 기사 내용을 스스로 해석해 보세요!
+                <DialogDescription className="text-xs font-bold text-foreground/80">
+                  {activeGlossaryTerm.shortSummary[level]}
                 </DialogDescription>
               </DialogHeader>
-              <p className="text-sm leading-relaxed text-foreground/90 font-medium pt-1">
+
+              <p className="text-sm leading-relaxed text-foreground/90 font-medium">
                 {activeGlossaryTerm.definitions[level]}
               </p>
-            </>
+
+              {/* Real-world Example */}
+              <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] p-3.5 space-y-1">
+                <div className="text-[11px] font-black text-emerald-700 dark:text-emerald-400">
+                  💡 실전 예시
+                </div>
+                <p className="text-xs sm:text-[13px] leading-relaxed text-foreground/90 font-medium">
+                  {activeGlossaryTerm.examples[level]}
+                </p>
+              </div>
+
+              {/* Clickable Related Terms */}
+              {activeGlossaryTerm.relatedIds.length > 0 && (
+                <div className="space-y-1.5 pt-1 border-t border-[var(--color-hts-border)]/70">
+                  <div className="text-[11px] font-extrabold text-muted-foreground">
+                    연관 용어 바로 보기
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {activeGlossaryTerm.relatedIds
+                      .map((rid) => GLOSSARY_BY_ID[rid])
+                      .filter((g): g is GlossaryItem => Boolean(g))
+                      .map((rel) => (
+                        <button
+                          key={rel.id}
+                          type="button"
+                          onClick={() => setActiveGlossaryTerm(rel)}
+                          className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-black/[0.04] dark:bg-white/[0.06] text-foreground hover:bg-[var(--color-accent-gold)]/15 hover:text-[var(--color-accent-gold)] border border-[var(--color-hts-border)] transition-colors cursor-pointer"
+                        >
+                          {rel.term.split(' (')[0]}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </DialogContent>
       </Dialog>

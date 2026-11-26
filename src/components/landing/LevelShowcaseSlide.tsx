@@ -249,7 +249,7 @@ export default function LevelShowcaseSlide({
                   </span>
                 </div>
                 <span className="text-[11px] font-bold text-slate-400">
-                  전체 18개 용어 수록
+                  전체 {GLOSSARY_TERMS.length}개 용어 수록
                 </span>
               </div>
 
@@ -284,7 +284,7 @@ export default function LevelShowcaseSlide({
               {activeTerm && (
                 <div
                   className={cn(
-                    'rounded-2xl border p-5 space-y-3 min-h-[195px] flex flex-col justify-between transition-colors',
+                    'rounded-2xl border p-5 space-y-3 min-h-[210px] flex flex-col justify-between transition-colors',
                     isDark ? 'bg-[#12151F] border-[#2B334A]' : 'bg-slate-50/90 border-slate-200/80'
                   )}
                 >
@@ -316,6 +316,18 @@ export default function LevelShowcaseSlide({
                     >
                       {activeTerm.definitions[level]}
                     </p>
+
+                    <div
+                      className={cn(
+                        'rounded-xl border px-3.5 py-2.5 text-xs leading-relaxed font-medium',
+                        isDark
+                          ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-200'
+                          : 'bg-emerald-50/90 border-emerald-200/80 text-emerald-900'
+                      )}
+                    >
+                      <span className="font-black mr-1.5">💡 실전 예시:</span>
+                      {activeTerm.examples[level]}
+                    </div>
                   </div>
 
                   <p className="text-[11px] font-semibold text-slate-400 pt-2 border-t border-dashed border-slate-300/40 dark:border-slate-700/60">
@@ -326,8 +338,8 @@ export default function LevelShowcaseSlide({
             </div>
 
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400">
-              <span>앱 내 ‘금융 용어 사전’ 탭에서 언제든 검색 가능</span>
-              <span className="font-mono">GLOSSARY · 18 TERMS</span>
+              <span>앱 내 ‘금융 용어 사전’ 탭에서 6개 카테고리별 검색·꼬리물기 학습 가능</span>
+              <span className="font-mono">GLOSSARY · {GLOSSARY_TERMS.length} TERMS</span>
             </div>
           </div>
         </div>

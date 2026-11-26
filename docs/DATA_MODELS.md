@@ -181,27 +181,38 @@ export interface NewsItem {
 
 ## 5. 📚 GlossaryItem
 
-> **파일:** `src/lib/glossaryData.ts` (총 32개 용어)
+> **파일:** `src/lib/glossaryData.ts` & `src/lib/glossary/*` (6개 카테고리 · 총 80개 용어)
 
 ```typescript
+export type GlossaryCategory =
+  | 'basic'
+  | 'financial'
+  | 'market'
+  | 'macro'
+  | 'sector'
+  | 'advanced';
+
 export interface GlossaryItem {
   id: string;
   term: string;
-  category: 'basic' | 'analysis' | 'macro' | 'advanced';
-  definitions: {
-    elementary: string;
-    middle: string;
-    high: string;
-  };
+  category: GlossaryCategory;
+  shortSummary: Record<Level, string>;
+  definitions: Record<Level, string>;
+  examples: Record<Level, string>;
+  relatedIds: string[];
+  relatedSectors?: SectorId[];
+  keywords?: string[];
 }
 ```
 
-| 카테고리 | 레이블 | 주요 포함 용어 (총 32개) |
-|:---:|:---|:---|
-| `basic` | 주식 기초 | 주식, 시가총액, 배당금, 거래량, 유동성, 블루칩, 분산투자, 자사주 매입·소각, 액면분할 등 |
-| `analysis` | 주식 분석 | PER, PBR, 이동평균선, ROE, 컨센서스, 어닝 서프라이즈/쇼크, NIM, CapEx, 수주잔고, 정제마진, CDMO 등 |
-| `macro` | 거시 경제 | 기준금리, 인플레이션, GDP, 양적완화, 환율, 밸류업·저PBR, 안전자산 선호(Risk-Off) |
-| `advanced` | 심화 지식 | 변동성, 공매도, 래깅 효과, 물적분할·중복상장, 전환사채(CB)·오버행 |
+| 카테고리 | 레이블 | 수량 | 주요 포함 용어 (총 80개) |
+|:---:|:---|:---:|:---|
+| `basic` | 주식 기초·거래 | 18 | 주식, 시가총액, 배당금, 거래량, 유동성, 블루칩, 분산투자, 자사주 소각, 액면분할, 매수·매도·체결, 호가창, 시가·종가·상한가, 코스피·코스닥, ETF, IPO, 포트폴리오·리밸런싱, 성장주·가치주, 경기민감·방어주 |
+| `financial` | 재무·실적 분석 | 15 | PER, PBR, ROE, 컨센서스, 어닝 서프라이즈/쇼크, CapEx, 매출·영업이익·순이익, 영업이익률(OPM), EPS·BPS, 잉여현금흐름(FCF), 가이던스, 밸류에이션·리레이팅, 배당수익률·배당락, TSR, EV/EBITDA |
+| `market` | 차트·시장 심리 | 9 | 이동평균선, 변동성, 캔들차트(양봉·음봉), 지지선·저항선, 골든·데드크로스, 선반영·차익실현, 호재·악재, 수급(외국인·기관·개인), 손절·익절·분할매수 |
+| `macro` | 거시경제·정책 | 15 | 기준금리, 인플레이션, GDP, 양적완화(QE), 환율, 밸류업·저PBR, 안전자산 선호(Risk-Off), CPI·PPI, 채권·국채, 경기침체·연착륙·경착륙, 스태그플레이션·디플레이션, 긴축(QT)·피벗, 관세·공급망, 무역수지, SOC |
+| `sector` | 산업 핵심 지표 | 15 | NIM, 수주잔고, 정제마진, CDMO, 가동률·수율·증설·감산, 산업 사이클·피크아웃, ASP·스프레드, HBM, 임상·파이프라인·바이오시밀러, OEM·ODM, SCFI·BDI, 신조선가·후판, MAU·GMV·ARPU·잠금효과, 부동산 PF·대손충당금, CET1·CSM·K-ICS |
+| `advanced` | 기업 이벤트·심화 | 8 | 공매도, 래깅 효과, 물적분할·중복상장, CB·오버행, 유상·무상증자, 지배구조·주총·의결권, 지주사 할인·NAV, DCF·WACC·헤지 |
 
 ---
 

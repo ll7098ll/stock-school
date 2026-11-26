@@ -14,14 +14,14 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 1. 기술(Tech) ====================
   {
     id: 'nuri-elec',
-    name: '누리전자',
+    name: '노바전자',
     sector: '기술(Tech)',
     basePrice: 82000,
     volatility: 0.7,
     exposure: 'export',
     descriptions: {
       elementary:
-        '누리전자는 스마트폰, 텔레비전, 냉장고 같은 생활 가전과 컴퓨터의 두뇌인 반도체를 함께 만드는 아주 든든한 종합 전자 회사예요. 여러 가지 제품을 골고루 만들어 전 세계에 수출하기 때문에 한쪽이 잠시 쉬어가도 쉽게 흔들리지 않는 반장 같은 기업이랍니다.',
+        '노바전자는 스마트폰, 텔레비전, 냉장고 같은 생활 가전과 컴퓨터의 두뇌인 반도체를 함께 만드는 아주 든든한 종합 전자 회사예요. 여러 가지 제품을 골고루 만들어 전 세계에 수출하기 때문에 한쪽이 잠시 쉬어가도 쉽게 흔들리지 않는 반장 같은 기업이랍니다.',
       middle:
         '메모리 반도체, 스마트폰, 생활 가전, 디스플레이 등 폭넓은 IT 하드웨어 사업부를 보유한 종합 전자 기업입니다. 반도체 산업은 수요와 공급에 따라 3~4년 주기로 호황과 불황(사이클)을 반복하는 특징이 있으며, AI 데이터센터 투자 확대나 글로벌 가전 교체 수요가 실적에 큰 영향을 줍니다.',
       high:
@@ -30,14 +30,14 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'neo-memory',
-    name: '네오메모리',
+    name: '뉴로세미',
     sector: '기술(Tech)',
     basePrice: 195000,
     volatility: 1.3,
     exposure: 'export',
     descriptions: {
       elementary:
-        '인공지능(AI) 로봇이 똑똑하게 생각하려면 아주 빠른 기억 장치가 필요해요. 네오메모리는 바로 그 초고속 메모리 칩만 전문으로 만드는 기술 강자예요. 한 분야에 집중하기 때문에 AI 인기가 뜨거울 땐 주가가 쑥쑥 오르지만, 경기가 식으면 크게 출렁일 수도 있어요.',
+        '인공지능(AI) 로봇이 똑똑하게 생각하려면 아주 빠른 기억 장치가 필요해요. 뉴로세미는 바로 그 초고속 메모리 칩만 전문으로 만드는 기술 강자예요. 한 분야에 집중하기 때문에 AI 인기가 뜨거울 땐 주가가 쑥쑥 오르지만, 경기가 식으면 크게 출렁일 수도 있어요.',
       middle:
         '고대역폭 메모리(HBM) 등 AI 서버용 고성능 메모리 반도체에 사업 역량을 집중한 순수 메모리 전문 기업입니다. 종합 전자 기업보다 사업 다각화는 적지만, 반도체 업황이 상승 사이클에 진입할 때 이익 레버리지가 훨씬 크게 나타나는 고위험·고수익 특성을 보입니다.',
       high:
@@ -48,7 +48,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 2. 자동차(Auto) ====================
   {
     id: 'baram-motors',
-    name: '바람모터스',
+    name: '루시온모터스',
     sector: '자동차(Auto)',
     basePrice: 240000,
     volatility: 0.9,
@@ -64,14 +64,14 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'mobil-parts',
-    name: '모빌파츠',
+    name: '오토코어',
     sector: '자동차(Auto)',
     basePrice: 145000,
     volatility: 1.0,
     exposure: 'export',
     descriptions: {
       elementary:
-        '자동차 한 대를 만들려면 수만 개의 부품이 꼭 맞게 조립되어야 해요. 모빌파츠는 자동차의 브레이크, 핸들, 전기차용 모터, 그리고 스스로 길을 찾는 자율주행 센서를 만들어 완성차 공장에 보내주는 핵심 조력자 회사예요.',
+        '자동차 한 대를 만들려면 수만 개의 부품이 꼭 맞게 조립되어야 해요. 오토코어는 자동차의 브레이크, 핸들, 전기차용 모터, 그리고 스스로 길을 찾는 자율주행 센서를 만들어 완성차 공장에 보내주는 핵심 조력자 회사예요.',
       middle:
         '완성차 제조사에 핵심 모듈과 전동화 구동 부품, 자율주행 센서를 공급하는 대형 자동차 부품 기업입니다. 신차 생산량이 늘어나면 함께 성장하며, 이미 도로를 달리는 차량의 교체용(A/S) 부품 판매에서 꾸준한 현금 흐름이 발생하는 것이 특징입니다.',
       high:
@@ -82,7 +82,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 3. 배터리(Battery) ====================
   {
     id: 'powercell-energy',
-    name: '파워셀에너지',
+    name: '볼트엑스',
     sector: '배터리(Battery)',
     basePrice: 340000,
     volatility: 1.4,
@@ -98,7 +98,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'solid-battery',
-    name: '솔리드배터리',
+    name: '아이온셀',
     sector: '배터리(Battery)',
     basePrice: 280000,
     volatility: 1.2,
@@ -116,7 +116,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 4. 정유/에너지(Energy) ====================
   {
     id: 'haeorum-oil',
-    name: '해오름정유',
+    name: '넥소일',
     sector: '정유/에너지(Energy)',
     basePrice: 76000,
     volatility: 1.4,
@@ -132,7 +132,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'clear-power',
-    name: '맑은전력에너지',
+    name: '에너그리드',
     sector: '정유/에너지(Energy)',
     basePrice: 54000,
     volatility: 0.9,
@@ -150,7 +150,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 5. 인터넷(Internet) ====================
   {
     id: 'open-portal',
-    name: '열린포털',
+    name: '플로우넷',
     sector: '인터넷(Internet)',
     basePrice: 210000,
     volatility: 1.1,
@@ -166,7 +166,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'damoa-platform',
-    name: '다모아플랫폼',
+    name: '웨이브톡',
     sector: '인터넷(Internet)',
     basePrice: 62000,
     volatility: 1.3,
@@ -184,7 +184,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 6. 금융(Finance) ====================
   {
     id: 'ansim-finance',
-    name: '안심금융지주',
+    name: '피넥스금융',
     sector: '금융(Finance)',
     basePrice: 84000,
     volatility: 0.6,
@@ -200,7 +200,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'dundeun-life',
-    name: '든든생명보험',
+    name: '라이프온생명',
     sector: '금융(Finance)',
     basePrice: 88000,
     volatility: 0.5,
@@ -218,7 +218,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 7. 바이오(Bio) ====================
   {
     id: 'medi-factory',
-    name: '메디팩토리',
+    name: '셀로직스',
     sector: '바이오(Bio)',
     basePrice: 640000,
     volatility: 1.0,
@@ -234,7 +234,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'cure-bio',
-    name: '큐어바이오',
+    name: '큐어젠바이오',
     sector: '바이오(Bio)',
     basePrice: 185000,
     volatility: 1.3,
@@ -252,7 +252,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 8. 방산/우주(Defense) ====================
   {
     id: 'guardian-aero',
-    name: '가디언에어로',
+    name: '에어로엑스',
     sector: '방산/우주(Defense)',
     basePrice: 230000,
     volatility: 1.4,
@@ -268,7 +268,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'starlight-defense',
-    name: '별빛우주방산',
+    name: '오르빗테크',
     sector: '방산/우주(Defense)',
     basePrice: 118000,
     volatility: 1.3,
@@ -286,7 +286,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 9. 식품(Food) ====================
   {
     id: 'flame-food',
-    name: '불꽃푸드',
+    name: '스파이스랩',
     sector: '식품(Food)',
     basePrice: 310000,
     volatility: 1.5,
@@ -302,7 +302,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'family-food',
-    name: '온가족식품',
+    name: '하베스트푸드',
     sector: '식품(Food)',
     basePrice: 175000,
     volatility: 0.8,
@@ -320,7 +320,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 10. 화학(Chemical) ====================
   {
     id: 'pureun-chem',
-    name: '푸른화학',
+    name: '에코케미컬',
     sector: '화학(Chemical)',
     basePrice: 220000,
     volatility: 1.1,
@@ -336,7 +336,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'next-materials',
-    name: '넥스트소재',
+    name: '하이켐소재',
     sector: '화학(Chemical)',
     basePrice: 265000,
     volatility: 1.5,
@@ -354,7 +354,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 11. 소재(Material) ====================
   {
     id: 'gangcheol-ind',
-    name: '강철산업',
+    name: '네오스틸',
     sector: '소재(Material)',
     basePrice: 295000,
     volatility: 1.3,
@@ -370,7 +370,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'terra-mineral',
-    name: '테라광물',
+    name: '테라메탈',
     sector: '소재(Material)',
     basePrice: 158000,
     volatility: 1.5,
@@ -388,7 +388,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 12. 통신(Telecom) ====================
   {
     id: 'onnuri-telecom',
-    name: '온누리통신',
+    name: '원텔레콤',
     sector: '통신(Telecom)',
     basePrice: 52000,
     volatility: 0.5,
@@ -404,7 +404,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'ieum-network',
-    name: '이음네트워크',
+    name: '파이버넷',
     sector: '통신(Telecom)',
     basePrice: 41000,
     volatility: 0.6,
@@ -422,7 +422,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 13. 조선(Shipbuilding) ====================
   {
     id: 'ocean-shipbuilding',
-    name: '오션조선',
+    name: '아틀라스조선',
     sector: '조선(Shipbuilding)',
     basePrice: 138000,
     volatility: 1.4,
@@ -438,7 +438,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'pado-heavy',
-    name: '파도중공업',
+    name: '마린파워',
     sector: '조선(Shipbuilding)',
     basePrice: 96000,
     volatility: 1.3,
@@ -456,7 +456,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 14. 건설(Construction) ====================
   {
     id: 'smart-const',
-    name: '스마트건설',
+    name: '아크이앤씨',
     sector: '건설(Construction)',
     basePrice: 44000,
     volatility: 1.2,
@@ -472,7 +472,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'urban-infra',
-    name: '어반토목',
+    name: '어반인프라',
     sector: '건설(Construction)',
     basePrice: 36000,
     volatility: 1.1,
@@ -506,7 +506,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'pure-cosmetic',
-    name: '순수코스메틱',
+    name: '코스메랩',
     sector: '화장품(Cosmetics)',
     basePrice: 89000,
     volatility: 1.1,
@@ -524,7 +524,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 16. 지주(Holding) ====================
   {
     id: 'daon-holdings',
-    name: '다온홀딩스',
+    name: '버텍스홀딩스',
     sector: '지주(Holding)',
     basePrice: 148000,
     volatility: 0.9,
@@ -540,7 +540,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'gaon-group',
-    name: '가온그룹지주',
+    name: '브릿지홀딩스',
     sector: '지주(Holding)',
     basePrice: 92000,
     volatility: 0.8,
@@ -558,7 +558,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   // ==================== 17. 해운(Shipping) ====================
   {
     id: 'bluewave-shipping',
-    name: '블루웨이브해운',
+    name: '퍼시픽라인',
     sector: '해운(Shipping)',
     basePrice: 22000,
     volatility: 1.7,
@@ -574,7 +574,7 @@ export const INITIAL_STOCKS: StockDefinition[] = [
   },
   {
     id: 'bada-logistics',
-    name: '바다물류',
+    name: '오션로지스',
     sector: '해운(Shipping)',
     basePrice: 31000,
     volatility: 1.4,

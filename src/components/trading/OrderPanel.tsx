@@ -9,6 +9,7 @@ import {
   computeSmartQtyByPct,
   formatSignedPct,
   formatSignedWon,
+  getHoldingCostBasis,
   previewBuyOrder,
   previewSellOrder,
 } from '../../lib/tradingMetrics';
@@ -50,6 +51,7 @@ export default function OrderPanel({
     buyStock,
     sellStock,
     level,
+    dayCount,
     tutorialStep,
     currentNews,
     todayNewsChecks,
@@ -79,11 +81,18 @@ export default function OrderPanel({
   const [prevSync, setPrevSync] = useState({
     stockId,
     intentNonce: orderIntent?.nonce ?? 0,
+    level,
+    dayCount,
   });
 
   const currentNonce = orderIntent?.nonce ?? 0;
-  if (prevSync.stockId !== stockId || prevSync.intentNonce !== currentNonce) {
-    setPrevSync({ stockId, intentNonce: currentNonce });
+  if (
+    prevSync.stockId !== stockId ||
+    prevSync.intentNonce !== currentNonce ||
+    prevSync.level !== level ||
+    prevSync.dayCount !== dayCount
+  ) {
+    setPrevSync({ stockId, intentNonce: currentNonce, level, dayCount });
     setConfirmPending(false);
 
     if (
@@ -93,7 +102,11 @@ export default function OrderPanel({
     ) {
       setTab(orderIntent.side);
       setQuantity(resolveIntentQty(orderIntent, stockId));
-    } else if (prevSync.stockId !== stockId) {
+    } else if (
+      prevSync.stockId !== stockId ||
+      prevSync.level !== level ||
+      prevSync.dayCount !== dayCount
+    ) {
       if (tab === 'sell') {
         const heldQty = holdings[stockId]?.quantity ?? 0;
         setQuantity(heldQty > 0 ? '1' : '0');
@@ -225,16 +238,18 @@ export default function OrderPanel({
   };
 
   const holdingPnL = holding
-    ? {
-        value: stock.currentPrice * holding.quantity,
-        cost: holding.avgPrice * holding.quantity,
-        profit: (stock.currentPrice - holding.avgPrice) * holding.quantity,
-        profitRate:
-          holding.avgPrice > 0
-            ? ((stock.currentPrice - holding.avgPrice) / holding.avgPrice) * 100
-            : 0,
-        weightPct: totalAsset > 0 ? ((stock.currentPrice * holding.quantity) / totalAsset) * 100 : 0,
-      }
+    ? (() => {
+        const value = stock.currentPrice * holding.quantity;
+        const cost = getHoldingCostBasis(holding);
+        const profit = value - cost;
+        return {
+          value,
+          cost,
+          profit,
+          profitRate: cost > 0 ? (profit / cost) * 100 : 0,
+          weightPct: totalAsset > 0 ? (value / totalAsset) * 100 : 0,
+        };
+      })()
     : null;
 
   const isSellUnheld = tab === 'sell' && !holding;

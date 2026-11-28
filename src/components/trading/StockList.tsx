@@ -2,6 +2,7 @@ import { useGameStore } from '../../stores/gameStore';
 import {
   formatSignedPct,
   formatSignedWon,
+  getHoldingCostBasis,
 } from '../../lib/tradingMetrics';
 import { cn } from '../../lib/utils';
 import {
@@ -109,7 +110,7 @@ export default function StockList({
     const h = holdings[stockId];
     if (!h || h.quantity <= 0) return null;
     const value = currentPrice * h.quantity;
-    const cost = h.avgPrice * h.quantity;
+    const cost = getHoldingCostBasis(h);
     const profit = value - cost;
     const profitRate = cost > 0 ? (profit / cost) * 100 : 0;
     return { quantity: h.quantity, avgPrice: h.avgPrice, value, profit, profitRate };
@@ -126,7 +127,7 @@ export default function StockList({
       const h = holdings[s.id];
       if (!h || h.quantity <= 0) return null;
       const value = s.currentPrice * h.quantity;
-      const cost = h.avgPrice * h.quantity;
+      const cost = getHoldingCostBasis(h);
       const profitRate = cost > 0 ? ((value - cost) / cost) * 100 : 0;
       return { value, profitRate };
     };

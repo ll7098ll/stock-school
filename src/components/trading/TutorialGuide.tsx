@@ -14,7 +14,8 @@ import {
   Compass,
 } from 'lucide-react';
 import { Button } from '../ui/button';
-import { useGameStore } from '../../stores/gameStore';
+import { TUTORIAL_COMPLETED_KEY, useGameStore } from '../../stores/gameStore';
+import { safeLocalStorage } from '../../lib/safeStorage';
 
 interface TutorialGuideProps {
   activeWorkspace: 'trading' | 'portfolio' | 'news' | 'glossary';
@@ -140,7 +141,7 @@ export default function TutorialGuide({
   };
 
   const handleComplete = () => {
-    localStorage.setItem('stockschool_tutorial_completed', 'true');
+    safeLocalStorage.setItem(TUTORIAL_COMPLETED_KEY, 'true');
     onClose();
   };
 

@@ -68,6 +68,15 @@ export function getTodayNewsSets(currentNews: NewsItem[]): {
   return { newsSectorSet, newsStockSet };
 }
 
+export function getHoldingCostBasis(holding: Holding | undefined): number {
+  if (!holding || !Number.isFinite(holding.quantity) || holding.quantity <= 0) return 0;
+  if (typeof holding.totalCost === 'number' && Number.isFinite(holding.totalCost) && holding.totalCost >= 0) {
+    return holding.totalCost;
+  }
+  const safeAvg = Number.isFinite(holding.avgPrice) && holding.avgPrice >= 0 ? holding.avgPrice : 0;
+  return safeAvg * holding.quantity;
+}
+
 export function computeHoldingSummaries(
   holdings: Record<string, Holding>,
   stocks: Record<string, StockState>,
@@ -91,7 +100,7 @@ export function computeHoldingSummaries(
     const dayChangePct = prevPrice > 0 ? (dayChange / prevPrice) * 100 : 0;
 
     const currentValue = stock.currentPrice * holding.quantity;
-    const buyCost = holding.avgPrice * holding.quantity;
+    const buyCost = getHoldingCostBasis(holding);
     const profit = currentValue - buyCost;
     const profitRate = buyCost > 0 ? (profit / buyCost) * 100 : 0;
 
@@ -141,7 +150,7 @@ export function computeAccountSummary(
     if (!stock || holding.quantity <= 0) return;
     holdingCount += 1;
     totalStockValue += stock.currentPrice * holding.quantity;
-    totalBuyCost += holding.avgPrice * holding.quantity;
+    totalBuyCost += getHoldingCostBasis(holding);
   });
 
   const totalAsset = cash + totalStockValue;
@@ -191,11 +200,11 @@ export function previewBuyOrder(
   const estimatedAmount = safeQty * stock.currentPrice;
   const remainingCash = Math.max(0, cash - estimatedAmount);
   const prevQty = holding?.quantity ?? 0;
-  const prevAvg = holding?.avgPrice ?? 0;
+  const prevTotalCost = getHoldingCostBasis(holding);
   const nextQuantity = prevQty + safeQty;
   const nextAvgPrice =
     nextQuantity > 0
-      ? Math.round((prevQty * prevAvg + estimatedAmount) / nextQuantity)
+      ? Math.round((prevTotalCost + estimatedAmount) / nextQuantity)
       : stock.currentPrice;
   const nextHoldingValue = nextQuantity * stock.currentPrice;
   const nextWeightPct = totalAsset > 0 ? (nextHoldingValue / totalAsset) * 100 : 0;
@@ -223,8 +232,13 @@ export function previewSellOrder(
   const estimatedAmount = safeQty * stock.currentPrice;
   const nextCash = cash + estimatedAmount;
   const remainingQuantity = Math.max(0, maxSell - safeQty);
-  const avgPrice = holding?.avgPrice ?? stock.currentPrice;
-  const costBasis = avgPrice * safeQty;
+  const prevTotalCost = getHoldingCostBasis(holding);
+  const costBasis =
+    maxSell > 0 && safeQty > 0
+      ? safeQty === maxSell
+        ? prevTotalCost
+        : Math.round((prevTotalCost * safeQty) / maxSell)
+      : 0;
   const realizedProfit = estimatedAmount - costBasis;
   const realizedProfitRate = costBasis > 0 ? (realizedProfit / costBasis) * 100 : 0;
 

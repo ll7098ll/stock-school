@@ -87,8 +87,10 @@ export interface StockState extends StockDefinition {
 
 export interface CompactStockSave {
   currentPrice: number;
-  priceHistory: number[];
+  priceHistory?: number[];
   volumeHistory?: number[];
+  pricesCsv?: string;
+  volumesCsv?: string;
 }
 
 export interface NewsItem {
@@ -193,6 +195,16 @@ export interface ActiveScenarioState {
 export interface Holding {
   quantity: number;
   avgPrice: number;
+  /** 분할 매수·매도 반올림 드리프트 방지를 위한 정확한 누적 매입 원가(원) */
+  totalCost?: number;
+}
+
+export interface TradeStats {
+  total: number;
+  buyCount: number;
+  sellCount: number;
+  winSells: number;
+  lossSells: number;
 }
 
 export type TradeType = 'buy' | 'sell';
@@ -277,7 +289,10 @@ export interface LevelGameSnapshot {
   watchlistStockIds?: string[];
   lastDayRecap?: LastDayRecap | null;
   tradeHistory: TradeRecord[];
+  tradeStats?: TradeStats;
   realizedProfitTotal: number;
+  /** 멀티 탭·멀티 기기 동시성 충돌 감지용 단조 증가 리비전 */
+  revision?: number;
 }
 
 export const NEWS_CATEGORY_LABELS: Record<NewsCategory, string> = {

@@ -32,9 +32,9 @@ Firebase API Key의 역할:
 - 데이터 **접근 권한을 부여하지 않음**
 - 실제 보안은 **Firestore Security Rules**로 관리
 
-### Firestore 보안 규칙 ([`firestore.rules`](../firestore.rules))
+### Firestore 보안 규칙 ([`firestore.rules`](../firestore.rules)) 및 인덱스 예외 ([`firestore.indexes.json`](../firestore.indexes.json))
 
-실제 배포 시 프로젝트 루트의 `firestore.rules`를 Firebase Console 또는 `firebase deploy --only firestore:rules`로 반드시 배포해야 합니다.
+실제 배포 시 프로젝트 루트의 `firestore.rules` 및 `firestore.indexes.json`을 Firebase Console 또는 `firebase deploy --only firestore`로 함께 배포해야 합니다.
 
 ```javascript
 rules_version = '2';
@@ -48,7 +48,13 @@ service cloud.firestore {
           'schemaVersion', 'displayName', 'currentLevel', 'gameStates', 'updatedAt'
         ])
         && request.resource.data.currentLevel in ['elementary', 'middle', 'high']
-        && request.resource.data.schemaVersion is int;
+        && request.resource.data.schemaVersion is int
+        && request.resource.data.gameStates is map
+        && request.resource.data.gameStates.size() > 0
+        && request.resource.data.gameStates.keys().hasOnly(['elementary', 'middle', 'high'])
+        && (request.resource.data.displayName == null ||
+            (request.resource.data.displayName is string && request.resource.data.displayName.size() <= 80))
+        && request.resource.data.updatedAt is string;
       allow delete: if request.auth != null && request.auth.uid == userId;
     }
     match /{document=**} {
@@ -60,7 +66,7 @@ service cloud.firestore {
 
 이 규칙이 보장하는 것:
 - ✅ 인증된 사용자만 자신의 문서 읽기·쓰기·삭제 가능
-- ✅ 허용된 스키마 필드 외 임의 필드 주입 차단
+- ✅ 허용된 스키마 필드 외 임의 필드 주입 및 빈 `gameStates` 덮어쓰기 차단
 - ✅ 개인정보 보호법 제21조·제36조 준수: 회원 탈퇴 시 본인 문서 즉시 삭제 허용
 - ❌ 타 사용자 데이터 및 미지정 컬렉션 접근 전면 차단
 

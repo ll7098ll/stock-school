@@ -9,6 +9,7 @@ import {
 import { Button } from '../ui/button';
 import { ShieldAlert, CheckCircle2, UserCheck } from 'lucide-react';
 import type { LegalTab } from './LegalModals';
+import { safeLocalStorage } from '../../lib/safeStorage';
 
 interface GoogleConsentModalProps {
   open: boolean;
@@ -35,17 +36,13 @@ export default function GoogleConsentModal({
 
   const handleConfirm = () => {
     if (!canProceed) return;
-    try {
-      localStorage.setItem(
-        'stockschool_consent_v1',
-        JSON.stringify({
-          ageStatus,
-          agreedAt: new Date().toISOString(),
-        })
-      );
-    } catch {
-      // ignore storage errors
-    }
+    safeLocalStorage.setItem(
+      'stockschool_consent_v1',
+      JSON.stringify({
+        ageStatus,
+        agreedAt: new Date().toISOString(),
+      })
+    );
     onProceedGoogle();
   };
 

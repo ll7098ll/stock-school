@@ -115,13 +115,14 @@ export default function PortfolioPanel({
     });
   }, [holdings, stocks, cash, currentNews, sortBy]);
 
-  // Chart data for Asset Trend
+  // Chart data for Asset Trend (180일 초과 트리밍 시에도 실제 일차 축 정확히 표기: H-2)
   const assetTrendData = useMemo(() => {
+    const startDay = Math.max(1, dayCount - totalAssetHistory.length + 1);
     return totalAssetHistory.map((val, idx) => ({
-      day: `DAY ${idx + 1}`,
+      day: `DAY ${startDay + idx}`,
       '총 자산': val,
     }));
-  }, [totalAssetHistory]);
+  }, [totalAssetHistory, dayCount]);
 
   // Chart data for Asset Allocation
   const assetAllocationData = useMemo(() => {

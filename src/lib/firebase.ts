@@ -1,6 +1,6 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getApps, initializeApp } from "firebase/app";
+import { getAuth, type Auth } from "firebase/auth";
+import { getFirestore, initializeFirestore, type Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -8,9 +8,28 @@ const firebaseConfig = {
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const isFirebaseConfigured = Boolean(
+  firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId
+);
+
+let authInstance: Auth | null = null;
+let firestoreInstance: Firestore | null = null;
+
+if (isFirebaseConfigured) {
+  const app = getApps().length > 0 ? getApps()[0] : initializeApp(firebaseConfig);
+  authInstance = getAuth(app);
+  try {
+    firestoreInstance = initializeFirestore(app, {
+      ignoreUndefinedProperties: true,
+    });
+  } catch {
+    // HMR 등으로 이미 초기화된 경우 기존 인스턴스 재사용
+    firestoreInstance = getFirestore(app);
+  }
+}
+
+export const auth = authInstance;
+export const db = firestoreInstance;

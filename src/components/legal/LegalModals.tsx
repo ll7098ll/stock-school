@@ -99,7 +99,7 @@ export default function LegalModals({
                 <section className="space-y-2">
                   <h4 className="font-black text-[15px] text-foreground">1. 가상 기업 · 가상 뉴스 · 가상 주가</h4>
                   <p className="text-muted-foreground font-medium">
-                    스탁스쿨에 상장된 34개 종목의 기업명, 주가, 호가, 거래량 및 102건의 경제 뉴스 시나리오는 모두 금융 교육을 위해 창작된 가상의 데이터입니다. 실존하는 특정 상장기업이나 실제 주가와 무관하며, 우연히 유사한 명칭이 있더라도 어떠한 제휴·추천·비방 의도가 없습니다.
+                    스탁스쿨에 상장된 34개 종목의 기업명, 주가, 호가, 거래량 및 1,098편의 경제 뉴스·시나리오는 모두 금융 교육을 위해 창작된 가상의 데이터입니다. 실존하는 특정 상장기업이나 실제 주가와 무관하며, 우연히 유사한 명칭이 있더라도 어떠한 제휴·추천·비방 의도가 없습니다.
                   </p>
                 </section>
 

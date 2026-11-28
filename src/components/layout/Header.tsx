@@ -1,14 +1,26 @@
-import { useGameStore } from '../../stores/gameStore';
+import { isTodayNewsComplete, useGameStore } from '../../stores/gameStore';
 import { LogOut, CalendarDays, SkipForward, Sun, Moon } from 'lucide-react';
 import SchoolLogo from './SchoolLogo';
 import { Button } from '../ui/button';
-import { auth } from '../../lib/firebase';
-import { signOut } from 'firebase/auth';
 import { toast } from 'sonner';
 import { useMemo } from 'react';
 
 export default function Header() {
-  const { displayName, dayCount, nextDay, level, stocks, cash, holdings, initialCash, theme, toggleTheme } = useGameStore();
+  const {
+    displayName,
+    dayCount,
+    nextDay,
+    level,
+    stocks,
+    cash,
+    holdings,
+    initialCash,
+    theme,
+    toggleTheme,
+    exitSession,
+    currentNews,
+    todayNewsChecks,
+  } = useGameStore();
 
   // Calculate total assets for header display
   const { totalAsset, totalProfitRate } = useMemo(() => {
@@ -18,7 +30,7 @@ export default function Header() {
       if (stock) stockValue += stock.currentPrice * h.quantity;
     });
     const total = cash + stockValue;
-    const rate = ((total - initialCash) / initialCash) * 100;
+    const rate = initialCash > 0 ? ((total - initialCash) / initialCash) * 100 : 0;
     return { totalAsset: total, totalProfitRate: rate };
   }, [holdings, stocks, cash, initialCash]);
 
@@ -32,9 +44,17 @@ export default function Header() {
     });
   }, [stocks]);
 
+  const handleNextDay = () => {
+    if (!isTodayNewsComplete(currentNews, todayNewsChecks)) {
+      toast.info('오늘의 뉴스를 모두 읽고 판단을 체크해 주세요!');
+      return;
+    }
+    nextDay();
+  };
+
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      await exitSession();
       toast.success('로그아웃 되었습니다.');
     } catch (error) {
       console.error(error);
@@ -120,7 +140,7 @@ export default function Header() {
           </div>
           
           <Button 
-            onClick={nextDay} 
+            onClick={handleNextDay} 
             size="sm" 
             className="h-9 bg-[var(--color-primary)] hover:opacity-90 text-[var(--color-primary-foreground)] font-extrabold text-xs px-4 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-[1px] active:translate-y-0 transition-all duration-200 gap-1.5 border-transparent cursor-pointer"
           >

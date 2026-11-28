@@ -3,7 +3,9 @@ import {
   useGameStore,
   countCheckedTodayNews,
   isTodayNewsComplete,
+  TUTORIAL_COMPLETED_KEY,
 } from '../stores/gameStore';
+import { safeLocalStorage } from '../lib/safeStorage';
 import { computeAccountSummary, formatSignedPct } from '../lib/tradingMetrics';
 import AppShell from '../components/layout/AppShell';
 import StockList from '../components/trading/StockList';
@@ -32,6 +34,8 @@ import {
   Wallet,
   Briefcase,
   History,
+  AlertTriangle,
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import type { OrderIntent, SectorId, TradeType } from '../lib/types';
@@ -50,6 +54,9 @@ export default function Dashboard() {
     todayNewsChecks,
     tradeHistory,
     realizedProfitTotal,
+    saveError,
+    isSaving,
+    retryPendingSave,
   } = useGameStore();
 
   // News-First default workspace!
@@ -75,7 +82,7 @@ export default function Dashboard() {
   const [portfolioSubTabNonce, setPortfolioSubTabNonce] = useState(0);
 
   const [showTutorial, setShowTutorial] = useState(
-    () => !localStorage.getItem('stockschool_tutorial_completed')
+    () => !safeLocalStorage.getItem(TUTORIAL_COMPLETED_KEY)
   );
   const [legalOpen, setLegalOpen] = useState(false);
   const [legalTab, setLegalTab] = useState<LegalTab>('disclaimer');
@@ -273,6 +280,27 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
+
+        {/* PERSISTENCE ERROR RECOVERY BANNER (F-1 / F-5) */}
+        {saveError && (
+          <div className="shrink-0 border-b border-rose-500/35 bg-rose-500/10 px-4 py-2 flex items-center justify-between gap-3 flex-wrap text-xs z-10">
+            <div className="flex items-center gap-2 font-bold text-rose-700 dark:text-rose-300 min-w-0">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span className="truncate">
+                학습 기록 저장에 일시적인 문제가 발생했습니다. 새로고침 전에 다시 저장을 시도해 주세요.
+              </span>
+            </div>
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => void retryPendingSave()}
+              className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-black text-xs cursor-pointer shrink-0"
+            >
+              <RefreshCw className={cn('w-3.5 h-3.5', isSaving && 'animate-spin')} />
+              <span>{isSaving ? '저장 중...' : '다시 저장'}</span>
+            </button>
+          </div>
+        )}
 
         {/* 1. NEWS WORKSPACE */}
         {activeWorkspace === 'news' && (

@@ -16,6 +16,9 @@ service cloud.firestore {
         ])
         && request.resource.data.currentLevel in ['elementary', 'middle', 'high']
         && request.resource.data.schemaVersion is int
+        && request.resource.data.gameStates is map
+        && request.resource.data.gameStates.size() > 0
+        && request.resource.data.gameStates.keys().hasOnly(['elementary', 'middle', 'high'])
         && (request.resource.data.displayName == null ||
             (request.resource.data.displayName is string && request.resource.data.displayName.size() <= 80))
         && request.resource.data.updatedAt is string;

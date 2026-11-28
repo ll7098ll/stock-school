@@ -17,6 +17,7 @@ import {
   computeSmartQtyByPct,
   formatSignedPct,
   formatSignedWon,
+  getHoldingCostBasis,
   previewBuyOrder,
   previewSellOrder,
 } from '../../lib/tradingMetrics';
@@ -130,11 +131,9 @@ export default function QuickTradeModal({
       ? sellPreview.isFullSell && qty > 0
       : buyPreview.isLargeOrder && qty > 0 && !isOverMax;
 
-  const holdingProfit = holding ? (stock.currentPrice - holding.avgPrice) * holding.quantity : 0;
-  const holdingProfitRate =
-    holding && holding.avgPrice > 0
-      ? ((stock.currentPrice - holding.avgPrice) / holding.avgPrice) * 100
-      : 0;
+  const holdingCost = getHoldingCostBasis(holding);
+  const holdingProfit = holding ? stock.currentPrice * holding.quantity - holdingCost : 0;
+  const holdingProfitRate = holding && holdingCost > 0 ? (holdingProfit / holdingCost) * 100 : 0;
 
   const handleSetPct = (pct: number) => {
     setQuantity(String(computeSmartQtyByPct(maxForSide, pct)));

@@ -95,6 +95,7 @@ export function getTickSize(price: number): number {
  * 한국 주식시장 호가 단위에 맞춰 주가를 반올림 (최소 100원 유지)
  */
 export function roundToTickSize(price: number): number {
+  if (!Number.isFinite(price)) return 100;
   const safePrice = Math.max(100, price);
   const tick = getTickSize(safePrice);
   return Math.max(100, Math.round(safePrice / tick) * tick);
@@ -110,12 +111,13 @@ export function shuffleArray<T>(arr: T[]): T[] {
 }
 
 /**
- * 한 뉴스 안에 양(+)의 영향과 음(-)의 영향 섹터가 공존하는지 판별
+ * 한 뉴스 안에 양(+)의 영향과 음(-)의 영향 섹터·종목이 공존하는지 판별
  */
 export function isMixedNews(item: NewsItem): boolean {
   const values: number[] = [
     ...Object.values(item.sectorImpact).filter((v): v is number => typeof v === 'number'),
-    ...Object.values(item.stockImpactOverrides ?? {}),
+    ...Object.values(item.stockImpactOverrides ?? {}).filter((v): v is number => typeof v === 'number'),
+    ...Object.values(item.stockImpact ?? {}).filter((v): v is number => typeof v === 'number'),
   ];
   const hasPos = values.some((v) => v > 0);
   const hasNeg = values.some((v) => v < 0);
@@ -208,12 +210,31 @@ export function getScaledImpact(rawImpact: number, level: Level): number {
   return rawImpact * LEVEL_SIM_CONFIG[level].newsScale;
 }
 
+export const MAX_HISTORY_LENGTH = 180;
+
 /**
- * 두 뉴스가 같은 섹터에 정반대(+/-) 영향을 주어 상충하는지 검사
+ * 두 뉴스가 같은 섹터 또는 동일 종목 오버라이드에 정반대(+/-) 영향을 주어 상충하는지 검사
  */
 export function hasOppositeSectorConflict(a: NewsItem, b: NewsItem): boolean {
   for (const [sector, impactA] of Object.entries(a.sectorImpact) as [SectorId, number][]) {
     const impactB = b.sectorImpact[sector];
+    if (typeof impactA === 'number' && typeof impactB === 'number') {
+      if ((impactA > 0 && impactB < 0) || (impactA < 0 && impactB > 0)) {
+        return true;
+      }
+    }
+  }
+
+  const stockA: Record<string, number> = {
+    ...(a.stockImpact ?? {}),
+    ...(a.stockImpactOverrides ?? {}),
+  };
+  const stockB: Record<string, number> = {
+    ...(b.stockImpact ?? {}),
+    ...(b.stockImpactOverrides ?? {}),
+  };
+  for (const [stockId, impactA] of Object.entries(stockA)) {
+    const impactB = stockB[stockId];
     if (typeof impactA === 'number' && typeof impactB === 'number') {
       if ((impactA > 0 && impactB < 0) || (impactA < 0 && impactB > 0)) {
         return true;
@@ -238,23 +259,35 @@ export function selectDailyNews(
   seedSelected: NewsItem[] = []
 ): { selected: NewsItem[]; nextUsedNewsIds: string[] } {
   const levelPool = allNews.filter((n) => n.difficulty.includes(level));
-  let available = levelPool.filter((n) => !usedNewsIds.includes(n.id));
-  let baseUsedIds = [...usedNewsIds];
+  const seedIds = new Set(seedSelected.map((n) => n.id));
+  const nonScenarioCurrentIds = new Set(
+    currentNews.filter((n) => !n.scenarioId).map((n) => n.id)
+  );
+  const cleanUsedIds = usedNewsIds.filter((id) => !seedIds.has(id));
 
-  // 풀 소진 시 현재 노출 중인 뉴스만 제외하고 리셋
-  if (available.length < count) {
-    const currentIds = new Set(currentNews.map((n) => n.id));
-    available = levelPool.filter((n) => !currentIds.has(n.id));
-    baseUsedIds = [...currentIds];
+  let available = levelPool.filter(
+    (n) => !cleanUsedIds.includes(n.id) && !seedIds.has(n.id)
+  );
+  let baseUsedIds = [...cleanUsedIds];
+
+  // 풀 소진 시 현재 노출 중인 일반 뉴스만 제외하고 리셋
+  const needed = Math.max(0, count - seedSelected.length);
+  if (available.length < needed) {
+    available = levelPool.filter(
+      (n) => !nonScenarioCurrentIds.has(n.id) && !seedIds.has(n.id)
+    );
+    baseUsedIds = [...nonScenarioCurrentIds];
   }
 
   const shuffled = shuffleArray(available);
   const selected: NewsItem[] = [...seedSelected];
+  const selectedIdSet = new Set(selected.map((n) => n.id));
   const avoidConflicts = level === 'elementary' || level === 'middle';
 
   // 1차 패스: 충돌 없고 호재/악재 균형을 맞추며 선별
   for (const candidate of shuffled) {
     if (selected.length >= count) break;
+    if (selectedIdSet.has(candidate.id)) continue;
     if (avoidConflicts && selected.some((s) => hasOppositeSectorConflict(s, candidate))) {
       continue;
     }
@@ -268,26 +301,28 @@ export function selectDailyNews(
 
       const hasBetterBalanceRemaining = shuffled.some(
         (other) =>
-          !selected.includes(other) &&
+          !selectedIdSet.has(other.id) &&
           (!avoidConflicts || !selected.some((s) => hasOppositeSectorConflict(s, other))) &&
-          ((allPos && !((other.sentiment > 0) && !isMixedNews(other))) ||
-            (allNeg && !((other.sentiment < 0) && !isMixedNews(other))))
+          ((allPos && !(other.sentiment > 0 && !isMixedNews(other))) ||
+            (allNeg && !(other.sentiment < 0 && !isMixedNews(other))))
       );
 
-      if ((allPos && candidateIsPurePos && hasBetterBalanceRemaining) ||
-          (allNeg && candidateIsPureNeg && hasBetterBalanceRemaining)) {
+      if (
+        (allPos && candidateIsPurePos && hasBetterBalanceRemaining) ||
+        (allNeg && candidateIsPureNeg && hasBetterBalanceRemaining)
+      ) {
         continue;
       }
     }
 
     selected.push(candidate);
+    selectedIdSet.add(candidate.id);
   }
 
   // 폴백: 남은 미사용 풀만으로 충돌 없이 count를 못 채운 경우, 전체 풀(현재 뉴스 제외)에서 충돌 없는 기사로 보충
   if (selected.length < count) {
-    const currentIds = new Set(currentNews.map((n) => n.id));
     const fallbackPool = shuffleArray(
-      levelPool.filter((n) => !currentIds.has(n.id) && !selected.includes(n))
+      levelPool.filter((n) => !nonScenarioCurrentIds.has(n.id) && !selectedIdSet.has(n.id))
     );
     for (const candidate of fallbackPool) {
       if (selected.length >= count) break;
@@ -295,13 +330,19 @@ export function selectDailyNews(
         continue;
       }
       selected.push(candidate);
+      selectedIdSet.add(candidate.id);
     }
-    baseUsedIds = [...currentIds];
+    baseUsedIds = [...nonScenarioCurrentIds];
   }
+
+  // 시나리오 에피소드 ID는 PREDEFINED_NEWS 풀이 아니므로 usedNewsIds에 혼입하지 않음
+  const regularSelectedIds = selected.filter((n) => !n.scenarioId).map((n) => n.id);
+  const regularPoolIdSet = new Set(levelPool.map((n) => n.id));
+  const filteredBaseUsed = baseUsedIds.filter((id) => regularPoolIdSet.has(id));
 
   return {
     selected,
-    nextUsedNewsIds: [...new Set([...baseUsedIds, ...selected.map((n) => n.id)])],
+    nextUsedNewsIds: [...new Set([...filteredBaseUsed, ...regularSelectedIds])],
   };
 }
 
@@ -320,7 +361,7 @@ export function simulateNextDay(
   level: Level,
   prevCarryoverImpacts: Record<string, number> = {}
 ): SimulateDayResult {
-  const cfg = LEVEL_SIM_CONFIG[level];
+  const cfg = LEVEL_SIM_CONFIG[level] ?? LEVEL_SIM_CONFIG.elementary;
   const newStocks: Record<string, StockState> = {};
   const breakdownByStock: Record<string, DayStockBreakdown> = {};
   const nextCarryoverImpacts: Record<string, number> = {};
@@ -330,24 +371,34 @@ export function simulateNextDay(
     -0.02,
     Math.min(
       0.02,
-      currentNews.reduce((sum, n) => sum + (typeof n.marketBias === 'number' ? n.marketBias : 0), 0)
+      currentNews.reduce((sum, n) => sum + (typeof n.marketBias === 'number' && Number.isFinite(n.marketBias) ? n.marketBias : 0), 0)
     )
   );
   const marketFactor = (Math.random() * 2 - 1) * cfg.marketHalfRange + cfg.marketBias + newsMarketBias;
 
   for (const id of Object.keys(stocks)) {
     const stock = stocks[id];
-    const prevPrice = stock.currentPrice;
+    const safeBasePrice =
+      Number.isFinite(stock.basePrice) && stock.basePrice >= 100 ? stock.basePrice : 10000;
+    const prevPrice =
+      Number.isFinite(stock.currentPrice) && stock.currentPrice >= 100
+        ? stock.currentPrice
+        : safeBasePrice;
 
     // 1. 뉴스 영향 합산 (종목별 예외 반영)
     let rawNewsSum = 0;
     for (const news of currentNews) {
-      rawNewsSum += getNewsRawImpactForStock(news, stock);
+      const impact = getNewsRawImpactForStock(news, stock);
+      if (Number.isFinite(impact)) {
+        rawNewsSum += impact;
+      }
     }
     const newsContribution = rawNewsSum * cfg.newsScale;
 
     // 2. 전일 뉴스 이월 모멘텀 (고급 난이도)
-    const carryoverContribution = prevCarryoverImpacts[id] ?? 0;
+    const rawCarryover = prevCarryoverImpacts[id];
+    const carryoverContribution =
+      typeof rawCarryover === 'number' && Number.isFinite(rawCarryover) ? rawCarryover : 0;
     if (cfg.carryoverRate > 0 && Math.abs(newsContribution) >= 0.005) {
       nextCarryoverImpacts[id] = newsContribution * cfg.carryoverRate;
     }
@@ -356,7 +407,7 @@ export function simulateNextDay(
     const randomChange = (Math.random() * 2 - 1) * cfg.randomHalfRange * stock.volatility;
 
     // 4. 기준가 평균 회귀 (극단적 이탈 완화)
-    const deviation = (prevPrice - stock.basePrice) / stock.basePrice;
+    const deviation = (prevPrice - safeBasePrice) / safeBasePrice;
     const meanReversion = -deviation * cfg.meanReversionRate;
 
     // 5. 돌발 수급 충격 (중·고급만 발생하며 사유를 기록해 학습자에게 투명하게 공개)
@@ -385,24 +436,28 @@ export function simulateNextDay(
     const actualChangePct = prevPrice > 0 ? (newPrice - prevPrice) / prevPrice : 0;
 
     const dailyVolume = calculateDailyVolume(
-      stock.basePrice,
+      safeBasePrice,
       Math.abs(actualChangePct),
       Math.abs(rawNewsSum) > 0 || Math.abs(shockContribution) > 0
     );
 
+    const safePriceHistory =
+      Array.isArray(stock.priceHistory) && stock.priceHistory.length > 0
+        ? stock.priceHistory
+        : [prevPrice];
     const existingVolumes =
-      stock.volumeHistory && stock.volumeHistory.length === stock.priceHistory.length
+      stock.volumeHistory && stock.volumeHistory.length === safePriceHistory.length
         ? stock.volumeHistory
-        : stock.priceHistory.map(() => calculateDailyVolume(stock.basePrice, 0.01, false));
+        : safePriceHistory.map(() => calculateDailyVolume(safeBasePrice, 0.01, false));
 
     newStocks[id] = {
       ...stock,
       currentPrice: newPrice,
-      priceHistory: [...stock.priceHistory, newPrice],
-      volumeHistory: [...existingVolumes, dailyVolume],
+      priceHistory: [...safePriceHistory, newPrice].slice(-MAX_HISTORY_LENGTH),
+      volumeHistory: [...existingVolumes, dailyVolume].slice(-MAX_HISTORY_LENGTH),
     };
 
-    breakdownByStock[id] = {
+    const breakdown: DayStockBreakdown = {
       stockId: id,
       prevPrice,
       newPrice,
@@ -411,8 +466,9 @@ export function simulateNextDay(
       carryoverContribution,
       marketAndNoise,
       shockContribution,
-      shockReason,
+      ...(shockReason ? { shockReason } : {}),
     };
+    breakdownByStock[id] = breakdown;
   }
 
   return { newStocks, breakdownByStock, nextCarryoverImpacts };

@@ -397,25 +397,32 @@ sequenceDiagram
     App->>App: Dashboard 렌더링
 ```
 
-### Firestore 문서 구조
+### Firestore 문서 구조 (v2 경량 압축 스키마)
 
 ```
 📁 users (Collection)
   └── 📄 {uid} (Document)
-        ├── displayName: "홍길동"
-        ├── updatedAt: "2026-05-20T..."
-        └── gameState:
-              ├── level: "elementary"
-              ├── dayCount: 15
-              ├── cash: 850000
-              ├── initialCash: 1000000
-              ├── stocks: { "samsung-elec": {...}, ... }
-              ├── holdings: { "samsung-elec": { quantity: 5, avgPrice: 82000 } }
-              ├── currentNews: [...]
-              ├── previousNews: [...]
-              ├── usedNewsIds: [...]
-              ├── totalAssetHistory: [1000000, 1050000, ...]
-              └── tutorialStep: null
+        ├── schemaVersion: 2
+        ├── displayName: "홍길동" (최대 80자)
+        ├── currentLevel: "elementary" | "middle" | "high"
+        ├── updatedAt: "2026-11-27T..."
+        └── gameStates:
+              └── elementary / middle / high:
+                    ├── schemaVersion: 2
+                    ├── revision: 12 (동시성 충돌 감지용 단조 증가)
+                    ├── level: "elementary"
+                    ├── dayCount: 15
+                    ├── cash: 850000
+                    ├── initialCash: 1000000
+                    ├── stocks: { "nuri-elec": { currentPrice, pricesCsv, volumesCsv }, ... }
+                    ├── holdings: { "nuri-elec": { quantity: 5, avgPrice: 82000, totalCost: 410000 } }
+                    ├── currentNewsIds: ["...", "...", "..."]
+                    ├── previousNewsIds: ["...", "...", "..."]
+                    ├── usedNewsIdsCsv: "...|..."
+                    ├── totalAssetHistoryCsv: "1000000,1050000,..."
+                    ├── tradeHistoryJson: "[...]" (최근 200건)
+                    ├── tradeStats: { total, buyCount, sellCount, winSells, lossSells }
+                    └── realizedProfitTotal: 25000
 ```
 
 ---

@@ -31,43 +31,54 @@ export default function TradeHistoryPanel({
   onSelectStock,
   onOpenPortfolio,
 }: TradeHistoryPanelProps) {
-  const { tradeHistory, dayCount, realizedProfitTotal } = useGameStore();
+  const { tradeHistory, tradeStats, dayCount, realizedProfitTotal } = useGameStore();
   const [filter, setFilter] = useState<TradeFilter>('all');
   const [search, setSearch] = useState('');
 
   const reversedHistory = useMemo(() => [...tradeHistory].reverse(), [tradeHistory]);
 
   const stats = useMemo(() => {
-    let buyCount = 0;
-    let sellCount = 0;
+    let recentBuyCount = 0;
+    let recentSellCount = 0;
     let todayCount = 0;
-    let winSells = 0;
-    let lossSells = 0;
+    let recentWinSells = 0;
+    let recentLossSells = 0;
 
     tradeHistory.forEach((t) => {
       if (t.dayCount === dayCount) todayCount += 1;
       if (t.type === 'buy') {
-        buyCount += 1;
+        recentBuyCount += 1;
       } else {
-        sellCount += 1;
-        if ((t.realizedProfit ?? 0) > 0) winSells += 1;
-        else if ((t.realizedProfit ?? 0) < 0) lossSells += 1;
+        recentSellCount += 1;
+        if ((t.realizedProfit ?? 0) > 0) recentWinSells += 1;
+        else if ((t.realizedProfit ?? 0) < 0) recentLossSells += 1;
       }
     });
+
+    const useAllTime = tradeStats && tradeStats.total >= tradeHistory.length;
+    const total = useAllTime ? tradeStats.total : tradeHistory.length;
+    const buyCount = useAllTime ? tradeStats.buyCount : recentBuyCount;
+    const sellCount = useAllTime ? tradeStats.sellCount : recentSellCount;
+    const winSells = useAllTime ? tradeStats.winSells : recentWinSells;
+    const lossSells = useAllTime ? tradeStats.lossSells : recentLossSells;
 
     const settledSells = winSells + lossSells;
     const winRate = settledSells > 0 ? Math.round((winSells / settledSells) * 100) : null;
 
     return {
-      total: tradeHistory.length,
+      total,
       buyCount,
       sellCount,
+      recentTotal: tradeHistory.length,
+      recentBuyCount,
+      recentSellCount,
       todayCount,
       winSells,
       lossSells,
       winRate,
+      isTrimmed: total > tradeHistory.length,
     };
-  }, [tradeHistory, dayCount]);
+  }, [tradeHistory, tradeStats, dayCount]);
 
   const filteredList = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -85,10 +96,10 @@ export default function TradeHistoryPanel({
   const isCompact = variant === 'compact';
 
   const filterChips: { id: TradeFilter; label: string }[] = [
-    { id: 'all', label: `전체 (${stats.total})` },
+    { id: 'all', label: `전체 (${stats.recentTotal})` },
     { id: 'today', label: `오늘 DAY ${dayCount} (${stats.todayCount})` },
-    { id: 'buy', label: `매수 (${stats.buyCount})` },
-    { id: 'sell', label: `매도 (${stats.sellCount})` },
+    { id: 'buy', label: `매수 (${stats.recentBuyCount})` },
+    { id: 'sell', label: `매도 (${stats.recentSellCount})` },
   ];
 
   return (
@@ -102,7 +113,9 @@ export default function TradeHistoryPanel({
       {!isCompact && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-0 border-b border-[var(--color-hts-border)] bg-black/[0.015] dark:bg-black/20">
           <div className="p-3.5 border-r border-b md:border-b-0 border-[var(--color-hts-border)]">
-            <div className="text-[11px] text-muted-foreground font-bold">누적 체결 건수</div>
+            <div className="text-[11px] text-muted-foreground font-bold">
+              누적 체결 건수{stats.isTrimmed ? ' (목록 최근 200건)' : ''}
+            </div>
             <div className="text-sm font-black text-foreground mt-0.5 tabular-nums">
               총 {stats.total}건{' '}
               <span className="text-xs font-bold text-muted-foreground">

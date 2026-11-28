@@ -27,16 +27,17 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
   const areaSeriesRef = useRef<ISeriesApi<'Area'> | null>(null);
   const avgPriceLineRef = useRef<IPriceLine | null>(null);
 
-  const { stocks, holdings, theme, tutorialStep } = useGameStore();
+  const { stocks, holdings, theme, tutorialStep, level, dayCount } = useGameStore();
   const stock = stocks[stockId];
   const holding = holdings[stockId];
 
   useEffect(() => {
     if (!chartContainerRef.current || !stock) return;
 
+    const historyStartOffset = Math.max(0, dayCount - stock.priceHistory.length);
     const getDateString = (index: number) => {
       const date = new Date(2026, 0, 1);
-      date.setDate(date.getDate() + index);
+      date.setDate(date.getDate() + historyStartOffset + index);
       const y = date.getFullYear();
       const m = String(date.getMonth() + 1).padStart(2, '0');
       const d = String(date.getDate()).padStart(2, '0');
@@ -199,7 +200,7 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
       areaSeriesRef.current = null;
       avgPriceLineRef.current = null;
     };
-  }, [stockId, stock?.priceHistory.length, theme]);
+  }, [stockId, stock, level, dayCount, theme]);
 
   // Sync user's average purchase price line onto the chart without recreating chart
   const avgPrice = holding && holding.quantity > 0 ? holding.avgPrice : null;
@@ -223,7 +224,7 @@ export default function PriceChart({ stockId, onTradeClick, onAnalyzeClick }: Pr
         title: '내 평단',
       });
     }
-  }, [avgPrice, stockId, stock?.priceHistory.length, theme]);
+  }, [avgPrice, stockId, stock, level, dayCount, theme]);
 
   if (!stock) return null;
 

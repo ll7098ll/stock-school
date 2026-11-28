@@ -29,6 +29,11 @@ export default function GlossaryHub() {
   const [selectedCategory, setSelectedCategory] = useState<'all' | GlossaryCategory>('all');
   const [selectedTermId, setSelectedTermId] = useState<string | null>(GLOSSARY_TERMS[0]?.id ?? null);
   const [learningLevel, setLearningLevel] = useState<'elementary' | 'middle' | 'high'>(level);
+  const [prevStoreLevel, setPrevStoreLevel] = useState(level);
+  if (level !== prevStoreLevel) {
+    setPrevStoreLevel(level);
+    setLearningLevel(level);
+  }
   const detailScrollRef = useRef<HTMLDivElement | null>(null);
 
   // Category counts

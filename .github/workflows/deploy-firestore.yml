@@ -1,0 +1,140 @@
+name: Deploy Firestore Rules & Indexes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'firestore.rules'
+      - 'firestore.indexes.json'
+      - 'firebase.json'
+  workflow_dispatch:
+    inputs:
+      target:
+        description: '배포 대상 선택'
+        required: true
+        default: 'firestore'
+        type: choice
+        options:
+          - firestore
+          - firestore:rules
+          - firestore:indexes
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-firestore
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Firestore to Firebase
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate Firestore configuration files
+        run: |
+          node -e '
+            const fs = require("fs");
+            const firebaseJson = JSON.parse(fs.readFileSync("firebase.json", "utf8"));
+            if (!firebaseJson.firestore?.rules || !firebaseJson.firestore?.indexes) {
+              throw new Error("firebase.json must define firestore.rules and firestore.indexes");
+            }
+            const indexes = JSON.parse(fs.readFileSync(firebaseJson.firestore.indexes, "utf8"));
+            if (!Array.isArray(indexes.indexes) || !Array.isArray(indexes.fieldOverrides)) {
+              throw new Error("firestore.indexes.json must contain indexes and fieldOverrides arrays");
+            }
+            const rules = fs.readFileSync(firebaseJson.firestore.rules, "utf8");
+            if (!rules.includes("rules_version")) {
+              throw new Error("firestore.rules appears invalid or empty");
+            }
+            console.log("Validated firebase.json, firestore.rules, and firestore.indexes.json");
+          '
+
+      - name: Prepare Firebase credentials
+        id: auth
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID || vars.FIREBASE_PROJECT_ID }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            const path = require("path");
+
+            const raw = (process.env.FIREBASE_SERVICE_ACCOUNT || "").trim();
+            if (!raw) {
+              console.error("::error::FIREBASE_SERVICE_ACCOUNT 시크릿이 설정되지 않았습니다. GitHub 저장소 Settings > Secrets and variables > Actions 에서 FIREBASE_SERVICE_ACCOUNT 시크릿을 등록해 주세요.");
+              process.exit(1);
+            }
+
+            let parsed;
+            let jsonText = raw;
+            try {
+              parsed = JSON.parse(jsonText);
+            } catch {
+              try {
+                jsonText = Buffer.from(raw, "base64").toString("utf8");
+                parsed = JSON.parse(jsonText);
+              } catch {
+                console.error("::error::FIREBASE_SERVICE_ACCOUNT 값이 올바른 JSON(또는 Base64 인코딩된 JSON)이 아닙니다.");
+                process.exit(1);
+              }
+            }
+
+            if (parsed.type !== "service_account" || !parsed.private_key || !parsed.client_email) {
+              console.error("::error::FIREBASE_SERVICE_ACCOUNT 에 유효한 Firebase 서비스 계정 JSON 키(type, private_key, client_email)가 포함되어 있지 않습니다.");
+              process.exit(1);
+            }
+
+            const projectId = (process.env.FIREBASE_PROJECT_ID || parsed.project_id || "").trim();
+            if (!projectId || !/^[a-z0-9-]+$/i.test(projectId)) {
+              console.error("::error::유효한 Firebase 프로젝트 ID를 확인할 수 없습니다. 서비스 계정 JSON의 project_id 또는 FIREBASE_PROJECT_ID 설정을 확인해 주세요.");
+              process.exit(1);
+            }
+
+            const runnerTemp = process.env.RUNNER_TEMP || "/tmp";
+            const credPath = path.join(runnerTemp, "firebase-service-account.json");
+            fs.writeFileSync(credPath, JSON.stringify(parsed), { mode: 0o600 });
+
+            fs.appendFileSync(process.env.GITHUB_ENV, `GOOGLE_APPLICATION_CREDENTIALS=${credPath}\n`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `project_id=${projectId}\n`);
+            console.log(`Prepared credentials for Firebase project: ${projectId}`);
+          '
+
+      - name: Deploy Firestore rules and indexes
+        env:
+          DEPLOY_TARGET: ${{ github.event.inputs.target || 'firestore' }}
+          PROJECT_ID: ${{ steps.auth.outputs.project_id }}
+        run: |
+          npx --yes firebase-tools@latest deploy \
+            --only "$DEPLOY_TARGET" \
+            --project "$PROJECT_ID" \
+            --non-interactive
+
+      - name: Write deployment summary
+        if: success()
+        env:
+          DEPLOY_TARGET: ${{ github.event.inputs.target || 'firestore' }}
+          PROJECT_ID: ${{ steps.auth.outputs.project_id }}
+        run: |
+          {
+            echo "### Firestore 배포 완료"
+            echo ""
+            echo "- **프로젝트**: \`${PROJECT_ID}\`"
+            echo "- **배포 대상**: \`${DEPLOY_TARGET}\`"
+            echo "- **규칙 파일**: \`firestore.rules\`"
+            echo "- **인덱스 파일**: \`firestore.indexes.json\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Clean up credentials
+        if: always()
+        run: |
+          rm -f "${RUNNER_TEMP}/firebase-service-account.json"

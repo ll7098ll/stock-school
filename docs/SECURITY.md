@@ -34,7 +34,7 @@ Firebase API Key의 역할:
 
 ### Firestore 보안 규칙 ([`firestore.rules`](../firestore.rules)) 및 인덱스 예외 ([`firestore.indexes.json`](../firestore.indexes.json))
 
-실제 배포 시 프로젝트 루트의 `firestore.rules` 및 `firestore.indexes.json`을 Firebase Console 또는 `firebase deploy --only firestore`로 함께 배포해야 합니다.
+실제 배포 시 프로젝트 루트의 `firestore.rules` 및 `firestore.indexes.json`을 Firebase Console, `firebase deploy --only firestore`, 또는 GitHub Actions 워크플로우([`.github/workflows/deploy-firestore.yml`](../.github/workflows/deploy-firestore.yml))로 함께 배포해야 합니다. GitHub Actions 배포 시 저장소 Secrets에 `FIREBASE_SERVICE_ACCOUNT`(Firebase 서비스 계정 JSON 키)를 등록합니다.
 
 ```javascript
 rules_version = '2';
